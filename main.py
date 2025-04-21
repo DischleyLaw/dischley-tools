@@ -54,6 +54,8 @@ class Lead(db.Model):
     lvm = db.Column(db.Boolean, default=False)
     not_pc = db.Column(db.Boolean, default=False)
     quote = db.Column(db.String(50))
+    lead_source = db.Column(db.String(100))
+    custom_source = db.Column(db.String(100))
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -110,6 +112,9 @@ def intake():
     if request.method == "POST":
         data = request.form
 
+        lead_source = data.get("lead_source")
+        custom_source = data.get("custom_source") if lead_source == "Other" else None
+
         new_lead = Lead(
             name=data.get("name"),
             phone=data.get("phone"),
@@ -124,7 +129,9 @@ def intake():
             lvm=False,
             not_pc=False,
             quote=None,
-            retainer_amount=None
+            retainer_amount=None,
+            lead_source=lead_source,
+            custom_source=custom_source
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -145,6 +152,8 @@ Court Time: {new_lead.court_time}
 Court: {new_lead.court}
 Notes: {new_lead.notes}
 Homework: {new_lead.homework}
+Lead Source: {lead_source}
+Custom Source: {custom_source}
 
 Manage lead: {lead_url}
         """
@@ -159,7 +168,7 @@ Manage lead: {lead_url}
                 "from_phone": new_lead.phone,
                 "from_message": f"Charge: {new_lead.charge}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
                 "referring_url": "http://127.0.0.1:5000/intake",
-                "from_source": "Dischley Intake Form"
+                "from_source": custom_source or lead_source
             },
             "inbox_lead_token": os.getenv("CLIO_TOKEN")
         }
@@ -202,6 +211,8 @@ def update_lead(lead_id):
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
     lead.quote = request.form.get("quote")
+    lead.lead_source = request.form.get("lead_source", lead.lead_source)
+    lead.custom_source = request.form.get("custom_source", lead.custom_source)
 
     db.session.commit()
 
@@ -226,6 +237,8 @@ Send Retainer: {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if 
 LVM: {checkmark(lead.lvm)}
 Not a PC: {checkmark(lead.not_pc)}
 Quote: ${lead.quote or 'N/A'}
+Lead Source: {lead.lead_source}
+Custom Source: {lead.custom_source}
 
 View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
     """

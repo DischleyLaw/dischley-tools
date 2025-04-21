@@ -8,14 +8,25 @@
       <p style="color: green;"><strong>Form submitted successfully!</strong></p>
     {% endif %}
     <form method="POST">
-      <label>Full Name:</label><br><input type="text" name="name" required><br><br>
-      <label>Phone Number:</label><br><input type="tel" name="phone" required><br><br>
-      <label>Email:</label><br><input type="email" name="email"><br><br>
-      <label>Charge or Legal Issue:</label><br><input type="text" name="charge"><br><br>
-      <label>Court Date:</label><br><input type="date" name="court_date"><br><br>
-      <label>Court Time:</label><br><input type="time" name="court_time"><br><br>
-      <label>Court Name:</label><br>
-      <select name="court" id="courtDropdown" onchange="toggleOtherCourtInput()">
+      <div style="text-align:center;">
+        <label><strong>Reason for Calling:</strong></label><br>
+        <input type="text" name="reason_call" style="width: 80%;" required><br><br>
+      </div>
+
+      <label>First Name:</label><br>
+      <input type="text" name="first_name" required><br><br>
+
+      <label>Last Name:</label><br>
+      <input type="text" name="last_name" required><br><br>
+
+      <label>Phone Number:</label><br>
+      <input type="tel" name="phone" required><br><br>
+
+      <label>Email:</label><br>
+      <input type="email" name="email"><br><br>
+
+      <label>Court:</label><br>
+      <select name="court">
         <option value="">-- Select Court --</option>
         <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
         <option value="Alexandria City General District Court">Alexandria City General District Court</option>
@@ -69,6 +80,7 @@
         <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
         <option value="Stafford County General District Court">Stafford County General District Court</option>
         <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
+        <option value="TBD">TBD</option>
         <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
         <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
         <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
@@ -79,21 +91,53 @@
         <option value="Warren County General District Court">Warren County General District Court</option>
         <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
         <option value="Winchester General District Court">Winchester General District Court</option>
+      </select><br><br>
+
+      <label>Court Date:</label><br>
+      <input type="date" name="court_date"><br><br>
+
+      <label>Court Time:</label><br>
+      <input type="time" name="court_time"><br><br>
+
+      <label>Brief Description of the Facts:</label><br>
+      <textarea name="facts" rows="3" style="width: 100%;"></textarea><br><br>
+
+      <label>Notes:</label><br>
+      <textarea name="notes" rows="3" style="width: 100%;"></textarea><br><br>
+
+      <label>Lead Source:</label><br>
+      <select name="lead_source" id="leadSourceDropdown" onchange="toggleOtherSourceInput()">
+        <option value="">-- Select Source --</option>
+        <option value="Avvo">Avvo</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Google Ad">Google Ad</option>
+        <option value="Justia">Justia</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="Martindale">Martindale</option>
+        <option value="Previous Client">Previous Client</option>
+        <option value="Referral">Referral</option>
+        <option value="Referred by a Previous Client">Referred by a Previous Client</option>
+        <option value="SuperLawyers">SuperLawyers</option>
+        <option value="Twitter">Twitter</option>
+        <option value="Unknown">Unknown</option>
+        <option value="Website">Website</option>
+        <option value="Yelp">Yelp</option>
         <option value="Other">Other</option>
       </select><br><br>
-      <div id="otherCourtInput" style="display: none;">
-        <label>Other Court Name:</label><br>
-        <input type="text" name="court_other"><br><br>
+
+      <div id="otherSourceInput" style="display: none;">
+        <label>Other Lead Source:</label><br>
+        <input type="text" name="lead_source_other"><br><br>
       </div>
- 
+
       <script>
-        function toggleOtherCourtInput() {
-          const dropdown = document.getElementById("courtDropdown");
-          const otherInput = document.getElementById("otherCourtInput");
+        function toggleOtherSourceInput() {
+          const dropdown = document.getElementById("leadSourceDropdown");
+          const otherInput = document.getElementById("otherSourceInput");
           otherInput.style.display = dropdown.value === "Other" ? "block" : "none";
         }
       </script>
-      <label>Notes:</label><br><textarea name="notes" rows="4"></textarea><br><br>
+
       <button type="submit">Submit</button>
     </form>
   </div>
