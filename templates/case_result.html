@@ -84,15 +84,7 @@
       <input type="text" name="offense"><br><br>
 
       <label>Amended Charge:</label><br>
-      <select name="amended_charge" id="amended_charge_select" onchange="toggleAmendedChargeInput()">
-        <option value="">-- Select Amended Charge --</option>
-        <option value="None">None</option>
-        <option value="Other">Other</option>
-      </select><br><br>
-      <div id="custom_amended_charge_container" style="display: none;">
-        <label>Enter Amended Charge:</label><br>
-        <input type="text" name="custom_amended_charge"><br><br>
-      </div>
+      <input type="text" name="amended_charge"><br><br>
 
       <label>Disposition:</label><br>
       <select name="disposition" id="disposition" onchange="toggleOtherDisposition()">
@@ -173,6 +165,9 @@
 
       <label><input type="checkbox" name="send_review_links" value="true"> Send Review Links</label><br><br>
 
+      <div id="additional_charges_container"></div>
+      <button type="button" onclick="addAdditionalCharge()">Add Additional Charge</button><br><br>
+
       <div class="form-group">
         <input type="submit" value="Submit" class="btn btn-primary">
         <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
@@ -198,5 +193,72 @@
     window.onload = function () {
       toggleContinuationDate();
     };
+
+    let additionalChargeIndex = 0;
+
+    function addAdditionalCharge() {
+      const container = document.getElementById("additional_charges_container");
+      const div = document.createElement("div");
+      div.classList.add("additional-charge-group");
+      div.innerHTML = `
+        <hr>
+        <h4>Additional Charge</h4>
+        <label>Original Charge:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][original_charge]"><br><br>
+
+        <label>Final Amended Charge:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][amended_charge]"><br><br>
+
+        <label>Final Disposition:</label><br>
+        <select name="additional_charges[${additionalChargeIndex}][disposition]">
+          <option value="Not Guilty">Not Guilty</option>
+          <option value="Guilty">Guilty</option>
+          <option value="Dismissed">Dismissed</option>
+          <option value="Dismissed with Costs">Dismissed with Costs</option>
+          <option value="Taken Under Advisement for Dismissal">Taken Under Advisement for Dismissal</option>
+          <option value="Deferred Disposition">Deferred Disposition</option>
+          <option value="Continued">Continued</option>
+          <option value="Other">Other</option>
+        </select><br><br>
+
+        <label>Other Disposition Notes:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][other_disposition]"><br><br>
+
+        <label>Jail Sentence:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][jail_time_imposed]"> days in jail with 
+        <input type="text" name="additional_charges[${additionalChargeIndex}][jail_time_suspended]"> days suspended<br><br>
+
+        <label>Fine:</label><br>
+        $<input type="text" name="additional_charges[${additionalChargeIndex}][fine_imposed]"> fine with 
+        $<input type="text" name="additional_charges[${additionalChargeIndex}][fine_suspended]"> suspended<br><br>
+
+        <label>License Suspension:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][license_suspension]"><br><br>
+
+        <label>Restricted License:</label><br>
+        <select name="additional_charges[${additionalChargeIndex}][restricted_license]">
+          <option value="">-- Select --</option>
+          <option value="No">No</option>
+          <option value="Yes - Interlock Only">Yes - Interlock Only</option>
+          <option value="Yes - Time and Place Restrictions Only">Yes - Time and Place Restrictions Only</option>
+          <option value="Yes - Interlock and Time and Place Restrictions">Yes - Interlock and Time and Place Restrictions</option>
+        </select><br><br>
+
+        <label>VASAP Ordered:</label><br>
+        <select name="additional_charges[${additionalChargeIndex}][asap_ordered]">
+          <option value="No" selected>No</option>
+          <option value="Yes">Yes</option>
+        </select><br><br>
+
+        <label>Probation Type:</label><br>
+        <select name="additional_charges[${additionalChargeIndex}][probation_type]">
+          <option value="">-- Select --</option>
+          <option value="Supervised">Supervised</option>
+          <option value="Unsupervised (GGB)">Unsupervised (GGB)</option>
+        </select><br><br>
+      `;
+      container.appendChild(div);
+      additionalChargeIndex++;
+    }
   </script>
 {% endblock %}
