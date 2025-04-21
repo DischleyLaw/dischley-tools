@@ -298,7 +298,9 @@ def case_result():
         license_suspension = request.form.getlist("license_suspension[]")
         
         msg_body = "**CASE RESULT**\n\n"
-        
+        msg_body += f"Defendant: {data.get('defendant_name')}\n"
+        msg_body += f"Court: {data.get('court')}\n\n"
+
         for i in range(len(offenses)):
             msg_body += f"""
 Original Charge: {offenses[i]}
@@ -308,6 +310,20 @@ Fine: ${fines_imposed[i]}
 Jail Sentence: {jail_time_imposed[i]} days
 Jail Time Suspended: {jail_time_suspended[i]} days
 License Suspension: {license_suspension[i]}
+"""
+
+        msg_body += f"""Other Disposition Notes: {data.get('other_disposition')}
+Restricted License: {data.get('restricted_license')}
+Interlock Type: {data.get('interlock_type')}
+ASAP Ordered: {data.get('asap_ordered')}
+VIP Ordered: {data.get('vip_ordered')}
+Community Service: {data.get('community_service')}
+Anger Management: {data.get('anger_management')}
+Probation Type: {data.get('probation_type')}
+Was Case Continued?: {data.get('was_continued')}
+Continuation Date: {data.get('continuation_date')}
+Disposition Date: {data.get('date_disposition')}
+Notes: {data.get('notes')}
 """
         
         result = CaseResult(
