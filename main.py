@@ -288,14 +288,14 @@ def case_result():
     if request.method == "POST":
         data = request.form
         
-        # Process multiple charges
-        offenses = request.form.getlist("offense[]")
-        amended_charges = request.form.getlist("amended_charge[]")
-        dispositions = request.form.getlist("disposition[]")
-        fines_imposed = request.form.getlist("fine_imposed[]")
-        jail_time_imposed = request.form.getlist("jail_time_imposed[]")
-        jail_time_suspended = request.form.getlist("jail_time_suspended[]")
-        license_suspension = request.form.getlist("license_suspension[]")
+        # Process multiple charges with fallback to prevent IndexError
+        offenses = request.form.getlist("offense[]") or [request.form.get("offense")]
+        amended_charges = request.form.getlist("amended_charge[]") or [request.form.get("amended_charge")]
+        dispositions = request.form.getlist("disposition[]") or [request.form.get("disposition")]
+        fines_imposed = request.form.getlist("fine_imposed[]") or [request.form.get("fine_imposed")]
+        jail_time_imposed = request.form.getlist("jail_time_imposed[]") or [request.form.get("jail_time_imposed")]
+        jail_time_suspended = request.form.getlist("jail_time_suspended[]") or [request.form.get("jail_time_suspended")]
+        license_suspension = request.form.getlist("license_suspension[]") or [request.form.get("license_suspension")]
         
         msg_body = "**CASE RESULT**\n\n"
         msg_body += f"Defendant: {data.get('defendant_name')}\n"
