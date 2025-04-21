@@ -288,11 +288,33 @@ def case_result():
     if request.method == "POST":
         data = request.form
         
+        # Process multiple charges
+        offenses = request.form.getlist("offense[]")
+        amended_charges = request.form.getlist("amended_charge[]")
+        dispositions = request.form.getlist("disposition[]")
+        fines_imposed = request.form.getlist("fine_imposed[]")
+        jail_time_imposed = request.form.getlist("jail_time_imposed[]")
+        jail_time_suspended = request.form.getlist("jail_time_suspended[]")
+        license_suspension = request.form.getlist("license_suspension[]")
+        
+        msg_body = "**CASE RESULT**\n\n"
+        
+        for i in range(len(offenses)):
+            msg_body += f"""
+Original Charge: {offenses[i]}
+Final Amended Charge: {amended_charges[i]}
+Final Disposition: {dispositions[i]}
+Fine: ${fines_imposed[i]}
+Jail Sentence: {jail_time_imposed[i]} days
+Jail Time Suspended: {jail_time_suspended[i]} days
+License Suspension: {license_suspension[i]}
+"""
+        
         result = CaseResult(
             defendant_name=data.get("defendant_name"),
-            offense=data.get("offense"),
-            amended_charge=data.get("amended_charge"),
-            disposition=data.get("disposition"),
+            offense=offenses[0],  # Store only the first offense in the database
+            amended_charge=amended_charges[0],  # Store only the first amended charge in the database
+            disposition=dispositions[0],  # Store only the first disposition in the database
             other_disposition=data.get("other_disposition"),
             jail_time_imposed=data.get("jail_time_imposed"),
             jail_time_suspended=data.get("jail_time_suspended"),
@@ -309,34 +331,6 @@ def case_result():
         )
         db.session.add(result)
         db.session.commit()
-
-        msg_body = f"""
-CASE RESULT
-
-Defendant: {data.get("defendant_name")}
-Court: {data.get("court")}
-Original Charge: {data.get("offense")}
-Final Amended Charge: {data.get("amended_charge")}
-Final Disposition: {data.get("disposition")}
-Other Disposition Notes: {data.get("other_disposition")}
-Jail Sentence: {data.get("jail_time_imposed")} days
-Jail Time Suspended: {data.get("jail_time_suspended")} days
-Fine: ${data.get("fine_imposed")}
-Fine Suspended: ${data.get("fine_suspended")}
-License Suspension: {data.get("license_suspension")}
-Restricted License: {data.get("restricted_license")}
-Interlock Type: {data.get("interlock_type")}
-ASAP Ordered: {data.get("asap_ordered")}
-Probation Type: {data.get("probation_type")}
-Was Case Continued?: {data.get("was_continued")}
-Continuation Date: {data.get("continuation_date")}
-Disposition Date: {data.get("date_disposition")}
-VASAP Ordered: {'Yes' if data.get('vasap') else 'No'}
-VIP Ordered: {'Yes' if data.get('vip') else 'No'}
-Community Service: {'Yes' if data.get('community_service') else 'No'}
-Anger Management: {'Yes' if data.get('anger_management') else 'No'}
-Notes: {data.get("notes")}
-"""
 
         msg = Message(
             subject=f"Case Result - {data.get('defendant_name')}",
