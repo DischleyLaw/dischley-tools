@@ -89,6 +89,7 @@
       <label>Disposition:</label><br>
       <select name="disposition" id="disposition" onchange="toggleOtherDisposition()">
         <option value="Not Guilty">Not Guilty</option>
+        <option value="Nolle Prosequi">Nolle Prosequi</option>
         <option value="Guilty">Guilty</option>
         <option value="Dismissed">Dismissed</option>
         <option value="Dismissed with Costs">Dismissed with Costs</option>
@@ -256,6 +257,11 @@
           <option value="Supervised">Supervised</option>
           <option value="Unsupervised (GGB)">Unsupervised (GGB)</option>
         </select><br><br>
+        <label>Interlock Type:</label><br>
+        <input type="text" name="additional_charges[${additionalChargeIndex}][interlock_type]"><br><br>
+
+        <label>Notes:</label><br>
+        <textarea name="additional_charges[${additionalChargeIndex}][notes]" rows="4" cols="50"></textarea><br><br>
       `;
       container.appendChild(div);
       additionalChargeIndex++;
