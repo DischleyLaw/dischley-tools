@@ -316,56 +316,26 @@ CASE RESULT
 Defendant: {data.get("defendant_name")}
 Court: {data.get("court")}
 Original Charge: {data.get("offense")}
-"""
-
-        disposition = data.get("disposition")
-        amended_charge = data.get("amended_charge")
-
-        if disposition == "Guilty" and amended_charge and amended_charge != "None":
-            msg_body += f"You were found guilty of an amended charge: {amended_charge}\n"
-        elif disposition in ["Not Guilty", "Nolle Prosequi", "Dismissed", "Dismissed with costs"]:
-            msg_body += f"Disposition: {disposition}\n"
-        elif disposition == "Deferred Disposition":
-            msg_body += f"Deferred Disposition of charge: {amended_charge or data.get('offense')}\n"
-
-
-        if data.get("send_review_links"):
-            msg_body += f"""
-
----
-
-REVIEW REQUEST EMAIL
-
-Dear {data.get("defendant_name")},
-
-You were charged with {data.get("offense")}.
-"""
-            if disposition == "Guilty" and amended_charge and amended_charge != "None":
-                msg_body += f"You were found guilty of the amended charge: {amended_charge}.\n"
-            elif disposition in ["Not Guilty", "Nolle Prosequi"]:
-                msg_body += f"You were found {disposition} of the charge.\n"
-            elif disposition == "Deferred Disposition":
-                msg_body += f"You received a deferred disposition.\n"
-            msg_body += f"""
-Thank you for choosing Dischley Law, PLLC. We truly appreciate the trust you placed in our firm and are delighted we could assist you with your legal matter. Your positive experience is our greatest reward, and your feedback helps others find trusted legal guidance.
-
-We invite you to share your experience by leaving a review. You may choose to review our firm as a whole or share your thoughts specifically about our attorneys.
-
-Firm Reviews:
-• Google (Manassas Office): https://g.page/r/CcUBoz3y4zj5EB0/review
-• Google (Fairfax Office): https://g.page/dischleylawfairfax/review
-• Facebook: https://www.facebook.com/dischleylaw/reviews
-
-David Dischley Reviews:
-• Lawyers.com: https://www.lawyers.com/manassas/virginia/david-dischley-42907553-a/
-• Justia: https://lawyers.justia.com/lawyer/david-joseph-dischley-1498182
-• Avvo: https://www.avvo.com/attorneys/20110-va-david-dischley-1720133.html
-
-Patrick O’Brien Reviews:
-• Avvo: https://www.avvo.com/attorneys/22314-va-patrick-obrien-5090692/reviews.html
-• Lawyers.com: https://www.lawyers.com/manassas/virginia/patrick-t-obrien-300385082-a/
-
-Thank you again for your support and for taking the time to share your feedback. Your insights not only motivate our team but also help others in need of exceptional legal representation.
+Final Amended Charge: {data.get("amended_charge")}
+Final Disposition: {data.get("disposition")}
+Other Disposition Notes: {data.get("other_disposition")}
+Jail Sentence: {data.get("jail_time_imposed")} days
+Jail Time Suspended: {data.get("jail_time_suspended")} days
+Fine: ${data.get("fine_imposed")}
+Fine Suspended: ${data.get("fine_suspended")}
+License Suspension: {data.get("license_suspension")}
+Restricted License: {data.get("restricted_license")}
+Interlock Type: {data.get("interlock_type")}
+ASAP Ordered: {data.get("asap_ordered")}
+Probation Type: {data.get("probation_type")}
+Was Case Continued?: {data.get("was_continued")}
+Continuation Date: {data.get("continuation_date")}
+Disposition Date: {data.get("date_disposition")}
+VASAP Ordered: {'Yes' if data.get('vasap') else 'No'}
+VIP Ordered: {'Yes' if data.get('vip') else 'No'}
+Community Service: {'Yes' if data.get('community_service') else 'No'}
+Anger Management: {'Yes' if data.get('anger_management') else 'No'}
+Notes: {data.get("notes")}
 """
 
         msg = Message(
