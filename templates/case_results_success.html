@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block title %}Case Result Success{% endblock %}
+{% block content %}
+<div class="card">
+  <div class="card-body">
+  <h2>Case Result Submitted Successfully</h2>
+  <p>Thank you. The case result has been recorded and sent to the appropriate parties.</p>
+  <ul>
+    <li><strong>Client Email Sent</strong>: A confirmation email has been sent if applicable.</li>
+    <li><strong>Staff Notified</strong>: Internal team has received a detailed summary.</li>
+    <li><strong>Review Request</strong>: If selected, the client was prompted for a review.</li>
+  </ul>
+  <div class="mt-4">
+    <a href="{{ url_for('case_result') }}" class="btn btn-primary">Submit Another Case Result</a>
+    <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
+  </div>
+  </div>
+</div>
+{% endblock %}
