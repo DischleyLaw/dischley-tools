@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Client Intake{% endblock %}
 {% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 <div class="card">
   <div class="card-body">
     <h2 class="mb-4">Client Intake Form</h2>
@@ -8,138 +9,290 @@
       <p style="color: green;"><strong>Form submitted successfully!</strong></p>
     {% endif %}
     <form method="POST">
-      <div style="text-align:center;">
-        <label><strong>Reason for Calling:</strong></label><br>
-        <input type="text" name="reason_call" style="width: 80%;" required><br><br>
+      <div class="form-group">
+        <label>Reason for Calling:</label>
+        <input type="text" name="reason_call" required>
       </div>
 
-      <label>First Name:</label><br>
-      <input type="text" name="first_name" required><br><br>
-
-      <label>Last Name:</label><br>
-      <input type="text" name="last_name" required><br><br>
-
-      <label>Phone Number:</label><br>
-      <input type="tel" name="phone" required><br><br>
-
-      <label>Email:</label><br>
-      <input type="email" name="email"><br><br>
-
-      <label>Court:</label><br>
-      <select name="court">
-        <option value="">-- Select Court --</option>
-        <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
-        <option value="Alexandria City General District Court">Alexandria City General District Court</option>
-        <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
-        <option value="Amherst General District Court">Amherst General District Court</option>
-        <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
-        <option value="Arlington County General District Court">Arlington County General District Court</option>
-        <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
-        <option value="Caroline County General District Court">Caroline County General District Court</option>
-        <option value="Clarke County General District Court">Clarke County General District Court</option>
-        <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
-        <option value="Culpeper General District Court">Culpeper General District Court</option>
-        <option value="Essex County General District Court">Essex County General District Court</option>
-        <option value="Fairfax City General District Court">Fairfax City General District Court</option>
-        <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
-        <option value="Fairfax County General District Court">Fairfax County General District Court</option>
-        <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
-        <option value="Falls Church General District Court">Falls Church General District Court</option>
-        <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
-        <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
-        <option value="Fauquier County General District Court">Fauquier County General District Court</option>
-        <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
-        <option value="Frederick County General District Court">Frederick County General District Court</option>
-        <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
-        <option value="Hanover General District Court">Hanover General District Court</option>
-        <option value="Henrico County General District Court">Henrico County General District Court</option>
-        <option value="King George County Circuit Court">King George County Circuit Court</option>
-        <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
-        <option value="King George General District Court">King George General District Court</option>
-        <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
-        <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
-        <option value="Loudoun County General District Court">Loudoun County General District Court</option>
-        <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
-        <option value="Orange County General District Court">Orange County General District Court</option>
-        <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
-        <option value="Page County Circuit Court">Page County Circuit Court</option>
-        <option value="Page County General District Court">Page County General District Court</option>
-        <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
-        <option value="Prince William County General District Court">Prince William County General District Court</option>
-        <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
-        <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
-        <option value="Rappahannock General District Court">Rappahannock General District Court</option>
-        <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
-        <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
-        <option value="Rockingham County General District Court">Rockingham County General District Court</option>
-        <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
-        <option value="Shenandoah General District Court">Shenandoah General District Court</option>
-        <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
-        <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
-        <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
-        <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
-        <option value="Stafford County General District Court">Stafford County General District Court</option>
-        <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
-        <option value="TBD">TBD</option>
-        <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
-        <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
-        <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
-        <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
-        <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
-        <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
-        <option value="Warren County Circuit Court">Warren County Circuit Court</option>
-        <option value="Warren County General District Court">Warren County General District Court</option>
-        <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
-        <option value="Winchester General District Court">Winchester General District Court</option>
-      </select><br><br>
-
-      <label>Court Date:</label><br>
-      <input type="date" name="court_date"><br><br>
-
-      <label>Court Time:</label><br>
-      <input type="time" name="court_time"><br><br>
-
-      <label>Brief Description of the Facts:</label><br>
-      <textarea name="facts" rows="3" style="width: 100%;"></textarea><br><br>
-
-      <label>Notes:</label><br>
-      <textarea name="notes" rows="3" style="width: 100%;"></textarea><br><br>
-
-      <label>Lead Source:</label><br>
-      <select name="lead_source" id="leadSourceDropdown" onchange="toggleOtherSourceInput()">
-        <option value="">-- Select Source --</option>
-        <option value="Avvo">Avvo</option>
-        <option value="Facebook">Facebook</option>
-        <option value="Google Ad">Google Ad</option>
-        <option value="Justia">Justia</option>
-        <option value="LinkedIn">LinkedIn</option>
-        <option value="Martindale">Martindale</option>
-        <option value="Previous Client">Previous Client</option>
-        <option value="Referral">Referral</option>
-        <option value="Referred by a Previous Client">Referred by a Previous Client</option>
-        <option value="SuperLawyers">SuperLawyers</option>
-        <option value="Twitter">Twitter</option>
-        <option value="Unknown">Unknown</option>
-        <option value="Website">Website</option>
-        <option value="Yelp">Yelp</option>
-        <option value="Other">Other</option>
-      </select><br><br>
-
-      <div id="otherSourceInput" style="display: none;">
-        <label>Other Lead Source:</label><br>
-        <input type="text" name="lead_source_other"><br><br>
+      <div class="form-group">
+        <label>Type of Case:</label>
+        <select name="case_type" id="caseTypeDropdown">
+          <option value="">-- Select Case Type --</option>
+          <option value="Criminal">Criminal</option>
+          <option value="DUI">DUI</option>
+          <option value="Traffic">Traffic</option>
+          <option value="Protective Order">Protective Order</option>
+          <option value="Expungement">Expungement</option>
+          <option value="Probation Violation">Probation Violation</option>
+          <option value="Civil">Civil</option>
+        </select>
       </div>
 
-      <script>
-        function toggleOtherSourceInput() {
-          const dropdown = document.getElementById("leadSourceDropdown");
-          const otherInput = document.getElementById("otherSourceInput");
-          otherInput.style.display = dropdown.value === "Other" ? "block" : "none";
-        }
-      </script>
+      <div class="form-group">
+        <label>First Name:</label>
+        <input type="text" name="first_name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Last Name:</label>
+        <input type="text" name="last_name" required>
+      </div>
+
+      <div class="form-group">
+        <label>Phone Number:</label>
+        <input type="tel" name="phone" required>
+      </div>
+
+      <div class="form-group">
+        <label>Email:</label>
+        <input type="email" name="email">
+      </div>
+
+      <div class="form-group">
+        <label>Court:</label>
+        <select name="court">
+          <option value="">-- Select Court --</option>
+          <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
+          <option value="Alexandria City General District Court">Alexandria City General District Court</option>
+          <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
+          <option value="Amherst General District Court">Amherst General District Court</option>
+          <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
+          <option value="Arlington County General District Court">Arlington County General District Court</option>
+          <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
+          <option value="Caroline County General District Court">Caroline County General District Court</option>
+          <option value="Clarke County General District Court">Clarke County General District Court</option>
+          <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
+          <option value="Culpeper General District Court">Culpeper General District Court</option>
+          <option value="Essex County General District Court">Essex County General District Court</option>
+          <option value="Fairfax City General District Court">Fairfax City General District Court</option>
+          <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
+          <option value="Fairfax County General District Court">Fairfax County General District Court</option>
+          <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
+          <option value="Falls Church General District Court">Falls Church General District Court</option>
+          <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
+          <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
+          <option value="Fauquier County General District Court">Fauquier County General District Court</option>
+          <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
+          <option value="Frederick County General District Court">Frederick County General District Court</option>
+          <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
+          <option value="Hanover General District Court">Hanover General District Court</option>
+          <option value="Henrico County General District Court">Henrico County General District Court</option>
+          <option value="King George County Circuit Court">King George County Circuit Court</option>
+          <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
+          <option value="King George General District Court">King George General District Court</option>
+          <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
+          <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
+          <option value="Loudoun County General District Court">Loudoun County General District Court</option>
+          <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
+          <option value="Orange County General District Court">Orange County General District Court</option>
+          <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
+          <option value="Page County Circuit Court">Page County Circuit Court</option>
+          <option value="Page County General District Court">Page County General District Court</option>
+          <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
+          <option value="Prince William County General District Court">Prince William County General District Court</option>
+          <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
+          <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
+          <option value="Rappahannock General District Court">Rappahannock General District Court</option>
+          <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
+          <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
+          <option value="Rockingham County General District Court">Rockingham County General District Court</option>
+          <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
+          <option value="Shenandoah General District Court">Shenandoah General District Court</option>
+          <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
+          <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
+          <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
+          <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
+          <option value="Stafford County General District Court">Stafford County General District Court</option>
+          <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
+          <option value="TBD">TBD</option>
+          <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
+          <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
+          <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
+          <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
+          <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
+          <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
+          <option value="Warren County Circuit Court">Warren County Circuit Court</option>
+          <option value="Warren County General District Court">Warren County General District Court</option>
+          <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
+          <option value="Winchester General District Court">Winchester General District Court</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label>Court Date:</label>
+        <input type="date" name="court_date">
+      </div>
+
+      <div class="form-group">
+        <label>Court Time:</label>
+        <input type="time" name="court_time">
+      </div>
+
+      <div class="form-group">
+        <label>Brief Description of the Facts:</label>
+        <textarea name="facts" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Notes:</label>
+        <textarea name="notes" rows="3"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label>Lead Source:</label>
+        <select name="lead_source" id="leadSourceDropdown" onchange="toggleOtherSourceInput()">
+          <option value="">-- Select Source --</option>
+          <option value="Avvo">Avvo</option>
+          <option value="Facebook">Facebook</option>
+          <option value="Google Ad">Google Ad</option>
+          <option value="Justia">Justia</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="Martindale">Martindale</option>
+          <option value="Previous Client">Previous Client</option>
+          <option value="Referral">Referral</option>
+          <option value="Referred by a Previous Client">Referred by a Previous Client</option>
+          <option value="SuperLawyers">SuperLawyers</option>
+          <option value="Twitter">Twitter</option>
+          <option value="Unknown">Unknown</option>
+          <option value="Website">Website</option>
+          <option value="Yelp">Yelp</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <div id="otherSourceInput" style="display: none;" class="form-group">
+        <label>Other Lead Source:</label>
+        <input type="text" name="lead_source_other">
+      </div>
+
+      <div id="duiFields" style="display: none;">
+        <div class="form-group">
+          <label>Was Blood Taken?</label>
+          <select name="dui_blood_taken">
+            <option value="">-- Select --</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Refusal Charge?</label>
+          <select name="dui_refusal">
+            <option value="">-- Select --</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Prior Offenses?</label>
+          <input type="number" name="dui_prior_offenses" min="0">
+        </div>
+
+        <div class="form-group">
+          <label>Interlock Required?</label>
+          <select name="dui_interlock">
+            <option value="">-- Select --</option>
+            <option value="Yes">Yes</option>
+            <option value="No">No</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="protectiveFields" style="display: none;">
+        <div class="form-group">
+          <label>Petitioner Name:</label>
+          <input type="text" name="po_petitioner">
+        </div>
+
+        <div class="form-group">
+          <label>Relationship:</label>
+          <input type="text" name="po_relationship">
+        </div>
+
+        <div class="form-group">
+          <label>Type of Order:</label>
+          <select name="po_order_type">
+            <option value="">-- Select --</option>
+            <option value="Emergency">Emergency</option>
+            <option value="Preliminary">Preliminary</option>
+            <option value="Permanent">Permanent</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="expungementFields" style="display: none;">
+        <div class="form-group">
+          <label>Original Charge:</label>
+          <input type="text" name="exp_original_charge">
+        </div>
+
+        <div class="form-group">
+          <label>Disposition:</label>
+          <input type="text" name="exp_disposition">
+        </div>
+
+        <div class="form-group">
+          <label>Basis for Expungement:</label>
+          <input type="text" name="exp_basis">
+        </div>
+      </div>
+
+      <div id="civilFields" style="display: none;">
+        <div class="form-group">
+          <label>Opposing Party:</label>
+          <input type="text" name="civil_opposing_party">
+        </div>
+
+        <div class="form-group">
+          <label>Nature of Dispute:</label>
+          <textarea name="civil_dispute" rows="2"></textarea>
+        </div>
+
+        <div class="form-group">
+          <label>Amount in Controversy:</label>
+          <input type="text" name="civil_amount">
+        </div>
+      </div>
 
       <button type="submit">Submit</button>
     </form>
   </div>
 </div>
 {% endblock %}
+<script>
+  function toggleOtherSourceInput() {
+    const dropdown = document.getElementById("leadSourceDropdown");
+    const otherInput = document.getElementById("otherSourceInput");
+    otherInput.style.display = dropdown.value === "Other" ? "block" : "none";
+  }
+
+  document.addEventListener("DOMContentLoaded", function () {
+    const dropdown = document.getElementById("caseTypeDropdown");
+    const dui = document.getElementById("duiFields");
+    const po = document.getElementById("protectiveFields");
+    const exp = document.getElementById("expungementFields");
+    const civ = document.getElementById("civilFields");
+
+    function toggleFields() {
+      dui.style.display = "none";
+      po.style.display = "none";
+      exp.style.display = "none";
+      civ.style.display = "none";
+
+      switch (dropdown.value) {
+        case "DUI": dui.style.display = "block"; break;
+        case "Protective Order": po.style.display = "block"; break;
+        case "Expungement": exp.style.display = "block"; break;
+        case "Civil": civ.style.display = "block"; break;
+      }
+    }
+
+    dropdown.addEventListener("change", toggleFields);
+    toggleFields(); // Call once on page load
+
+    // Ensure Other Lead Source is visible if "Other" is selected on reload
+    toggleOtherSourceInput();
+    document.getElementById("leadSourceDropdown").addEventListener("change", toggleOtherSourceInput);
+  });
+</script>

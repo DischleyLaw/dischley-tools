@@ -56,6 +56,7 @@ class Lead(db.Model):
     quote = db.Column(db.String(50))
     lead_source = db.Column(db.String(100))
     custom_source = db.Column(db.String(100))
+    case_type = db.Column(db.String(100))
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -115,6 +116,30 @@ def intake():
         lead_source = data.get("lead_source")
         custom_source = data.get("custom_source") if lead_source == "Other" else None
 
+        # Extract additional dynamic case-type fields from the form
+        case_type = data.get("case_type")
+
+        # DUI fields
+        dui_blood_taken = data.get("dui_blood_taken")
+        dui_refusal = data.get("dui_refusal")
+        dui_prior_offenses = data.get("dui_prior_offenses")
+        dui_interlock = data.get("dui_interlock")
+
+        # Protective Order fields
+        po_petitioner = data.get("po_petitioner")
+        po_relationship = data.get("po_relationship")
+        po_order_type = data.get("po_order_type")
+
+        # Expungement fields
+        exp_original_charge = data.get("exp_original_charge")
+        exp_disposition = data.get("exp_disposition")
+        exp_basis = data.get("exp_basis")
+
+        # Civil fields
+        civil_opposing_party = data.get("civil_opposing_party")
+        civil_dispute = data.get("civil_dispute")
+        civil_amount = data.get("civil_amount")
+
         new_lead = Lead(
             name=data.get("name"),
             phone=data.get("phone"),
@@ -131,7 +156,8 @@ def intake():
             quote=None,
             retainer_amount=None,
             lead_source=lead_source,
-            custom_source=custom_source
+            custom_source=custom_source,
+            case_type=case_type
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -154,6 +180,28 @@ Notes: {new_lead.notes}
 Homework: {new_lead.homework}
 Lead Source: {lead_source}
 Custom Source: {custom_source}
+Case Type: {case_type}
+
+# DUI
+Blood Taken: {dui_blood_taken}
+Refusal: {dui_refusal}
+Prior Offenses: {dui_prior_offenses}
+Interlock: {dui_interlock}
+
+# Protective Order
+Petitioner: {po_petitioner}
+Relationship: {po_relationship}
+Order Type: {po_order_type}
+
+# Expungement
+Original Charge: {exp_original_charge}
+Disposition: {exp_disposition}
+Basis: {exp_basis}
+
+# Civil
+Opposing Party: {civil_opposing_party}
+Dispute: {civil_dispute}
+Amount in Controversy: {civil_amount}
 
 Manage lead: {lead_url}
         """
@@ -166,7 +214,7 @@ Manage lead: {lead_url}
                 "from_last": new_lead.name.split()[-1],
                 "from_email": new_lead.email,
                 "from_phone": new_lead.phone,
-                "from_message": f"Charge: {new_lead.charge}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
+                "from_message": f"Case Type: {case_type}, Charge: {new_lead.charge}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
                 "referring_url": "http://127.0.0.1:5000/intake",
                 "from_source": custom_source or lead_source
             },
@@ -377,8 +425,8 @@ def case_result_success():
     return render_template("case_results_success.html")
 
 def init_db():
-    with app.app_context():
-        db.create_all()
+with app.app_context():
+    db.create_all()
 
 if __name__ == "__main__":
     init_db()
