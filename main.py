@@ -439,12 +439,6 @@ def init_db():
         db.create_all()
 
 
-# Add a route to reset the database
-@app.route("/reset-db")
-def reset_db():
-    db.drop_all()
-    db.create_all()
-    return "Database has been reset!"
 
 if __name__ == "__main__":
     init_db()
