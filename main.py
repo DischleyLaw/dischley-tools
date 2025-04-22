@@ -178,35 +178,35 @@ def intake():
         else:
             formatted_date = "N/A"
 
-        msg = Message("New Lead - PC: {last_name}, {first_name}",
+        msg = Message(f"New Lead - PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
-**New Lead Information**
+NEW LEAD INFORMATION
 
-**Type of Case:** {case_type or 'N/A'}
+Type of Case: {case_type or 'N/A'}
 
-**First Name:** {first_name or 'N/A'}
+First Name: {first_name or 'N/A'}
 
-**Last Name:** {last_name or 'N/A'}
+Last Name: {last_name or 'N/A'}
 
-**Phone Number:** {new_lead.phone or 'N/A'}
+Phone Number: {new_lead.phone or 'N/A'}
 
-**Email:** {new_lead.email or 'N/A'}
+Email: {new_lead.email or 'N/A'}
 
-**Charges:** {new_lead.charges or 'N/A'}
+Charges: {new_lead.charges or 'N/A'}
 
-**Court:** {new_lead.court or 'N/A'}
+Court: {new_lead.court or 'N/A'}
 
-**Court Date:** {formatted_date}
+Court Date: {formatted_date}
 
-**Court Time:** {new_lead.court_time or 'N/A'}
+Court Time: {new_lead.court_time or 'N/A'}
 
-**Brief Description of the Facts:** {new_lead.notes or 'N/A'}
+Brief Description of the Facts: {new_lead.notes or 'N/A'}
 
-**Notes:** {new_lead.homework or 'N/A'}
+Notes: {new_lead.homework or 'N/A'}
 
-**Lead Source:** {lead_source if lead_source != 'Other' else (custom_source or 'N/A')}
+Lead Source: {lead_source if lead_source != 'Other' else (custom_source or 'N/A')}
 
 Manage Lead: {lead_url}
 """
