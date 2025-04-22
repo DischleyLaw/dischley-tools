@@ -1,3 +1,0 @@
-([('ExpungementGenerator',
-   '/Users/Dischley/openai_project/Expungement/Exp_Generator/dist/ExpungementGenerator',
-   'EXECUTABLE')],)

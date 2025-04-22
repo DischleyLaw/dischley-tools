@@ -1,3 +1,0 @@
-([('expungement',
-   '/Users/Dischley/openai_project/Expungement/dist/expungement',
-   'EXECUTABLE')],)
