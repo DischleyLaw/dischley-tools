@@ -57,7 +57,6 @@ class Lead(db.Model):
     lead_source = db.Column(db.String(100))
     custom_source = db.Column(db.String(100))
     case_type = db.Column(db.String(100))
-    reason_for_calling = db.Column(db.Text)
     charges = db.Column(db.Text)
 
 class CaseResult(db.Model):
@@ -164,7 +163,6 @@ def intake():
             lead_source=lead_source,
             custom_source=custom_source,
             case_type=case_type,
-            reason_for_calling=data.get("reason_for_calling"),
             charges=data.get("charges"),
         )
         db.session.add(new_lead)
@@ -176,7 +174,6 @@ def intake():
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
-Reason for Calling: {new_lead.reason_for_calling}
 Type of Case: {case_type}
 First Name: {first_name}
 Last Name: {last_name}
@@ -259,7 +256,6 @@ def update_lead(lead_id):
     msg.body = f"""
 Lead Updated:
 
-Reason for Calling: {lead.notes}
 Type of Case: {lead.case_type}
 Name: {lead.name}
 Phone: {lead.phone}

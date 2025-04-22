@@ -4,12 +4,8 @@
 <div class="card mx-auto" style="max-width: 700px;">
   <div class="card-body">
     <h2 class="mb-4">View / Edit Lead</h2>
-    <label>Reason for Calling:</label><br>
-    <textarea name="reason_calling" class="form-control" rows="2">{{ lead.reason_calling }}</textarea><br>
-
-    <label>Type of Case:</label><br>
-    <input type="text" name="case_type" value="{{ lead.case_type }}" class="form-control"><br>
     <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
+      <h4>Client Information</h4>
       <label>First Name:</label><br>
       <input type="text" name="first_name" value="{{ lead.first_name }}" class="form-control" required><br>
 
@@ -22,11 +18,12 @@
       <label>Email:</label><br>
       <input type="email" name="email" value="{{ lead.email }}" class="form-control"><br>
 
+      <h4>Case Information</h4>
+      <label>Type of Case:</label><br>
+      <input type="text" name="case_type" value="{{ lead.case_type }}" class="form-control"><br>
+
       <label>Charges:</label><br>
       <textarea name="charges" class="form-control" rows="2">{{ lead.charges }}</textarea><br>
-
-      <label>Charge or Legal Matter:</label><br>
-      <input type="text" name="charge" value="{{ lead.charge }}" class="form-control"><br>
 
       <label>County:</label><br>
       <input type="text" name="county" value="{{ lead.county }}" class="form-control"><br>
@@ -43,6 +40,7 @@
       <label>Homework:</label><br>
       <textarea name="homework" class="form-control" rows="2">{{ lead.homework }}</textarea><br>
 
+      <h4>Administrative</h4>
       <div class="form-check mb-2">
         <input class="form-check-input" type="checkbox" name="send_retainer" id="send_retainer" {% if lead.send_retainer %}checked{% endif %}>
         <label class="form-check-label" for="send_retainer">Send Retainer</label>
