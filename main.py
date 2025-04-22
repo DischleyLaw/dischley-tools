@@ -471,7 +471,7 @@ def reset_db():
 
 
 # --- Expungement Generator Integration ---
-from Expungement.expungement import populate_document, prosecutor_info
+from Expungement.expungement_utils import populate_document, prosecutor_info
 
 @app.route("/expungement", methods=["GET", "POST"])
 @login_required
