@@ -4,43 +4,20 @@
 <div class="card">
   <div class="card-body">
     <h2 class="mb-4">Dashboard</h2>
-<ul>
-  <li>
+<div style="text-align: center;">
+  <div style="margin: 20px;">
     <a href="/intake">
-      <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" width="30" style="vertical-align: middle; margin-right: 8px;">
-      Client Intake
+      <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" width="80" style="vertical-align: middle; margin-right: 8px;">
+      <div>Client Intake</div>
     </a>
-  </li>
-  <li>
+  </div>
+  <div style="margin: 20px;">
     <a href="/case_result">
-      <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" width="30" style="vertical-align: middle; margin-right: 8px;">
-      Submit Case Result
+      <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" width="80" style="vertical-align: middle; margin-right: 8px;">
+      <div>Submit Case Result</div>
     </a>
-  </li>
-  <li><a href="/leads">View Leads</a></li>
-</ul>
-
-<h3>Case Results</h3>
-<ul id="caseResultList">
-  {% for result in case_results %}
-    <li>
-      <strong>{{ result.defendant_name }}</strong><br>
-      {{ result.offense }} – {{ result.disposition }}<br>
-      <a href="/edit/case_result/{{ result.id }}">Edit</a>
-    </li>
-  {% endfor %}
-</ul>
-
-<script>
-  function filterDashboard() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const items = document.getElementById("caseResultList").getElementsByTagName("li");
-    for (let i = 0; i < items.length; i++) {
-      const text = items[i].innerText.toLowerCase();
-      items[i].style.display = text.includes(input) ? "" : "none";
-    }
-  }
-</script>
+  </div>
+</div>
   </div>
 </div>
 {% endblock %}
