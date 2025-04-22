@@ -435,10 +435,13 @@ def init_db():
         db.create_all()
 
 
+
 # Route to reset the database
 @app.route("/reset-db")
 def reset_db():
-    init_db()
+    with app.app_context():
+        db.drop_all()
+        db.create_all()
     return "Database has been reset!"
 
 
