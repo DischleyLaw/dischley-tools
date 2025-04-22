@@ -172,43 +172,24 @@ def intake():
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
-New lead submitted:
-Name: {new_lead.name}
-Phone: {new_lead.phone}
-Email: {new_lead.email}
-Charge: {new_lead.charge}
-Court Date: {new_lead.court_date}
-Court Time: {new_lead.court_time}
-Court: {new_lead.court}
-Notes: {new_lead.notes}
-Homework: {new_lead.homework}
-Lead Source: {lead_source}
-Custom Source: {custom_source}
-Case Type: {case_type}
+New Client Intake Submission:
 
-# DUI
-Blood Taken: {dui_blood_taken}
-Refusal: {dui_refusal}
-Prior Offenses: {dui_prior_offenses}
-Interlock: {dui_interlock}
-
-# Protective Order
-Petitioner: {po_petitioner}
-Relationship: {po_relationship}
-Order Type: {po_order_type}
-
-# Expungement
-Original Charge: {exp_original_charge}
-Disposition: {exp_disposition}
-Basis: {exp_basis}
-
-# Civil
-Opposing Party: {civil_opposing_party}
-Dispute: {civil_dispute}
-Amount in Controversy: {civil_amount}
+Reason for Calling: {data.get('reason_for_calling')}
+Type of Case: {case_type}
+First Name: {first_name}
+Last Name: {last_name}
+Phone Number: {data.get('phone')}
+Email: {data.get('email')}
+Charges: {data.get('charge')}
+Court: {data.get('court')}
+Court Date: {data.get('court_date')}
+Court Time: {data.get('court_time')}
+Brief Description of the Facts: {data.get('notes')}
+Notes: {data.get('homework')}
+Lead Source: {lead_source if lead_source != 'Other' else custom_source}
 
 Manage lead: {lead_url}
-        """
+"""
         mail.send(msg)
 
         # Clio
