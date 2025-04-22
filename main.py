@@ -168,7 +168,7 @@ def intake():
 
         lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
 
-        msg = Message("New Client Intake Form Submission",
+        msg = Message("New Lead - PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
