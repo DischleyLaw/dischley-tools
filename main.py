@@ -301,7 +301,8 @@ View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
         client_name = lead.name if lead.name else "there"
         auto_msg = Message(
             "Thank You for Your Inquiry",
-            recipients=[lead.email]
+            recipients=[lead.email],
+            sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER'))
         )
         auto_msg.body = f"""
 Dear {client_name},

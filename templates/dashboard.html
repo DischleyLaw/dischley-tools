@@ -5,8 +5,18 @@
   <div class="card-body">
     <h2 class="mb-4">Dashboard</h2>
 <ul>
-  <li><a href="/intake">Client Intake</a></li>
-  <li><a href="/case_result">Submit Case Result</a></li>
+  <li>
+    <a href="/intake">
+      <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" width="30" style="vertical-align: middle; margin-right: 8px;">
+      Client Intake
+    </a>
+  </li>
+  <li>
+    <a href="/case_result">
+      <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" width="30" style="vertical-align: middle; margin-right: 8px;">
+      Submit Case Result
+    </a>
+  </li>
   <li><a href="/leads">View Leads</a></li>
 </ul>
 
