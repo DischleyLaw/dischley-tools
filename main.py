@@ -168,24 +168,47 @@ def intake():
 
         lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
 
+        # Format court_date if available
+        formatted_date = ""
+        if new_lead.court_date:
+            try:
+                formatted_date = datetime.strptime(new_lead.court_date, "%Y-%m-%d").strftime("%B %d, %Y")
+            except ValueError:
+                formatted_date = new_lead.court_date  # fallback if date parsing fails
+        else:
+            formatted_date = "N/A"
+
         msg = Message("New Lead - PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
-Type of Case: {case_type}
-First Name: {first_name}
-Last Name: {last_name}
-Phone Number: {new_lead.phone}
-Email: {new_lead.email}
-Charges: {new_lead.charges}
-Court: {new_lead.court}
-Court Date: {new_lead.court_date}
-Court Time: {new_lead.court_time}
-Brief Description of the Facts: {new_lead.notes}
-Notes: {new_lead.homework}
-Lead Source: {lead_source if lead_source != 'Other' else custom_source}
+**New Lead Information**
 
-Manage lead: {lead_url}
+**Type of Case:** {case_type or 'N/A'}
+
+**First Name:** {first_name or 'N/A'}
+
+**Last Name:** {last_name or 'N/A'}
+
+**Phone Number:** {new_lead.phone or 'N/A'}
+
+**Email:** {new_lead.email or 'N/A'}
+
+**Charges:** {new_lead.charges or 'N/A'}
+
+**Court:** {new_lead.court or 'N/A'}
+
+**Court Date:** {formatted_date}
+
+**Court Time:** {new_lead.court_time or 'N/A'}
+
+**Brief Description of the Facts:** {new_lead.notes or 'N/A'}
+
+**Notes:** {new_lead.homework or 'N/A'}
+
+**Lead Source:** {lead_source if lead_source != 'Other' else (custom_source or 'N/A')}
+
+Manage Lead: {lead_url}
 """
         mail.send(msg)
 
