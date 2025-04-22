@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_mail import Mail, Message
 from functools import wraps
 
@@ -468,5 +468,50 @@ def reset_db():
 
 
 
+
+
+# --- Expungement Generator Integration ---
+from Expungement.expungement import populate_document, prosecutor_info
+
+@app.route("/expungement", methods=["GET", "POST"])
+@login_required
+def expungement_form():
+    if request.method == "POST":
+        data = request.form.to_dict()
+
+        county = data.get('county')
+        expungement_type = data.get('expungement_type')
+
+        if expungement_type == "Expungement of Right":
+            expungement_clause = "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+        elif expungement_type == "Manifest Injustice":
+            manifest_injustice = data.get('manifest_injustice')
+            expungement_clause = f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice})."
+        else:
+            expungement_clause = ""
+
+        prosecutor = prosecutor_info[county]
+        data.update({
+            "{Prosecutor}": prosecutor['name'],
+            "{Prosecutor Title}": prosecutor['title'],
+            "{Prosecutor Address 1}": prosecutor['address1'],
+            "{Prosecutor Address 2}": prosecutor['address2'],
+            "{COUNTY}": county.upper(),
+            "{County2}": county.title(),
+            "{Type of Expungement}": expungement_clause
+        })
+
+        template_path = 'ExpungementTemplate.docx'
+        output_path = f'temp/{data["{NAME}"]}_Expungement.docx'
+
+        os.makedirs('temp', exist_ok=True)
+        populate_document(template_path, output_path, data)
+
+        return send_file(output_path, as_attachment=True)
+
+    return render_template('expungement_form.html', counties=prosecutor_info.keys())
+
+
+# Run the Flask app
 if __name__ == "__main__":
-    init_db()
+    app.run(debug=True)

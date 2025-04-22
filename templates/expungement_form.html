@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Expungement Petition Generator</title>
+</head>
+<body>
+    <h1>Expungement Petition Generator</h1>
+    <form method="POST">
+        <label>Select County:</label>
+        <select name="county" required>
+            {% for county in counties %}
+                <option value="{{ county }}">{{ county }}</option>
+            {% endfor %}
+        </select><br><br>
+
+        <label>Final Disposition:</label>
+        <select name="final_disposition" required>
+            <option>Nolle Prosequi</option>
+            <option>Not Guilty</option>
+            <option>Otherwise Dismissed</option>
+        </select><br><br>
+
+        <label>Type of Expungement:</label>
+        <select name="expungement_type" required>
+            <option>Expungement of Right</option>
+            <option>Manifest Injustice</option>
+        </select><br><br>
+
+        <label>Manifest Injustice Details:</label>
+        <input type="text" name="manifest_injustice"><br><br>
+
+        <!-- Example of dynamic fields -->
+        {% for field in fields %}
+            <label>{{ field }}:</label>
+            <input type="text" name="{{ field }}"><br><br>
+        {% endfor %}
+
+        <button type="submit">Generate Document</button>
+    </form>
+</body>
+</html>
