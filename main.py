@@ -42,7 +42,6 @@ class Lead(db.Model):
     name = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(20))
     email = db.Column(db.String(120))
-    charge = db.Column(db.String(200))
     court_date = db.Column(db.String(20))
     court_time = db.Column(db.String(20))
     court = db.Column(db.String(200))
@@ -149,7 +148,6 @@ def intake():
             name=full_name if full_name else "Unknown",
             phone=data.get("phone"),
             email=data.get("email"),
-            charge=data.get("charges"),
             court_date=data.get("court_date"),
             court_time=data.get("court_time"),
             court=data.get("court"),
@@ -198,7 +196,7 @@ Manage lead: {lead_url}
                 "from_last": new_lead.name.split()[-1],
                 "from_email": new_lead.email,
                 "from_phone": new_lead.phone,
-                "from_message": f"Case Type: {case_type}, Charge: {new_lead.charge}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
+                "from_message": f"Case Type: {case_type}, Charges: {new_lead.charges}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
                 "referring_url": "http://127.0.0.1:5000/intake",
                 "from_source": custom_source or lead_source
             },
@@ -232,7 +230,7 @@ def update_lead(lead_id):
     lead.name = request.form.get("name", lead.name)
     lead.phone = request.form.get("phone", lead.phone)
     lead.email = request.form.get("email", lead.email)
-    lead.charge = request.form.get("charge", lead.charge)
+    lead.charges = request.form.get("charges", lead.charges)
     lead.court_date = request.form.get("court_date", lead.court_date)
     lead.court_time = request.form.get("court_time", lead.court_time)
     lead.court = request.form.get("court", lead.court)
@@ -260,7 +258,7 @@ Type of Case: {lead.case_type}
 Name: {lead.name}
 Phone: {lead.phone}
 Email: {lead.email}
-Charges: {lead.charge}
+Charges: {lead.charges}
 Court: {lead.court}
 Court Date: {lead.court_date}
 Court Time: {lead.court_time}
@@ -268,6 +266,7 @@ Brief Description of the Facts: {lead.notes}
 Notes: {lead.homework}
 Lead Source: {lead.lead_source}
 Custom Source: {lead.custom_source}
+Case Type: {lead.case_type}
 
 Send Retainer: {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}
 LVM: {checkmark(lead.lvm)}

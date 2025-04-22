@@ -6,11 +6,8 @@
     <h2 class="mb-4">View / Edit Lead</h2>
     <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
       <h4>Client Information</h4>
-      <label>First Name:</label><br>
-      <input type="text" name="first_name" value="{{ lead.first_name }}" class="form-control" required><br>
-
-      <label>Last Name:</label><br>
-      <input type="text" name="last_name" value="{{ lead.last_name }}" class="form-control"><br>
+      <label>Name:</label><br>
+      <input type="text" name="name" value="{{ lead.name }}" class="form-control" required><br>
 
       <label>Phone Number:</label><br>
       <input type="tel" name="phone" value="{{ lead.phone }}" class="form-control"><br>
@@ -25,17 +22,14 @@
       <label>Charges:</label><br>
       <textarea name="charges" class="form-control" rows="2">{{ lead.charges }}</textarea><br>
 
-      <label>County:</label><br>
-      <input type="text" name="county" value="{{ lead.county }}" class="form-control"><br>
+      <label>Court:</label><br>
+      <input type="text" name="court" value="{{ lead.court }}" class="form-control"><br>
 
       <label>Court Date:</label><br>
       <input type="date" name="court_date" value="{{ lead.court_date }}" class="form-control"><br>
 
       <label>Court Time:</label><br>
       <input type="time" name="court_time" value="{{ lead.court_time }}" class="form-control"><br>
-
-      <label>Court Name:</label><br>
-      <input type="text" name="court" value="{{ lead.court }}" class="form-control"><br>
 
       <label>Homework:</label><br>
       <textarea name="homework" class="form-control" rows="2">{{ lead.homework }}</textarea><br>
