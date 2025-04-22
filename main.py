@@ -147,10 +147,10 @@ def intake():
         full_name = f"{first_name} {last_name}".strip()
 
         new_lead = Lead(
-            name=full_name,
+            name=full_name if full_name else "Unknown",
             phone=data.get("phone"),
             email=data.get("email"),
-            charge=data.get("charge"),
+            charge=data.get("charges"),
             court_date=data.get("court_date"),
             court_time=data.get("court_time"),
             court=data.get("court"),
@@ -437,6 +437,13 @@ def init_db():
     with app.app_context():
         db.drop_all()
         db.create_all()
+
+
+# Route to reset the database
+@app.route("/reset-db")
+def reset_db():
+    init_db()
+    return "Database has been reset!"
 
 
 
