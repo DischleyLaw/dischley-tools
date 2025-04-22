@@ -4,15 +4,26 @@
 <div class="card mx-auto" style="max-width: 700px;">
   <div class="card-body">
     <h2 class="mb-4">View / Edit Lead</h2>
+    <label>Reason for Calling:</label><br>
+    <textarea name="reason_calling" class="form-control" rows="2">{{ lead.reason_calling }}</textarea><br>
+
+    <label>Type of Case:</label><br>
+    <input type="text" name="case_type" value="{{ lead.case_type }}" class="form-control"><br>
     <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
-      <label>Full Name:</label><br>
-      <input type="text" name="name" value="{{ lead.name }}" class="form-control" required><br>
+      <label>First Name:</label><br>
+      <input type="text" name="first_name" value="{{ lead.first_name }}" class="form-control" required><br>
+
+      <label>Last Name:</label><br>
+      <input type="text" name="last_name" value="{{ lead.last_name }}" class="form-control"><br>
 
       <label>Phone Number:</label><br>
       <input type="tel" name="phone" value="{{ lead.phone }}" class="form-control"><br>
 
       <label>Email:</label><br>
       <input type="email" name="email" value="{{ lead.email }}" class="form-control"><br>
+
+      <label>Charges:</label><br>
+      <textarea name="charges" class="form-control" rows="2">{{ lead.charges }}</textarea><br>
 
       <label>Charge or Legal Matter:</label><br>
       <input type="text" name="charge" value="{{ lead.charge }}" class="form-control"><br>
@@ -52,6 +63,12 @@
 
       <label>Quote:</label><br>
       <input type="text" name="quote" value="{{ lead.quote or '' }}" class="form-control"><br>
+
+      <label>Lead Source:</label><br>
+      <input type="text" name="lead_source" value="{{ lead.lead_source }}" class="form-control"><br>
+
+      <label>Custom Source (if applicable):</label><br>
+      <input type="text" name="custom_source" value="{{ lead.custom_source }}" class="form-control"><br>
 
       <label>Notes:</label><br>
       <textarea name="notes" class="form-control" rows="4">{{ lead.notes }}</textarea><br>

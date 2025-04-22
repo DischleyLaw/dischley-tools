@@ -57,6 +57,8 @@ class Lead(db.Model):
     lead_source = db.Column(db.String(100))
     custom_source = db.Column(db.String(100))
     case_type = db.Column(db.String(100))
+    reason_for_calling = db.Column(db.Text)
+    charges = db.Column(db.Text)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -161,7 +163,9 @@ def intake():
             retainer_amount=None,
             lead_source=lead_source,
             custom_source=custom_source,
-            case_type=case_type
+            case_type=case_type,
+            reason_for_calling=data.get("reason_for_calling"),
+            charges=data.get("charges"),
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -172,20 +176,18 @@ def intake():
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.body = f"""
-New Client Intake Submission:
-
-Reason for Calling: {data.get('reason_for_calling')}
+Reason for Calling: {new_lead.reason_for_calling}
 Type of Case: {case_type}
 First Name: {first_name}
 Last Name: {last_name}
-Phone Number: {data.get('phone')}
-Email: {data.get('email')}
-Charges: {data.get('charge')}
-Court: {data.get('court')}
-Court Date: {data.get('court_date')}
-Court Time: {data.get('court_time')}
-Brief Description of the Facts: {data.get('notes')}
-Notes: {data.get('homework')}
+Phone Number: {new_lead.phone}
+Email: {new_lead.email}
+Charges: {new_lead.charges}
+Court: {new_lead.court}
+Court Date: {new_lead.court_date}
+Court Time: {new_lead.court_time}
+Brief Description of the Facts: {new_lead.notes}
+Notes: {new_lead.homework}
 Lead Source: {lead_source if lead_source != 'Other' else custom_source}
 
 Manage lead: {lead_url}
@@ -256,22 +258,25 @@ def update_lead(lead_id):
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
     msg.body = f"""
 Lead Updated:
+
+Reason for Calling: {lead.notes}
+Type of Case: {lead.case_type}
 Name: {lead.name}
 Phone: {lead.phone}
 Email: {lead.email}
-Charge: {lead.charge}
+Charges: {lead.charge}
+Court: {lead.court}
 Court Date: {lead.court_date}
 Court Time: {lead.court_time}
-Court: {lead.court}
-Notes: {lead.notes}
-Homework: {lead.homework}
+Brief Description of the Facts: {lead.notes}
+Notes: {lead.homework}
+Lead Source: {lead.lead_source}
+Custom Source: {lead.custom_source}
 
 Send Retainer: {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}
 LVM: {checkmark(lead.lvm)}
 Not a PC: {checkmark(lead.not_pc)}
 Quote: ${lead.quote or 'N/A'}
-Lead Source: {lead.lead_source}
-Custom Source: {lead.custom_source}
 
 View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
     """
@@ -430,7 +435,16 @@ def case_result_success():
 
 def init_db():
     with app.app_context():
+        db.drop_all()
         db.create_all()
+
+
+# Add a route to reset the database
+@app.route("/reset-db")
+def reset_db():
+    db.drop_all()
+    db.create_all()
+    return "Database has been reset!"
 
 if __name__ == "__main__":
     init_db()
