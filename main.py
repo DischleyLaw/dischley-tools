@@ -140,8 +140,12 @@ def intake():
         civil_dispute = data.get("civil_dispute")
         civil_amount = data.get("civil_amount")
 
+        first_name = data.get("first_name", "").strip()
+        last_name = data.get("last_name", "").strip()
+        full_name = f"{first_name} {last_name}".strip()
+
         new_lead = Lead(
-            name=data.get("name"),
+            name=full_name,
             phone=data.get("phone"),
             email=data.get("email"),
             charge=data.get("charge"),
