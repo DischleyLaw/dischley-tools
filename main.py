@@ -298,8 +298,26 @@ View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
 
     # Optional: Send auto-email to client if LVM is checked and client email exists
     if lead.lvm and lead.email:
-        auto_msg = Message("We Tried Reaching You", recipients=[lead.email])
-        auto_msg.body = "We attempted to contact you regarding your recent inquiry. Please call us back at your earliest convenience."
+        client_name = lead.name if lead.name else "there"
+        auto_msg = Message(
+            "Thank You for Your Inquiry",
+            recipients=[lead.email]
+        )
+        auto_msg.body = f"""
+Dear {client_name},
+
+Thank you for contacting Dischley Law, PLLC regarding your legal matter. We appreciate the opportunity to assist you.
+
+We attempted to reach you by phone but were unable to connect. At your convenience, please feel free to return our call so we can discuss your case in more detail and answer any questions you may have.
+
+You can reach us at (703) 215-9337. We look forward to speaking with you.
+
+Best regards,  
+Dischley Law, PLLC  
+(703) 215-9337  
+attorneys@dischleylaw.com  
+www.dischleylaw.com
+"""
         mail.send(auto_msg)
 
     return redirect(url_for("update_success"))
