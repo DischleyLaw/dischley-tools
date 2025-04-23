@@ -181,35 +181,49 @@ def intake():
         msg = Message(f"New Lead - PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-        msg.body = f"""
-NEW LEAD INFORMATION
 
-Type of Case: {case_type or 'N/A'}
+        email_lines = ["NEW LEAD INFORMATION\n"]
 
-First Name: {first_name or 'N/A'}
+        if case_type:
+            email_lines.append(f"Type of Case: {case_type}\n")
 
-Last Name: {last_name or 'N/A'}
+        if first_name:
+            email_lines.append(f"First Name: {first_name}\n")
 
-Phone Number: {new_lead.phone or 'N/A'}
+        if last_name:
+            email_lines.append(f"Last Name: {last_name}\n")
 
-Email: {new_lead.email or 'N/A'}
+        if new_lead.phone:
+            email_lines.append(f"Phone Number: {new_lead.phone}\n")
 
-Charges: {new_lead.charges or 'N/A'}
+        if new_lead.email:
+            email_lines.append(f"Email: {new_lead.email}\n")
 
-Court: {new_lead.court or 'N/A'}
+        if new_lead.charges:
+            email_lines.append(f"Charges: {new_lead.charges}\n")
 
-Court Date: {formatted_date}
+        if new_lead.court:
+            email_lines.append(f"Court: {new_lead.court}\n")
 
-Court Time: {new_lead.court_time or 'N/A'}
+        if formatted_date != "N/A":
+            email_lines.append(f"Court Date: {formatted_date}\n")
 
-Brief Description of the Facts: {new_lead.notes or 'N/A'}
+        if new_lead.court_time:
+            email_lines.append(f"Court Time: {new_lead.court_time}\n")
 
-Notes: {new_lead.homework or 'N/A'}
+        if new_lead.notes:
+            email_lines.append(f"Brief Description of the Facts: {new_lead.notes}\n")
 
-Lead Source: {lead_source if lead_source != 'Other' else (custom_source or 'N/A')}
+        if new_lead.homework:
+            email_lines.append(f"Notes: {new_lead.homework}\n")
 
-Manage Lead: {lead_url}
-"""
+        if lead_source or custom_source:
+            source_display = lead_source if lead_source != 'Other' else custom_source
+            email_lines.append(f"Lead Source: {source_display}\n")
+
+        email_lines.append(f"\nManage Lead: {lead_url}")
+
+        msg.body = "\n".join(email_lines)
         mail.send(msg)
 
         # Clio
@@ -270,47 +284,52 @@ def update_lead(lead_id):
     db.session.commit()
 
     # Prepare update email
-    checkmark = lambda val: "✅" if val else "❌"
     msg = Message(f"Lead Updated: {lead.name}",
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    msg.body = f"""
-**LEAD UPDATED**
+    update_lines = ["LEAD UPDATED\n"]
 
-**Type of Case:** {lead.case_type or 'N/A'}
+    if lead.case_type:
+        update_lines.append(f"Type of Case: {lead.case_type}\n")
 
-**Name:** {lead.name or 'N/A'}
+    if lead.name:
+        update_lines.append(f"Name: {lead.name}\n")
 
-**Phone:** {lead.phone or 'N/A'}
+    if lead.phone:
+        update_lines.append(f"Phone: {lead.phone}\n")
 
-**Email:** {lead.email or 'N/A'}
+    if lead.email:
+        update_lines.append(f"Email: {lead.email}\n")
 
-**Charges:** {lead.charges or 'N/A'}
+    if lead.charges:
+        update_lines.append(f"Charges: {lead.charges}\n")
 
-**Court:** {lead.court or 'N/A'}
+    if lead.court:
+        update_lines.append(f"Court: {lead.court}\n")
 
-**Court Date:** {lead.court_date or 'N/A'}
+    if lead.court_date:
+        update_lines.append(f"Court Date: {lead.court_date}\n")
 
-**Court Time:** {lead.court_time or 'N/A'}
+    if lead.court_time:
+        update_lines.append(f"Court Time: {lead.court_time}\n")
 
-**Brief Description of the Facts:** {lead.notes or 'N/A'}
+    if lead.notes:
+        update_lines.append(f"Brief Description of the Facts: {lead.notes}\n")
 
-**Notes:** {lead.homework or 'N/A'}
+    if lead.homework:
+        update_lines.append(f"Notes: {lead.homework}\n")
 
-**Lead Source:** {lead.lead_source or 'N/A'}
+    if lead.lead_source or lead.custom_source:
+        source_display = lead.lead_source if lead.lead_source != 'Other' else lead.custom_source
+        update_lines.append(f"Lead Source: {source_display}\n")
 
-**Custom Source:** {lead.custom_source or 'N/A'}
+    update_lines.append(f"Send Retainer: {'✅' if lead.send_retainer else '❌'} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}\n")
+    update_lines.append(f"LVM: {'✅' if lead.lvm else '❌'}\n")
+    update_lines.append(f"Not a PC: {'✅' if lead.not_pc else '❌'}\n")
+    update_lines.append(f"Quote: ${lead.quote or 'N/A'}\n")
+    update_lines.append(f"\nView Lead: {url_for('view_lead', lead_id=lead.id, _external=True)}")
 
-**Send Retainer:** {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}
-
-**LVM:** {checkmark(lead.lvm)}
-
-**Not a PC:** {checkmark(lead.not_pc)}
-
-**Quote:** ${lead.quote or 'N/A'}
-
-View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
-"""
+    msg.body = "\n".join(update_lines)
     mail.send(msg)
 
     # Optional: Send auto-email to client if LVM is checked and client email exists
@@ -400,37 +419,68 @@ def case_result():
         jail_time_suspended = request.form.getlist("jail_time_suspended[]") or [request.form.get("jail_time_suspended")]
         license_suspension = request.form.getlist("license_suspension[]") or [request.form.get("license_suspension")]
         
-        msg_body = "CASE RESULT\n\n\n"
-        msg_body += f"Defendant: {data.get('defendant_name') or 'N/A'}\n\n\n"
-        msg_body += f"Court: {data.get('court') or 'N/A'}\n\n\n"
-
-        # Move Was Case Continued and Continuation Date before Final Disposition section
-        msg_body += f"Was Case Continued?: {data.get('was_continued') or 'N/A'}\n\n\n"
-        msg_body += f"Continuation Date: {data.get('continuation_date') or 'N/A'}\n\n\n"
+        msg_body_lines = ["CASE RESULT\n"]
+        if data.get("defendant_name"):
+            msg_body_lines.append(f"Defendant: {data.get('defendant_name')}\n")
+        if data.get("court"):
+            msg_body_lines.append(f"Court: {data.get('court')}\n")
+        if data.get("was_continued"):
+            msg_body_lines.append(f"Was Case Continued?: {data.get('was_continued')}\n")
+            continuation_date = data.get("continuation_date")
+            continuation_time = data.get("continuation_time")
+            if continuation_date:
+                try:
+                    formatted_date = datetime.strptime(continuation_date, "%Y-%m-%d").strftime("%B %d, %Y")
+                except ValueError:
+                    formatted_date = continuation_date
+                if continuation_time:
+                    # Format time to h:mm a.m./p.m.
+                    try:
+                        formatted_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p").lstrip("0").replace("AM", "a.m.").replace("PM", "p.m.")
+                    except ValueError:
+                        formatted_time = continuation_time
+                    msg_body_lines.append(f"Continuation Date: {formatted_date} at {formatted_time}\n")
+                else:
+                    msg_body_lines.append(f"Continuation Date: {formatted_date}\n")
 
         for i in range(len(offenses)):
-            msg_body += (
-                f"Original Charge: {offenses[i] or 'N/A'}\n\n\n"
-                f"Final Amended Charge: {amended_charges[i] or 'N/A'}\n\n\n"
-                f"Final Disposition: {dispositions[i] or 'N/A'}\n\n\n"
-                f"Fine: ${fines_imposed[i] or 'N/A'}\n\n\n"
-                f"Jail Sentence: {jail_time_imposed[i] or 'N/A'} days\n\n\n"
-                f"Jail Time Suspended: {jail_time_suspended[i] or 'N/A'} days\n\n\n"
-                f"License Suspension: {license_suspension[i] or 'N/A'}\n\n\n"
-            )
+            if offenses[i]:
+                msg_body_lines.append(f"Original Charge: {offenses[i]}\n")
+            if amended_charges[i]:
+                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n")
+            if dispositions[i]:
+                msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n")
+            if fines_imposed[i]:
+                msg_body_lines.append(f"Fine: ${fines_imposed[i]}\n")
+            if jail_time_imposed[i]:
+                msg_body_lines.append(f"Jail Sentence: {jail_time_imposed[i]} days\n")
+            if jail_time_suspended[i]:
+                msg_body_lines.append(f"Jail Time Suspended: {jail_time_suspended[i]} days\n")
+            if license_suspension[i]:
+                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n")
 
-        msg_body += (
-            f"Other Disposition Notes: {data.get('other_disposition') or 'N/A'}\n\n\n"
-            f"Restricted License: {data.get('restricted_license') or 'N/A'}\n\n\n"
-            f"Interlock Type: {data.get('interlock_type') or 'N/A'}\n\n\n"
-            f"ASAP Ordered: {data.get('asap_ordered') or 'N/A'}\n\n\n"
-            f"VIP Ordered: {data.get('vip_ordered') or 'N/A'}\n\n\n"
-            f"Community Service: {data.get('community_service') or 'N/A'}\n\n\n"
-            f"Anger Management: {data.get('anger_management') or 'N/A'}\n\n\n"
-            f"Probation Type: {data.get('probation_type') or 'N/A'}\n\n\n"
-            f"Disposition Date: {data.get('date_disposition') or 'N/A'}\n\n\n"
-            f"Notes: {data.get('notes') or 'N/A'}\n\n"
-        )
+        if data.get("other_disposition"):
+            msg_body_lines.append(f"Other Disposition Notes: {data.get('other_disposition')}\n")
+        if data.get("restricted_license"):
+            msg_body_lines.append(f"Restricted License: {data.get('restricted_license')}\n")
+        if data.get("interlock_type"):
+            msg_body_lines.append(f"Interlock Type: {data.get('interlock_type')}\n")
+        if data.get("asap_ordered"):
+            msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n")
+        if data.get("vip_ordered"):
+            msg_body_lines.append(f"VIP Ordered: {data.get('vip_ordered')}\n")
+        if data.get("community_service"):
+            msg_body_lines.append(f"Community Service: {data.get('community_service')}\n")
+        if data.get("anger_management"):
+            msg_body_lines.append(f"Anger Management: {data.get('anger_management')}\n")
+        if data.get("probation_type"):
+            msg_body_lines.append(f"Probation Type: {data.get('probation_type')}\n")
+        if data.get("date_disposition"):
+            msg_body_lines.append(f"Disposition Date: {data.get('date_disposition')}\n")
+        if data.get("notes"):
+            msg_body_lines.append(f"Notes: {data.get('notes')}\n")
+
+        msg_body = "\n".join(msg_body_lines)
         
         result = CaseResult(
             defendant_name=data.get("defendant_name"),
