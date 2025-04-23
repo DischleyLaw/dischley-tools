@@ -507,10 +507,10 @@ def case_result():
             fine_suspended_list = data.getlist("fine_suspended[]")
             fine_suspended = fine_suspended_list[i] if i < len(fine_suspended_list) else ""
             if fine_imposed:
-                fine_text = f"${fine_imposed} fine"
+                fine_text = f"A ${fine_imposed} fine"
                 if fine_suspended:
                     fine_text += f" with ${fine_suspended} suspended"
-                msg_body_lines.append(f"Fine: {fine_text}\n")
+                msg_body_lines.append(f"{fine_text}\n")
 
             # Jail formatting
             jail_imposed = jail_time_imposed[i] if i < len(jail_time_imposed) else ""
@@ -520,7 +520,7 @@ def case_result():
                 jail_text = f"{jail_imposed} days in jail"
                 if jail_suspended:
                     jail_text += f" with {jail_suspended} days suspended"
-                msg_body_lines.append(f"Jail Sentence: {jail_text}\n")
+                msg_body_lines.append(f"{jail_text}\n")
 
             # License suspension
             lic_susp = license_suspension[i] if i < len(license_suspension) else ""
