@@ -112,6 +112,21 @@ class CaseResult(db.Model):
     notes = db.Column(db.Text)
     date_disposition = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    charges = db.relationship('Charge', backref='case_result', cascade="all, delete-orphan")
+
+# --- Charge Model ---
+class Charge(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    case_result_id = db.Column(db.Integer, db.ForeignKey('case_result.id'), nullable=False)
+    original_charge = db.Column(db.String(200))
+    amended_charge = db.Column(db.String(200))
+    disposition = db.Column(db.String(100))
+    jail_time_imposed = db.Column(db.String(50))
+    jail_time_suspended = db.Column(db.String(50))
+    fine_imposed = db.Column(db.String(50))
+    fine_suspended = db.Column(db.String(50))
+    license_suspension = db.Column(db.String(100))
+    restricted_license = db.Column(db.String(100))
 
 @app.route("/")
 @login_required
@@ -481,7 +496,7 @@ def case_result():
         # Compose email lines
         msg_body_lines = []
         msg_body_lines.append("CASE RESULT\n")
-        # Include all available fields in the email
+        # Only include non-empty fields
         def include_field(label, key):
             val = data.get(key)
             if val:
@@ -502,23 +517,28 @@ def case_result():
                 heading = f"Additional Charge {i+1}"
             msg_body_lines.append(f"\n--- {heading} ---")
 
-            # Offense, Amended, Dispo
+            # Offense, Amended, Dispo (only if not blank)
             offense = offenses[i] if i < len(offenses) and offenses[i] else ""
             amended_charge = amended_charges[i] if i < len(amended_charges) and amended_charges[i] else ""
             disposition = dispositions[i] if i < len(dispositions) and dispositions[i] else ""
-            msg_body_lines.append(f"Original Charge: {offense}")
-            msg_body_lines.append(f"Amended Charge: {amended_charge}")
-            msg_body_lines.append(f"Disposition: {disposition}")
+            if offense:
+                msg_body_lines.append(f"Original Charge: {offense}")
+            if amended_charge:
+                msg_body_lines.append(f"Amended Charge: {amended_charge}")
+            if disposition:
+                msg_body_lines.append(f"Disposition: {disposition}")
 
             # Jail
             jail_imposed = jail_time_imposed[i] if i < len(jail_time_imposed) and jail_time_imposed[i] else ""
             jail_suspended = jail_time_suspended_list[i] if i < len(jail_time_suspended_list) and jail_time_suspended_list[i] else ""
             if jail_imposed or jail_suspended:
                 jail_line = "Jail: "
+                jail_parts = []
                 if jail_imposed:
-                    jail_line += f"{jail_imposed} days imposed"
+                    jail_parts.append(f"{jail_imposed} days imposed")
                 if jail_suspended:
-                    jail_line += f", {jail_suspended} days suspended"
+                    jail_parts.append(f"{jail_suspended} days suspended")
+                jail_line += ", ".join(jail_parts)
                 msg_body_lines.append(jail_line)
 
             # Fine
@@ -526,10 +546,12 @@ def case_result():
             fine_suspended = fine_suspended_list[i] if i < len(fine_suspended_list) and fine_suspended_list[i] else ""
             if fine_imposed or fine_suspended:
                 fine_line = "Fine: "
+                fine_parts = []
                 if fine_imposed:
-                    fine_line += f"${fine_imposed} imposed"
+                    fine_parts.append(f"${fine_imposed} imposed")
                 if fine_suspended:
-                    fine_line += f", ${fine_suspended} suspended"
+                    fine_parts.append(f"${fine_suspended} suspended")
+                fine_line += ", ".join(fine_parts)
                 msg_body_lines.append(fine_line)
 
             # License Suspension
@@ -541,17 +563,26 @@ def case_result():
             if restricted_license:
                 msg_body_lines.append(f"Restricted License: {restricted_license}")
 
-            # Conditions of Probation section
-            msg_body_lines.append("Conditions of Probation:")
-            msg_body_lines.append(f"  - ASAP Ordered: {asap_ordered or 'N/A'}")
-            msg_body_lines.append(f"  - VIP Ordered: {vip_ordered or 'N/A'}")
-            msg_body_lines.append(f"  - Community Service: {community_service or 'N/A'}")
-            msg_body_lines.append(f"  - Anger Management: {anger_management or 'N/A'}")
-            prob_type_str = probation_type or "N/A"
-            prob_term_str = probation_term or "N/A"
-            msg_body_lines.append(f"  - Probation: {prob_type_str} for {prob_term_str}")
+            # Conditions of Probation section: only include non-empty conditions
+            conditions_lines = []
+            if asap_ordered:
+                conditions_lines.append(f"  - ASAP Ordered: {asap_ordered}")
+            if vip_ordered:
+                conditions_lines.append(f"  - VIP Ordered: {vip_ordered}")
+            if community_service:
+                conditions_lines.append(f"  - Community Service: {community_service}")
+            if anger_management:
+                conditions_lines.append(f"  - Anger Management: {anger_management}")
+            prob_type_str = probation_type if probation_type else ""
+            prob_term_str = probation_term if probation_term else ""
+            if prob_type_str or prob_term_str:
+                prob_str = f"  - Probation: {prob_type_str}{' for ' + prob_term_str if prob_term_str else ''}"
+                conditions_lines.append(prob_str)
+            if conditions_lines:
+                msg_body_lines.append("Conditions of Probation:")
+                msg_body_lines.extend(conditions_lines)
 
-        # After charges, add continuation date, disposition date, notes, etc.
+        # After charges, add continuation date, disposition date, notes, etc., only if not blank
         if data.get("was_continued"):
             msg_body_lines.append(f"\nWas Case Continued?: {data.get('was_continued')}")
             continuation_date = data.get("continuation_date")
@@ -578,7 +609,7 @@ def case_result():
 
         msg_body = "\n".join(msg_body_lines)
 
-        # Store only the first charge in the database, as before
+        # Store only the first charge in the CaseResult as before, but now also add Charge rows for all charges
         result = CaseResult(
             defendant_name=data.get("defendant_name"),
             offense=offenses[0] if offenses else "",
@@ -600,6 +631,22 @@ def case_result():
             date_disposition=data.get("date_disposition"),
         )
         db.session.add(result)
+        db.session.flush()  # Ensure result.id is available
+
+        for i in range(num_charges):
+            charge = Charge(
+                case_result_id=result.id,
+                original_charge=offenses[i] if i < len(offenses) else "",
+                amended_charge=amended_charges[i] if i < len(amended_charges) else "",
+                disposition=dispositions[i] if i < len(dispositions) else "",
+                jail_time_imposed=jail_time_imposed[i] if i < len(jail_time_imposed) else "",
+                jail_time_suspended=jail_time_suspended_list[i] if i < len(jail_time_suspended_list) else "",
+                fine_imposed=fines_imposed[i] if i < len(fines_imposed) else "",
+                fine_suspended=fine_suspended_list[i] if i < len(fine_suspended_list) else "",
+                license_suspension=license_suspension[i] if i < len(license_suspension) else "",
+                restricted_license=restricted_license
+            )
+            db.session.add(charge)
         db.session.commit()
 
         msg = Message(
