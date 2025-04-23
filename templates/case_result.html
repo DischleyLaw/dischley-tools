@@ -81,10 +81,22 @@
       <input type="text" name="defendant_name"><br><br>
 
       <label>Original Charge:</label><br>
-      <input type="text" name="offense"><br><br>
+      <textarea name="offense" rows="3"></textarea><br><br>
 
       <label>Amended Charge:</label><br>
-      <input type="text" name="amended_charge"><br><br>
+      <textarea name="amended_charge" rows="3"></textarea><br><br>
+
+      <label>Was the case continued?</label><br>
+      <select name="was_continued" id="was_continued" onchange="toggleContinuationDate()">
+        <option value="No">No</option>
+        <option value="Yes">Yes</option>
+      </select><br><br>
+
+      <div id="continuation_date_container" style="display: none;">
+        <label>Continuation Date:</label><br>
+        <input type="date" name="continuation_date">
+        <input type="time" name="continuation_time"><br><br>
+      </div>
 
       <label>Disposition:</label><br>
       <select name="disposition" id="disposition" onchange="toggleOtherDisposition()">
@@ -95,7 +107,6 @@
         <option value="Dismissed with Costs">Dismissed with Costs</option>
         <option value="Taken Under Advisement for Dismissal">Taken Under Advisement for Dismissal</option>
         <option value="Deferred Disposition">Deferred Disposition</option>
-        <option value="Continued">Continued</option>
         <option value="Other">Other</option>
       </select><br><br>
       <div id="other_disposition_container" style="display: none;">
@@ -144,17 +155,6 @@
         <label><input type="checkbox" name="conditions" value="Anger Management"> Anger Management</label><br>
       </fieldset><br>
 
-      <label>Was the case continued?</label><br>
-      <select name="was_continued" id="was_continued" onchange="toggleContinuationDate()">
-        <option value="No">No</option>
-        <option value="Yes">Yes</option>
-      </select><br><br>
-
-      <div id="continuation_date_container" style="display: none;">
-        <label>Continuation Date:</label><br>
-        <input type="date" name="continuation_date">
-        <input type="time" name="continuation_time"><br><br>
-      </div>
 
       <input type="hidden" name="date_disposition" id="date_disposition">
 

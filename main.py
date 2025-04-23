@@ -275,29 +275,42 @@ def update_lead(lead_id):
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
     msg.body = f"""
-Lead Updated:
+**LEAD UPDATED**
 
-Type of Case: {lead.case_type}
-Name: {lead.name}
-Phone: {lead.phone}
-Email: {lead.email}
-Charges: {lead.charges}
-Court: {lead.court}
-Court Date: {lead.court_date}
-Court Time: {lead.court_time}
-Brief Description of the Facts: {lead.notes}
-Notes: {lead.homework}
-Lead Source: {lead.lead_source}
-Custom Source: {lead.custom_source}
-Case Type: {lead.case_type}
+**Type of Case:** {lead.case_type or 'N/A'}
 
-Send Retainer: {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}
-LVM: {checkmark(lead.lvm)}
-Not a PC: {checkmark(lead.not_pc)}
-Quote: ${lead.quote or 'N/A'}
+**Name:** {lead.name or 'N/A'}
+
+**Phone:** {lead.phone or 'N/A'}
+
+**Email:** {lead.email or 'N/A'}
+
+**Charges:** {lead.charges or 'N/A'}
+
+**Court:** {lead.court or 'N/A'}
+
+**Court Date:** {lead.court_date or 'N/A'}
+
+**Court Time:** {lead.court_time or 'N/A'}
+
+**Brief Description of the Facts:** {lead.notes or 'N/A'}
+
+**Notes:** {lead.homework or 'N/A'}
+
+**Lead Source:** {lead.lead_source or 'N/A'}
+
+**Custom Source:** {lead.custom_source or 'N/A'}
+
+**Send Retainer:** {checkmark(lead.send_retainer)} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}
+
+**LVM:** {checkmark(lead.lvm)}
+
+**Not a PC:** {checkmark(lead.not_pc)}
+
+**Quote:** ${lead.quote or 'N/A'}
 
 View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
-    """
+"""
     mail.send(msg)
 
     # Optional: Send auto-email to client if LVM is checked and client email exists
@@ -309,6 +322,8 @@ View Lead: {url_for("view_lead", lead_id=lead.id, _external=True)}
             sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER'))
         )
         auto_msg.body = f"""
+**Thank You for Your Inquiry**
+
 Dear {client_name},
 
 Thank you for contacting Dischley Law, PLLC regarding your legal matter. We appreciate the opportunity to assist you.
@@ -317,10 +332,10 @@ We attempted to reach you by phone but were unable to connect. At your convenien
 
 You can reach us at (703) 635-2424. We look forward to speaking with you.
 
-Best regards,  
-Dischley Law, PLLC  
-(703) 635-2424 
-attorneys@dischleylaw.com  
+Best regards,
+Dischley Law, PLLC
+(703) 635-2424
+attorneys@dischleylaw.com
 www.dischleylaw.com
 """
         mail.send(auto_msg)
@@ -385,34 +400,37 @@ def case_result():
         jail_time_suspended = request.form.getlist("jail_time_suspended[]") or [request.form.get("jail_time_suspended")]
         license_suspension = request.form.getlist("license_suspension[]") or [request.form.get("license_suspension")]
         
-        msg_body = "**CASE RESULT**\n\n"
-        msg_body += f"Defendant: {data.get('defendant_name')}\n"
-        msg_body += f"Court: {data.get('court')}\n\n"
+        msg_body = "CASE RESULT\n\n\n"
+        msg_body += f"Defendant: {data.get('defendant_name') or 'N/A'}\n\n\n"
+        msg_body += f"Court: {data.get('court') or 'N/A'}\n\n\n"
+
+        # Move Was Case Continued and Continuation Date before Final Disposition section
+        msg_body += f"Was Case Continued?: {data.get('was_continued') or 'N/A'}\n\n\n"
+        msg_body += f"Continuation Date: {data.get('continuation_date') or 'N/A'}\n\n\n"
 
         for i in range(len(offenses)):
-            msg_body += f"""
-Original Charge: {offenses[i]}
-Final Amended Charge: {amended_charges[i]}
-Final Disposition: {dispositions[i]}
-Fine: ${fines_imposed[i]}
-Jail Sentence: {jail_time_imposed[i]} days
-Jail Time Suspended: {jail_time_suspended[i]} days
-License Suspension: {license_suspension[i]}
-"""
+            msg_body += (
+                f"Original Charge: {offenses[i] or 'N/A'}\n\n\n"
+                f"Final Amended Charge: {amended_charges[i] or 'N/A'}\n\n\n"
+                f"Final Disposition: {dispositions[i] or 'N/A'}\n\n\n"
+                f"Fine: ${fines_imposed[i] or 'N/A'}\n\n\n"
+                f"Jail Sentence: {jail_time_imposed[i] or 'N/A'} days\n\n\n"
+                f"Jail Time Suspended: {jail_time_suspended[i] or 'N/A'} days\n\n\n"
+                f"License Suspension: {license_suspension[i] or 'N/A'}\n\n\n"
+            )
 
-        msg_body += f"""Other Disposition Notes: {data.get('other_disposition')}
-Restricted License: {data.get('restricted_license')}
-Interlock Type: {data.get('interlock_type')}
-ASAP Ordered: {data.get('asap_ordered')}
-VIP Ordered: {data.get('vip_ordered')}
-Community Service: {data.get('community_service')}
-Anger Management: {data.get('anger_management')}
-Probation Type: {data.get('probation_type')}
-Was Case Continued?: {data.get('was_continued')}
-Continuation Date: {data.get('continuation_date')}
-Disposition Date: {data.get('date_disposition')}
-Notes: {data.get('notes')}
-"""
+        msg_body += (
+            f"Other Disposition Notes: {data.get('other_disposition') or 'N/A'}\n\n\n"
+            f"Restricted License: {data.get('restricted_license') or 'N/A'}\n\n\n"
+            f"Interlock Type: {data.get('interlock_type') or 'N/A'}\n\n\n"
+            f"ASAP Ordered: {data.get('asap_ordered') or 'N/A'}\n\n\n"
+            f"VIP Ordered: {data.get('vip_ordered') or 'N/A'}\n\n\n"
+            f"Community Service: {data.get('community_service') or 'N/A'}\n\n\n"
+            f"Anger Management: {data.get('anger_management') or 'N/A'}\n\n\n"
+            f"Probation Type: {data.get('probation_type') or 'N/A'}\n\n\n"
+            f"Disposition Date: {data.get('date_disposition') or 'N/A'}\n\n\n"
+            f"Notes: {data.get('notes') or 'N/A'}\n\n"
+        )
         
         result = CaseResult(
             defendant_name=data.get("defendant_name"),
