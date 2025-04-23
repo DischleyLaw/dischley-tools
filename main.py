@@ -463,26 +463,28 @@ def case_result():
 
         for i in range(len(offenses)):
             if offenses[i]:
-                msg_body_lines.append(f"Original Charge: {offenses[i]}\n\n")
+                msg_body_lines.append(f"Original Charge: {offenses[i]}\n")
             if amended_charges[i]:
-                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n\n")
+                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n")
             if dispositions[i]:
-                msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n\n")
+                msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n")
+            # Fine formatting
             if fines_imposed[i]:
-                fine_text = f"a ${fines_imposed[i]} fine"
+                fine_text = f"${fines_imposed[i]} fine"
                 if data.getlist("fine_suspended[]")[i]:
                     fine_text += f" with ${data.getlist('fine_suspended[]')[i]} suspended"
-                msg_body_lines.append(f"Fine: {fine_text}\n\n")
+                msg_body_lines.append(f"Fine: {fine_text}\n")
+            # Jail formatting
             if jail_time_imposed[i]:
                 jail_text = f"{jail_time_imposed[i]} days in jail"
                 if data.getlist("jail_time_suspended[]")[i]:
                     jail_text += f" with {data.getlist('jail_time_suspended[]')[i]} days suspended"
-                msg_body_lines.append(f"Jail Sentence: {jail_text}\n\n")
+                msg_body_lines.append(f"Jail Sentence: {jail_text}\n")
             if license_suspension[i]:
-                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n\n")
+                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n")
 
         if data.get("asap_ordered"):
-            msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n\n")
+            msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n")
 
         if data.get("other_disposition"):
             msg_body_lines.append(f"Other Disposition Notes: {data.get('other_disposition')}\n")
@@ -490,8 +492,6 @@ def case_result():
             msg_body_lines.append(f"Restricted License: {data.get('restricted_license')}\n")
         if data.get("interlock_type"):
             msg_body_lines.append(f"Interlock Type: {data.get('interlock_type')}\n")
-        if data.get("asap_ordered"):
-            msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n")
         if data.get("vip_ordered"):
             msg_body_lines.append(f"VIP Ordered: {data.get('vip_ordered')}\n")
         if data.get("community_service"):
