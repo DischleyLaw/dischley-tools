@@ -482,7 +482,6 @@ def case_result():
                 except ValueError:
                     formatted_date = continuation_date
                 if continuation_time:
-                    # Format time to h:mm a.m./p.m.
                     try:
                         formatted_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p").lstrip("0").replace("AM", "a.m.").replace("PM", "p.m.")
                     except ValueError:
@@ -491,36 +490,37 @@ def case_result():
                 else:
                     msg_body_lines.append(f"Continuation Date: {formatted_date}\n")
 
+        fine_suspended_list = data.getlist("fine_suspended[]")
+        jail_suspended_list = data.getlist("jail_time_suspended[]")
+
         for i in range(len(offenses)):
-            # Show all original charges (including additional offenses)
+            # Original charge
             if offenses[i]:
                 msg_body_lines.append(f"Original Charge: {offenses[i]}\n")
-            # Show amended charge if present
+            # Amended charge
             if amended_charges[i]:
-                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n")
-            # Show disposition if present
+                msg_body_lines.append(f"Amended Charge: {amended_charges[i]}\n")
+            # Disposition
             if dispositions[i]:
                 msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n")
 
-            # Fine formatting
-            fine_imposed = fines_imposed[i] if i < len(fines_imposed) else ""
-            fine_suspended_list = data.getlist("fine_suspended[]")
-            fine_suspended = fine_suspended_list[i] if i < len(fine_suspended_list) else ""
-            if fine_imposed:
-                fine_text = f"A ${fine_imposed} fine"
-                if fine_suspended:
-                    fine_text += f" with ${fine_suspended} suspended"
-                msg_body_lines.append(f"{fine_text}\n")
-
-            # Jail formatting
+            # JAIL section
             jail_imposed = jail_time_imposed[i] if i < len(jail_time_imposed) else ""
-            jail_suspended_list = data.getlist("jail_time_suspended[]")
             jail_suspended = jail_suspended_list[i] if i < len(jail_suspended_list) else ""
             if jail_imposed:
-                jail_text = f"{jail_imposed} days in jail"
+                jail_line = f"JAIL:\n{jail_imposed} days imposed"
                 if jail_suspended:
-                    jail_text += f" with {jail_suspended} days suspended"
-                msg_body_lines.append(f"{jail_text}\n")
+                    jail_line += f" with {jail_suspended} days suspended"
+                msg_body_lines.append(jail_line + "\n")
+
+            # FINE section
+            fine_imposed = fines_imposed[i] if i < len(fines_imposed) else ""
+            fine_suspended = fine_suspended_list[i] if i < len(fine_suspended_list) else ""
+            if fine_imposed:
+                fine_line = f"FINE:\n${fine_imposed} imposed"
+                if fine_suspended:
+                    fine_line += f" with ${fine_suspended} suspended"
+                msg_body_lines.append(fine_line + "\n")
 
             # License suspension
             lic_susp = license_suspension[i] if i < len(license_suspension) else ""
@@ -529,7 +529,6 @@ def case_result():
 
         if data.get("asap_ordered"):
             msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n")
-
         if data.get("other_disposition"):
             msg_body_lines.append(f"Other Disposition Notes: {data.get('other_disposition')}\n")
         if data.get("restricted_license"):
