@@ -445,19 +445,22 @@ def case_result():
 
         for i in range(len(offenses)):
             if offenses[i]:
-                msg_body_lines.append(f"Original Charge: {offenses[i]}\n")
+                msg_body_lines.append(f"Original Charge: {offenses[i]}\n\n")
             if amended_charges[i]:
-                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n")
+                msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n\n")
             if dispositions[i]:
-                msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n")
+                msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n\n")
             if fines_imposed[i]:
-                msg_body_lines.append(f"Fine: ${fines_imposed[i]}\n")
+                msg_body_lines.append(f"Fine: ${fines_imposed[i]}\n\n")
             if jail_time_imposed[i]:
-                msg_body_lines.append(f"Jail Sentence: {jail_time_imposed[i]} days\n")
+                msg_body_lines.append(f"Jail Sentence: {jail_time_imposed[i]} days\n\n")
             if jail_time_suspended[i]:
-                msg_body_lines.append(f"Jail Time Suspended: {jail_time_suspended[i]} days\n")
+                msg_body_lines.append(f"Jail Time Suspended: {jail_time_suspended[i]} days\n\n")
             if license_suspension[i]:
-                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n")
+                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n\n")
+
+        if data.get("asap_ordered"):
+            msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n\n")
 
         if data.get("other_disposition"):
             msg_body_lines.append(f"Other Disposition Notes: {data.get('other_disposition')}\n")
