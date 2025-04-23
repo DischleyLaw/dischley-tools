@@ -1,3 +1,32 @@
+# --- Admin Leads Dashboard ---
+@app.route("/admin/leads")
+@login_required
+def admin_leads():
+    leads = Lead.query.order_by(Lead.created_at.desc()).all()
+    return render_template("admin_leads.html", leads=leads)
+
+# --- Admin Edit Lead ---
+@app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
+@login_required
+def admin_edit_lead(lead_id):
+    lead = Lead.query.get_or_404(lead_id)
+    if request.method == "POST":
+        lead.name = request.form.get("name", lead.name)
+        lead.phone = request.form.get("phone", lead.phone)
+        lead.email = request.form.get("email", lead.email)
+        lead.charges = request.form.get("charges", lead.charges)
+        lead.court_date = request.form.get("court_date", lead.court_date)
+        lead.court_time = request.form.get("court_time", lead.court_time)
+        lead.court = request.form.get("court", lead.court)
+        lead.notes = request.form.get("notes", lead.notes)
+        lead.homework = request.form.get("homework", lead.homework)
+        lead.lead_source = request.form.get("lead_source", lead.lead_source)
+        lead.case_type = request.form.get("case_type", lead.case_type)
+        lead.staff_member = request.form.get("staff_member", lead.staff_member)
+        lead.absence_waiver = 'absence_waiver' in request.form
+        db.session.commit()
+        return redirect(url_for("admin_leads"))
+    return render_template("admin_edit_lead.html", lead=lead)
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_mail import Mail, Message
 from functools import wraps
@@ -462,26 +491,40 @@ def case_result():
                     msg_body_lines.append(f"Continuation Date: {formatted_date}\n")
 
         for i in range(len(offenses)):
+            # Show all original charges (including additional offenses)
             if offenses[i]:
                 msg_body_lines.append(f"Original Charge: {offenses[i]}\n")
+            # Show amended charge if present
             if amended_charges[i]:
                 msg_body_lines.append(f"Final Amended Charge: {amended_charges[i]}\n")
+            # Show disposition if present
             if dispositions[i]:
                 msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n")
+
             # Fine formatting
-            if fines_imposed[i]:
-                fine_text = f"${fines_imposed[i]} fine"
-                if data.getlist("fine_suspended[]")[i]:
-                    fine_text += f" with ${data.getlist('fine_suspended[]')[i]} suspended"
+            fine_imposed = fines_imposed[i] if i < len(fines_imposed) else ""
+            fine_suspended_list = data.getlist("fine_suspended[]")
+            fine_suspended = fine_suspended_list[i] if i < len(fine_suspended_list) else ""
+            if fine_imposed:
+                fine_text = f"${fine_imposed} fine"
+                if fine_suspended:
+                    fine_text += f" with ${fine_suspended} suspended"
                 msg_body_lines.append(f"Fine: {fine_text}\n")
+
             # Jail formatting
-            if jail_time_imposed[i]:
-                jail_text = f"{jail_time_imposed[i]} days in jail"
-                if data.getlist("jail_time_suspended[]")[i]:
-                    jail_text += f" with {data.getlist('jail_time_suspended[]')[i]} days suspended"
+            jail_imposed = jail_time_imposed[i] if i < len(jail_time_imposed) else ""
+            jail_suspended_list = data.getlist("jail_time_suspended[]")
+            jail_suspended = jail_suspended_list[i] if i < len(jail_suspended_list) else ""
+            if jail_imposed:
+                jail_text = f"{jail_imposed} days in jail"
+                if jail_suspended:
+                    jail_text += f" with {jail_suspended} days suspended"
                 msg_body_lines.append(f"Jail Sentence: {jail_text}\n")
-            if license_suspension[i]:
-                msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n")
+
+            # License suspension
+            lic_susp = license_suspension[i] if i < len(license_suspension) else ""
+            if lic_susp:
+                msg_body_lines.append(f"License Suspension: {lic_susp}\n")
 
         if data.get("asap_ordered"):
             msg_body_lines.append(f"ASAP Ordered: {data.get('asap_ordered')}\n")
