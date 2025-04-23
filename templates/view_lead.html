@@ -53,6 +53,11 @@
         <label class="form-check-label" for="not_pc">Not a PC</label>
       </div>
 
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
+        <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+      </div>
+
       <label>Quote:</label><br>
       <input type="text" name="quote" value="{{ lead.quote or '' }}" class="form-control"><br>
 

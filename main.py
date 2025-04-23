@@ -58,6 +58,7 @@ class Lead(db.Model):
     case_type = db.Column(db.String(100))
     charges = db.Column(db.Text)
     staff_member = db.Column(db.String(100))
+    absence_waiver = db.Column(db.Boolean, default=False)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -290,6 +291,7 @@ def update_lead(lead_id):
     lead.lead_source = request.form.get("lead_source", lead.lead_source)
     lead.custom_source = request.form.get("custom_source", lead.custom_source)
     lead.staff_member = request.form.get("staff_member", lead.staff_member)
+    lead.absence_waiver = 'absence_waiver' in request.form
 
     db.session.commit()
 
@@ -331,6 +333,7 @@ def update_lead(lead_id):
 
     if lead.staff_member:
         update_lines.append(f"Staff Member: {lead.staff_member}\n")
+
     if request.form.get("attorney"):
         update_lines.append(f"Attorney: {request.form.get('attorney')}\n")
 
@@ -342,6 +345,7 @@ def update_lead(lead_id):
     update_lines.append(f"LVM: {'✅' if lead.lvm else '❌'}\n")
     update_lines.append(f"Not a PC: {'✅' if lead.not_pc else '❌'}\n")
     update_lines.append(f"Quote: ${lead.quote or 'N/A'}\n")
+    update_lines.append(f"Absence Waiver: {'✅' if lead.absence_waiver else '❌'}\n")
     update_lines.append(f"\nView Lead: {url_for('view_lead', lead_id=lead.id, _external=True)}")
 
     msg.body = "\n".join(update_lines)
@@ -356,8 +360,6 @@ def update_lead(lead_id):
             sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER'))
         )
         auto_msg.body = f"""
-**Thank You for Your Inquiry**
-
 Dear {client_name},
 
 Thank you for contacting Dischley Law, PLLC regarding your legal matter. We appreciate the opportunity to assist you.
