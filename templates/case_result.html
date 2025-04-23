@@ -3,10 +3,11 @@
 {% block content %}
 <div class="card">
   <div class="card-body">
+    <div class="container mt-4">
     <h2 class="mb-4">Submit Case Result</h2>
     <form method="POST">
       <div class="form-group">
-      <label>Court:</label>
+      <label class="mt-3">Court:</label>
       <select name="court" id="court_select" onchange="toggleCourtInput()" class="form-control">
         <option value="">-- Select Court --</option>
         <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
@@ -74,32 +75,32 @@
         <option value="Other">Other</option>
       </select>
       <div id="custom_court_container" style="display: none;">
-        <label>Enter Court:</label>
+        <label class="mt-3">Enter Court:</label>
         <input type="text" name="custom_court" class="form-control">
       </div>
 
-      <label>Client Name:</label>
+      <label class="mt-3">Client Name:</label>
       <input type="text" name="defendant_name" class="form-control">
 
-      <label>Original Charge:</label>
-      <textarea name="offense" rows="3" class="form-control"></textarea>
+      <label class="mt-3">Original Charge:</label>
+      <textarea name="offense" rows="3" class="form-control mt-2"></textarea>
 
-      <label>Amended Charge:</label>
-      <textarea name="amended_charge" rows="3" class="form-control"></textarea>
+      <label class="mt-3">Amended Charge:</label>
+      <textarea name="amended_charge" rows="3" class="form-control mt-2"></textarea>
 
-      <label>Was the case continued?</label>
+      <label class="mt-3">Was the case continued?</label>
       <select name="was_continued" id="was_continued" onchange="toggleContinuationDate()" class="form-control">
         <option value="No">No</option>
         <option value="Yes">Yes</option>
       </select>
 
       <div id="continuation_date_container" style="display: none;">
-        <label>Continuation Date:</label>
+        <label class="mt-3">Continuation Date:</label>
         <input type="date" name="continuation_date" class="form-control" style="display:inline-block; width:auto;">
         <input type="time" name="continuation_time" class="form-control" style="display:inline-block; width:auto;">
       </div>
 
-      <label>Disposition:</label>
+      <label class="mt-3">Disposition:</label>
       <select name="disposition" id="disposition" onchange="toggleOtherDisposition()" class="form-control">
         <option value="">-- Select Disposition --</option>
         <option value="Not Guilty">Not Guilty</option>
@@ -112,11 +113,11 @@
         <option value="Other">Other</option>
       </select>
       <div id="other_disposition_container" style="display: none;">
-        <label>Specify Other Disposition:</label>
+        <label class="mt-3">Specify Other Disposition:</label>
         <input type="text" name="other_disposition" class="form-control">
       </div>
 
-      <label>Jail Sentence:</label>
+      <label class="mt-3">Jail Sentence:</label>
       <div class="row">
         <div class="col">
           <input type="text" name="jail_time_imposed" placeholder="e.g., 90" class="form-control" style="display:inline-block; width:auto;"> days in jail with 
@@ -124,7 +125,7 @@
         </div>
       </div>
 
-      <label>Fine:</label>
+      <label class="mt-3">Fine:</label>
       <div class="row">
         <div class="col">
           $<input type="text" name="fine_imposed" placeholder="e.g., 1000" class="form-control" style="display:inline-block; width:auto;"> fine with 
@@ -132,10 +133,10 @@
         </div>
       </div>
 
-      <label>License Suspension:</label>
+      <label class="mt-3">License Suspension:</label>
       <input type="text" name="license_suspension" class="form-control">
 
-      <label>Restricted License:</label>
+      <label class="mt-3">Restricted License:</label>
       <select name="restricted_license" class="form-control">
         <option value="">-- Select --</option>
         <option value="No">No</option>
@@ -144,14 +145,14 @@
         <option value="Yes - Interlock and Time and Place Restrictions">Yes - Interlock and Time and Place Restrictions</option>
       </select>
 
-      <label>VASAP Ordered:</label>
+      <label class="mt-3">VASAP Ordered:</label>
       <select name="asap_ordered" class="form-control">
         <option value="">-- Select Option --</option>
         <option value="No">No</option>
         <option value="Yes">Yes</option>
       </select>
 
-      <label>Probation Type:</label>
+      <label class="mt-3">Probation Type:</label>
       <select name="probation_type" class="form-control">
         <option value="">-- Select --</option>
         <option value="Supervised">Supervised</option>
@@ -159,33 +160,34 @@
       </select>
 
       <fieldset>
-        <legend>Other Conditions:</legend>
-        <label><input type="checkbox" name="conditions" value="VASAP"> VASAP</label><br>
-        <label><input type="checkbox" name="conditions" value="VIP"> Victim Impact Panel (VIP)</label><br>
-        <label><input type="checkbox" name="conditions" value="Community Service"> Community Service</label><br>
-        <label><input type="checkbox" name="conditions" value="Anger Management"> Anger Management</label>
+        <h4 class="mt-4">Other Conditions</h4>
+        <label class="mt-3"><input type="checkbox" name="conditions" value="VASAP"> VASAP</label><br>
+        <label class="mt-3"><input type="checkbox" name="conditions" value="VIP"> Victim Impact Panel (VIP)</label><br>
+        <label class="mt-3"><input type="checkbox" name="conditions" value="Community Service"> Community Service</label><br>
+        <label class="mt-3"><input type="checkbox" name="conditions" value="Anger Management"> Anger Management</label>
       </fieldset>
 
       <input type="hidden" name="date_disposition" id="date_disposition">
 
-      <label>Client Email:</label>
+      <label class="mt-3">Client Email:</label>
       <input type="email" name="client_email" class="form-control">
 
-      <label>Notes:</label>
-      <textarea name="notes" rows="4" cols="50" class="form-control"></textarea>
+      <label class="mt-3">Notes:</label>
+      <textarea name="notes" rows="4" cols="50" class="form-control mt-2"></textarea>
 
-      <label><input type="checkbox" name="send_review_links" value="true"> Send Review Links</label>
+      <label class="mt-3"><input type="checkbox" name="send_review_links" value="true"> Send Review Links</label>
 
       <div id="additional_charges_container"></div>
       <button type="button" onclick="addAdditionalCharge()">Add Additional Charge</button>
 
-      <div class="form-group mt-3">
-        <input type="submit" value="Submit" class="btn btn-primary">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-secondary">Back to Dashboard</a>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-danger">Cancel</a>
+      <div class="text-center mt-4">
+        <input type="submit" value="Submit Case Result" class="btn btn-success mx-2">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary mx-2">Dashboard</a>
+        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-danger mx-2">Cancel</a>
       </div>
       </div>
     </form>
+    </div>
   </div>
 </div>
   <script>
@@ -214,14 +216,14 @@
       div.classList.add("additional-charge-group");
       div.innerHTML = `
         <hr>
-        <h4>Additional Charge</h4>
-        <label>Original Charge:</label>
+        <h5 class="mt-4">Additional Charge</h5>
+        <label class="mt-3">Original Charge:</label>
         <input type="text" name="additional_charges[${additionalChargeIndex}][original_charge]" class="form-control">
 
-        <label>Final Amended Charge:</label>
+        <label class="mt-3">Final Amended Charge:</label>
         <input type="text" name="additional_charges[${additionalChargeIndex}][amended_charge]" class="form-control">
 
-        <label>Final Disposition:</label>
+        <label class="mt-3">Final Disposition:</label>
         <select name="additional_charges[${additionalChargeIndex}][disposition]" class="form-control">
           <option value="Not Guilty">Not Guilty</option>
           <option value="Guilty">Guilty</option>
@@ -233,10 +235,10 @@
           <option value="Other">Other</option>
         </select>
 
-        <label>Other Disposition Notes:</label>
+        <label class="mt-3">Other Disposition Notes:</label>
         <input type="text" name="additional_charges[${additionalChargeIndex}][other_disposition]" class="form-control">
 
-        <label>Jail Sentence:</label>
+        <label class="mt-3">Jail Sentence:</label>
         <div class="row">
           <div class="col">
             <input type="text" name="additional_charges[${additionalChargeIndex}][jail_time_imposed]" class="form-control" style="display:inline-block; width:auto;"> days in jail with 
@@ -244,7 +246,7 @@
           </div>
         </div>
 
-        <label>Fine:</label>
+        <label class="mt-3">Fine:</label>
         <div class="row">
           <div class="col">
             $<input type="text" name="additional_charges[${additionalChargeIndex}][fine_imposed]" class="form-control" style="display:inline-block; width:auto;"> fine with 
@@ -252,10 +254,10 @@
           </div>
         </div>
 
-        <label>License Suspension:</label>
+        <label class="mt-3">License Suspension:</label>
         <input type="text" name="additional_charges[${additionalChargeIndex}][license_suspension]" class="form-control">
 
-        <label>Restricted License:</label>
+        <label class="mt-3">Restricted License:</label>
         <select name="additional_charges[${additionalChargeIndex}][restricted_license]" class="form-control">
           <option value="">-- Select --</option>
           <option value="No">No</option>
@@ -264,26 +266,26 @@
           <option value="Yes - Interlock and Time and Place Restrictions">Yes - Interlock and Time and Place Restrictions</option>
         </select>
 
-        <label>VASAP Ordered:</label>
+        <label class="mt-3">VASAP Ordered:</label>
         <select name="additional_charges[${additionalChargeIndex}][asap_ordered]" class="form-control">
           <option value="No" selected>No</option>
           <option value="Yes">Yes</option>
         </select>
 
-        <label>Probation Type:</label>
+        <label class="mt-3">Probation Type:</label>
         <select name="additional_charges[${additionalChargeIndex}][probation_type]" class="form-control">
           <option value="">-- Select --</option>
           <option value="Supervised">Supervised</option>
           <option value="Unsupervised (GGB)">Unsupervised (GGB)</option>
         </select>
-        <label>Interlock Type:</label>
+        <label class="mt-3">Interlock Type:</label>
         <input type="text" name="additional_charges[${additionalChargeIndex}][interlock_type]" class="form-control">
 
-        <label>Notes:</label>
-        <textarea name="additional_charges[${additionalChargeIndex}][notes]" rows="4" cols="50" class="form-control"></textarea>
+        <label class="mt-3">Notes:</label>
+        <textarea name="additional_charges[${additionalChargeIndex}][notes]" rows="4" cols="50" class="form-control mt-2"></textarea>
       `;
       container.appendChild(div);
       additionalChargeIndex++;
     }
   </script>
-{% endblock %}
+    {% endblock %}

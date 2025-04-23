@@ -62,6 +62,12 @@
       <label>Custom Source (if applicable):</label><br>
       <input type="text" name="custom_source" value="{{ lead.custom_source }}" class="form-control"><br>
 
+      <label>Attorney:</label><br>
+      <select name="attorney" class="form-control">
+        <option value="David Dischley" {% if lead.attorney == 'David Dischley' %}selected{% endif %}>David Dischley</option>
+        <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+      </select><br>
+
       <label>Notes:</label><br>
       <textarea name="notes" class="form-control" rows="4">{{ lead.notes }}</textarea><br>
 

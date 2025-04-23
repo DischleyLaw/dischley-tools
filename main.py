@@ -57,6 +57,7 @@ class Lead(db.Model):
     custom_source = db.Column(db.String(100))
     case_type = db.Column(db.String(100))
     charges = db.Column(db.Text)
+    staff_member = db.Column(db.String(100))
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -144,6 +145,8 @@ def intake():
         last_name = data.get("last_name", "").strip()
         full_name = f"{first_name} {last_name}".strip()
 
+        staff_member = data.get("staff_member")
+
         new_lead = Lead(
             name=full_name if full_name else "Unknown",
             phone=data.get("phone"),
@@ -162,6 +165,7 @@ def intake():
             custom_source=custom_source,
             case_type=case_type,
             charges=data.get("charges"),
+            staff_member=staff_member,
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -211,11 +215,16 @@ def intake():
         if new_lead.court_time:
             email_lines.append(f"Court Time: {new_lead.court_time}\n")
 
-        if new_lead.notes:
-            email_lines.append(f"Brief Description of the Facts: {new_lead.notes}\n")
-
         if new_lead.homework:
-            email_lines.append(f"Notes: {new_lead.homework}\n")
+            email_lines.append(f"Brief Description of the Facts: {new_lead.homework}\n")
+
+        if new_lead.notes:
+            email_lines.append(f"Notes: {new_lead.notes}\n")
+
+        if staff_member:
+            email_lines.append(f"Staff Member: {staff_member}\n")
+        if data.get("attorney"):
+            email_lines.append(f"Attorney: {data.get('attorney')}\n")
 
         if lead_source or custom_source:
             source_display = lead_source if lead_source != 'Other' else custom_source
@@ -280,6 +289,7 @@ def update_lead(lead_id):
     lead.quote = request.form.get("quote")
     lead.lead_source = request.form.get("lead_source", lead.lead_source)
     lead.custom_source = request.form.get("custom_source", lead.custom_source)
+    lead.staff_member = request.form.get("staff_member", lead.staff_member)
 
     db.session.commit()
 
@@ -313,11 +323,16 @@ def update_lead(lead_id):
     if lead.court_time:
         update_lines.append(f"Court Time: {lead.court_time}\n")
 
-    if lead.notes:
-        update_lines.append(f"Brief Description of the Facts: {lead.notes}\n")
-
     if lead.homework:
-        update_lines.append(f"Notes: {lead.homework}\n")
+        update_lines.append(f"Brief Description of the Facts: {lead.homework}\n")
+
+    if lead.notes:
+        update_lines.append(f"Notes: {lead.notes}\n")
+
+    if lead.staff_member:
+        update_lines.append(f"Staff Member: {lead.staff_member}\n")
+    if request.form.get("attorney"):
+        update_lines.append(f"Attorney: {request.form.get('attorney')}\n")
 
     if lead.lead_source or lead.custom_source:
         source_display = lead.lead_source if lead.lead_source != 'Other' else lead.custom_source
