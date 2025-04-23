@@ -1,32 +1,3 @@
-# --- Admin Leads Dashboard ---
-@app.route("/admin/leads")
-@login_required
-def admin_leads():
-    leads = Lead.query.order_by(Lead.created_at.desc()).all()
-    return render_template("admin_leads.html", leads=leads)
-
-# --- Admin Edit Lead ---
-@app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
-@login_required
-def admin_edit_lead(lead_id):
-    lead = Lead.query.get_or_404(lead_id)
-    if request.method == "POST":
-        lead.name = request.form.get("name", lead.name)
-        lead.phone = request.form.get("phone", lead.phone)
-        lead.email = request.form.get("email", lead.email)
-        lead.charges = request.form.get("charges", lead.charges)
-        lead.court_date = request.form.get("court_date", lead.court_date)
-        lead.court_time = request.form.get("court_time", lead.court_time)
-        lead.court = request.form.get("court", lead.court)
-        lead.notes = request.form.get("notes", lead.notes)
-        lead.homework = request.form.get("homework", lead.homework)
-        lead.lead_source = request.form.get("lead_source", lead.lead_source)
-        lead.case_type = request.form.get("case_type", lead.case_type)
-        lead.staff_member = request.form.get("staff_member", lead.staff_member)
-        lead.absence_waiver = 'absence_waiver' in request.form
-        db.session.commit()
-        return redirect(url_for("admin_leads"))
-    return render_template("admin_edit_lead.html", lead=lead)
 from flask import Flask, render_template, request, redirect, url_for, session, send_file
 from flask_mail import Mail, Message
 from functools import wraps
@@ -65,6 +36,36 @@ db = SQLAlchemy(app)
 
 with app.app_context():
     db.create_all()
+
+# --- Admin Leads Dashboard ---
+@app.route("/admin/leads")
+@login_required
+def admin_leads():
+    leads = Lead.query.order_by(Lead.created_at.desc()).all()
+    return render_template("admin_leads.html", leads=leads)
+
+# --- Admin Edit Lead ---
+@app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
+@login_required
+def admin_edit_lead(lead_id):
+    lead = Lead.query.get_or_404(lead_id)
+    if request.method == "POST":
+        lead.name = request.form.get("name", lead.name)
+        lead.phone = request.form.get("phone", lead.phone)
+        lead.email = request.form.get("email", lead.email)
+        lead.charges = request.form.get("charges", lead.charges)
+        lead.court_date = request.form.get("court_date", lead.court_date)
+        lead.court_time = request.form.get("court_time", lead.court_time)
+        lead.court = request.form.get("court", lead.court)
+        lead.notes = request.form.get("notes", lead.notes)
+        lead.homework = request.form.get("homework", lead.homework)
+        lead.lead_source = request.form.get("lead_source", lead.lead_source)
+        lead.case_type = request.form.get("case_type", lead.case_type)
+        lead.staff_member = request.form.get("staff_member", lead.staff_member)
+        lead.absence_waiver = 'absence_waiver' in request.form
+        db.session.commit()
+        return redirect(url_for("admin_leads"))
+    return render_template("admin_edit_lead.html", lead=lead)
 
 class Lead(db.Model):
     id = db.Column(db.Integer, primary_key=True)
