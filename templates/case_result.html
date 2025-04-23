@@ -82,9 +82,23 @@
 
       <label class="mt-3">Original Charge:</label>
       <textarea name="offense" rows="3" class="form-control mt-2"></textarea>
+      <label class="mt-3">Charge Level:</label>
+      <select name="charge_level" class="form-control">
+          <option value="">-- Select Level --</option>
+          <option value="Infraction">Infraction</option>
+          <option value="Misdemeanor">Misdemeanor</option>
+          <option value="Felony">Felony</option>
+      </select>
 
       <label class="mt-3">Amended Charge:</label>
       <textarea name="amended_charge" rows="3" class="form-control mt-2"></textarea>
+      <label class="mt-3">Amended Charge Level:</label>
+      <select name="amended_charge_level" class="form-control">
+          <option value="">-- Select Level --</option>
+          <option value="Infraction">Infraction</option>
+          <option value="Misdemeanor">Misdemeanor</option>
+          <option value="Felony">Felony</option>
+      </select>
 
       <label class="mt-3">Was the case continued?</label>
       <select name="was_continued" id="was_continued" onchange="toggleContinuationDate()" class="form-control">
