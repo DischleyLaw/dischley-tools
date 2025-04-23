@@ -74,6 +74,7 @@ class CaseResult(db.Model):
     license_suspension = db.Column(db.String(100))
     asap_ordered = db.Column(db.String(10))
     probation_type = db.Column(db.String(50))
+    probation_term = db.Column(db.String(50))
     was_continued = db.Column(db.String(10))
     continuation_date = db.Column(db.String(20))
     client_email = db.Column(db.String(120))
@@ -468,11 +469,15 @@ def case_result():
             if dispositions[i]:
                 msg_body_lines.append(f"Final Disposition: {dispositions[i]}\n\n")
             if fines_imposed[i]:
-                msg_body_lines.append(f"Fine: ${fines_imposed[i]}\n\n")
+                fine_text = f"a ${fines_imposed[i]} fine"
+                if data.getlist("fine_suspended[]")[i]:
+                    fine_text += f" with ${data.getlist('fine_suspended[]')[i]} suspended"
+                msg_body_lines.append(f"Fine: {fine_text}\n\n")
             if jail_time_imposed[i]:
-                msg_body_lines.append(f"Jail Sentence: {jail_time_imposed[i]} days\n\n")
-            if jail_time_suspended[i]:
-                msg_body_lines.append(f"Jail Time Suspended: {jail_time_suspended[i]} days\n\n")
+                jail_text = f"{jail_time_imposed[i]} days in jail"
+                if data.getlist("jail_time_suspended[]")[i]:
+                    jail_text += f" with {data.getlist('jail_time_suspended[]')[i]} days suspended"
+                msg_body_lines.append(f"Jail Sentence: {jail_text}\n\n")
             if license_suspension[i]:
                 msg_body_lines.append(f"License Suspension: {license_suspension[i]}\n\n")
 
@@ -495,6 +500,8 @@ def case_result():
             msg_body_lines.append(f"Anger Management: {data.get('anger_management')}\n")
         if data.get("probation_type"):
             msg_body_lines.append(f"Probation Type: {data.get('probation_type')}\n")
+        if data.get("probation_term"):
+            msg_body_lines.append(f"Probation Term: {data.get('probation_term')}\n")
         if data.get("date_disposition"):
             msg_body_lines.append(f"Disposition Date: {data.get('date_disposition')}\n")
         if data.get("notes"):
@@ -515,6 +522,7 @@ def case_result():
             license_suspension=data.get("license_suspension"),
             asap_ordered=data.get("asap_ordered"),
             probation_type=data.get("probation_type"),
+            probation_term=data.get("probation_term"),
             was_continued=data.get("was_continued"),
             continuation_date=data.get("continuation_date"),
             client_email=data.get("client_email"),
