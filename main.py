@@ -563,24 +563,24 @@ def case_result():
             if restricted_license:
                 msg_body_lines.append(f"Restricted License: {restricted_license}")
 
-            # Conditions of Probation section: only include non-empty conditions
-            conditions_lines = []
-            if asap_ordered:
-                conditions_lines.append(f"  - ASAP Ordered: {asap_ordered}")
-            if vip_ordered:
-                conditions_lines.append(f"  - VIP Ordered: {vip_ordered}")
-            if community_service:
-                conditions_lines.append(f"  - Community Service: {community_service}")
-            if anger_management:
-                conditions_lines.append(f"  - Anger Management: {anger_management}")
-            prob_type_str = probation_type if probation_type else ""
-            prob_term_str = probation_term if probation_term else ""
-            if prob_type_str or prob_term_str:
-                prob_str = f"  - Probation: {prob_type_str}{' for ' + prob_term_str if prob_term_str else ''}"
-                conditions_lines.append(prob_str)
-            if conditions_lines:
-                msg_body_lines.append("Conditions of Probation:")
-                msg_body_lines.extend(conditions_lines)
+        # Only include Conditions of Probation ONCE, after all charges, if any conditions exist
+        conditions_lines = []
+        if asap_ordered:
+            conditions_lines.append(f"  - ASAP Ordered: {asap_ordered}")
+        if vip_ordered:
+            conditions_lines.append(f"  - VIP Ordered: {vip_ordered}")
+        if community_service:
+            conditions_lines.append(f"  - Community Service: {community_service}")
+        if anger_management:
+            conditions_lines.append(f"  - Anger Management: {anger_management}")
+        prob_type_str = probation_type if probation_type else ""
+        prob_term_str = probation_term if probation_term else ""
+        if prob_type_str or prob_term_str:
+            prob_str = f"  - Probation: {prob_type_str}{' for ' + prob_term_str if prob_term_str else ''}"
+            conditions_lines.append(prob_str)
+        if conditions_lines:
+            msg_body_lines.append("\nConditions of Probation:")
+            msg_body_lines.extend(conditions_lines)
 
         # After charges, add continuation date, disposition date, notes, etc., only if not blank
         if data.get("was_continued"):
