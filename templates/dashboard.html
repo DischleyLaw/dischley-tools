@@ -1,7 +1,31 @@
-.dashboard-icon {
-    width: 40px;
-    height: 40px;
-    object-fit: contain;
-    display: block;
-    margin: 0 auto;
-}
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h2 class="mb-4 text-center">Dashboard</h2>
+<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px;">
+  <div style="text-align: center;">
+    <a href="/intake">
+      <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" class="dashboard-icon">
+      <div>Client Intake</div>
+    </a>
+  </div>
+  <div style="text-align: center;">
+    <a href="/case_result">
+      <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" class="dashboard-icon">
+      <div>Submit Case Result</div>
+    </a>
+  </div>
+  <div style="text-align: center;">
+    <a href="/expungement">
+      <img src="{{ url_for('static', filename='img/expungement_generator.png') }}" alt="Expungement Generator" class="dashboard-icon">
+      <div>Expungement Generator</div>
+    </a>
+  </div>
+  <div style="text-align: center;">
+    <a href="/admin/leads">
+      <img src="{{ url_for('static', filename='img/admin_panel.png') }}" alt="Admin Panel" class="dashboard-icon">
+      <div>Admin Panel</div>
+    </a>
+  </div>
+</div>
+{% endblock %}
