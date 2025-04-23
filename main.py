@@ -13,6 +13,7 @@ import requests
 import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from datetime import datetime
 from email.utils import formataddr
 
@@ -33,9 +34,9 @@ app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
 mail = Mail(app)
 db = SQLAlchemy(app)
-
-with app.app_context():
-    db.create_all()
+migrate = Migrate(app, db)
+# with app.app_context():
+#     db.create_all()
 
 # --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
