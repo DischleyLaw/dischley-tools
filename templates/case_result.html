@@ -1,334 +1,91 @@
-{% extends "base.html" %}
-{% block title %}Submit Case Result{% endblock %}
-{% block content %}
-<div class="container mt-4">
-    <h2 class="mb-4">Submit Case Result</h2>
-    <form method="POST">
-      <div class="form-group">
-      <label class="mt-3">Court:</label>
-      <select name="court" id="court_select" onchange="toggleCourtInput()" class="form-control">
-        <option value="">-- Select Court --</option>
-        <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
-        <option value="Alexandria City General District Court">Alexandria City General District Court</option>
-        <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
-        <option value="Amherst General District Court">Amherst General District Court</option>
-        <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
-        <option value="Arlington County General District Court">Arlington County General District Court</option>
-        <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
-        <option value="Caroline County General District Court">Caroline County General District Court</option>
-        <option value="Clarke County General District Court">Clarke County General District Court</option>
-        <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
-        <option value="Culpeper General District Court">Culpeper General District Court</option>
-        <option value="Essex County General District Court">Essex County General District Court</option>
-        <option value="Fairfax City General District Court">Fairfax City General District Court</option>
-        <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
-        <option value="Fairfax County General District Court">Fairfax County General District Court</option>
-        <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
-        <option value="Falls Church General District Court">Falls Church General District Court</option>
-        <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
-        <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
-        <option value="Fauquier County General District Court">Fauquier County General District Court</option>
-        <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
-        <option value="Frederick County General District Court">Frederick County General District Court</option>
-        <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
-        <option value="Hanover General District Court">Hanover General District Court</option>
-        <option value="Henrico County General District Court">Henrico County General District Court</option>
-        <option value="King George County Circuit Court">King George County Circuit Court</option>
-        <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
-        <option value="King George General District Court">King George General District Court</option>
-        <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
-        <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
-        <option value="Loudoun County General District Court">Loudoun County General District Court</option>
-        <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
-        <option value="Orange County General District Court">Orange County General District Court</option>
-        <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
-        <option value="Page County Circuit Court">Page County Circuit Court</option>
-        <option value="Page County General District Court">Page County General District Court</option>
-        <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
-        <option value="Prince William County General District Court">Prince William County General District Court</option>
-        <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
-        <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
-        <option value="Rappahannock General District Court">Rappahannock General District Court</option>
-        <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
-        <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
-        <option value="Rockingham County General District Court">Rockingham County General District Court</option>
-        <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
-        <option value="Shenandoah General District Court">Shenandoah General District Court</option>
-        <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
-        <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
-        <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
-        <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
-        <option value="Stafford County General District Court">Stafford County General District Court</option>
-        <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
-        <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
-        <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
-        <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
-        <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
-        <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
-        <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
-        <option value="Warren County Circuit Court">Warren County Circuit Court</option>
-        <option value="Warren County General District Court">Warren County General District Court</option>
-        <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
-        <option value="Winchester General District Court">Winchester General District Court</option>
-        <option value="Other">Other</option>
-      </select>
-      <div id="custom_court_container" style="display: none;">
-        <label class="mt-3">Enter Court:</label>
-        <input type="text" name="custom_court" class="form-control">
-      </div>
+<form method="POST">
+  <h2>Defendant Information</h2>
+  <label>Defendant Name:</label>
+  <input type="text" name="defendant_name" required>
 
-      <label class="mt-3">Client Name:</label>
-      <input type="text" name="defendant_name" class="form-control">
+  <div id="charges-section">
+      <h2>Charge Details</h2>
+      <div class="charge-block">
+          <label>Original Charge:</label>
+          <textarea name="original_charge"></textarea>
 
-      <label class="mt-3">Original Charge:</label>
-      <textarea name="offense" rows="3" class="form-control mt-2"></textarea>
-      <label class="mt-3">Charge Level:</label>
-      <select name="charge_level" class="form-control">
-          <option value="">-- Select Level --</option>
-          <option value="Infraction">Infraction</option>
-          <option value="Misdemeanor">Misdemeanor</option>
-          <option value="Felony">Felony</option>
-      </select>
+          <label>Amended Charge:</label>
+          <textarea name="amended_charge"></textarea>
 
-      <label class="mt-3">Amended Charge:</label>
-      <textarea name="amended_charge" rows="3" class="form-control mt-2"></textarea>
-      <label class="mt-3">Amended Charge Level:</label>
-      <select name="amended_charge_level" class="form-control">
-          <option value="">-- Select Level --</option>
-          <option value="Infraction">Infraction</option>
-          <option value="Misdemeanor">Misdemeanor</option>
-          <option value="Felony">Felony</option>
-      </select>
-
-      <label class="mt-3">Was the case continued?</label>
-      <select name="was_continued" id="was_continued" onchange="toggleContinuationDate()" class="form-control">
-        <option value="No">No</option>
-        <option value="Yes">Yes</option>
-      </select>
-
-      <div id="continuation_date_container" style="display: none;">
-        <label class="mt-3">Continuation Date:</label>
-        <input type="date" name="continuation_date" class="form-control" style="display:inline-block; width:auto;">
-        <input type="time" name="continuation_time" class="form-control" style="display:inline-block; width:auto;">
-      </div>
-
-      <label class="mt-3">Disposition:</label>
-      <select name="disposition" id="disposition" onchange="toggleOtherDisposition()" class="form-control">
-        <option value="">-- Select Disposition --</option>
-        <option value="Not Guilty">Not Guilty</option>
-        <option value="Nolle Prosequi">Nolle Prosequi</option>
-        <option value="Guilty">Guilty</option>
-        <option value="Dismissed">Dismissed</option>
-        <option value="Dismissed with Costs">Dismissed with Costs</option>
-        <option value="Taken Under Advisement for Dismissal">Taken Under Advisement for Dismissal</option>
-        <option value="Deferred Disposition">Deferred Disposition</option>
-        <option value="Other">Other</option>
-      </select>
-      <div id="other_disposition_container" style="display: none;">
-        <label class="mt-3">Specify Other Disposition:</label>
-        <input type="text" name="other_disposition" class="form-control">
-      </div>
-      <div id="plea_container" style="display: none;">
-          <label class="mt-3">Plea:</label>
-          <select name="plea" class="form-control">
-              <option value="">-- Select Plea --</option>
+          <label>Plea:</label>
+          <select name="plea">
+              <option value="">Select Plea</option>
               <option value="Guilty">Guilty</option>
-              <option value="No Contest">No Contest</option>
               <option value="Not Guilty">Not Guilty</option>
-              <option value="Not Guilty Stipulate">Not Guilty Stipulate</option>
+              <option value="No Contest">No Contest</option>
+          </select>
+
+          <label>Disposition:</label>
+          <select name="disposition">
+              <option value="">Select Disposition</option>
+              <option value="Guilty">Guilty</option>
+              <option value="Not Guilty">Not Guilty</option>
+              <option value="Dismissed">Dismissed</option>
+              <option value="Nolle Prosequi">Nolle Prosequi</option>
+              <option value="Continued">Continued</option>
           </select>
       </div>
+  </div>
 
-      <label class="mt-3">Jail Sentence:</label>
-      <div class="row">
-        <div class="col">
-          <input type="text" name="jail_time_imposed" placeholder="e.g., 90" class="form-control" style="display:inline-block; width:auto;"> days in jail with 
-          <input type="text" name="jail_time_suspended" placeholder="e.g., 90" class="form-control" style="display:inline-block; width:auto;"> days suspended
-        </div>
-      </div>
+  <button type="button" onclick="addCharge()">Add Additional Charge</button>
 
-      <label class="mt-3">Fine:</label>
-      <div class="row">
-        <div class="col">
-          $<input type="text" name="fine_imposed" placeholder="e.g., 1000" class="form-control" style="display:inline-block; width:auto;"> fine with 
-          $<input type="text" name="fine_suspended" placeholder="e.g., 500" class="form-control" style="display:inline-block; width:auto;"> suspended
-        </div>
-      </div>
+  <h2>Sentencing</h2>
+  <label>Jail Time Imposed (days):</label>
+  <input type="number" name="jail_time_imposed">
+  <label>Jail Time Suspended (days):</label>
+  <input type="number" name="jail_time_suspended">
 
-      <label class="mt-3">License Suspension:</label>
-      <input type="text" name="license_suspension" class="form-control">
+  <label>Fine Imposed ($):</label>
+  <input type="number" name="fine_imposed">
+  <label>Fine Suspended ($):</label>
+  <input type="number" name="fine_suspended">
 
-      <label class="mt-3">Restricted License:</label>
-      <select name="restricted_license" class="form-control">
-        <option value="">-- Select --</option>
-        <option value="No">No</option>
-        <option value="Yes - Interlock Only">Yes - Interlock Only</option>
-        <option value="Yes - Time and Place Restrictions Only">Yes - Time and Place Restrictions Only</option>
-        <option value="Yes - Interlock and Time and Place Restrictions">Yes - Interlock and Time and Place Restrictions</option>
-      </select>
+  <h2>Conditions of Probation</h2>
+  <label>Probation Type:</label>
+  <select name="probation_type">
+      <option value="">None</option>
+      <option value="Supervised">Supervised</option>
+      <option value="Unsupervised">Unsupervised</option>
+  </select>
 
-      <label class="mt-3">Probation Type:</label>
-      <select name="probation_type" class="form-control">
-        <option value="">-- Select --</option>
-        <option value="Supervised">Supervised</option>
-        <option value="Unsupervised (GGB)">Unsupervised (GGB)</option>
-      </select>
-      <label class="mt-3">Probation Term:</label>
-      <input type="text" name="probation_term" placeholder="e.g., 12 months" class="form-control">
+  <label>Probation Term:</label>
+  <input type="text" name="probation_term">
 
-      <fieldset>
-        <h4 class="mt-4">Other Conditions</h4>
-        <label class="mt-3"><input type="checkbox" name="conditions" value="VASAP"> VASAP</label><br>
-        <label class="mt-3"><input type="checkbox" name="conditions" value="VIP"> Victim Impact Panel (VIP)</label><br>
-        <label class="mt-3"><input type="checkbox" name="conditions" value="Community Service"> Community Service</label><br>
-        <label class="mt-3"><input type="checkbox" name="conditions" value="Anger Management"> Anger Management</label>
-      </fieldset>
+  <label><input type="checkbox" name="vasap"> VASAP</label>
+  <label><input type="checkbox" name="vip"> VIP</label>
+  <label><input type="checkbox" name="community_service"> Community Service</label>
+  <label><input type="checkbox" name="anger_management"> Anger Management</label>
+  <label><input type="checkbox" name="absence_waiver"> Absence Waiver</label>
 
-      <input type="hidden" name="date_disposition" id="date_disposition">
+  <h2>Case Status</h2>
+  <label><input type="checkbox" name="was_continued" id="was_continued"> Case Continued?</label>
+  <div id="continuation_fields" style="display:none;">
+      <label>Continuation Date & Time:</label>
+      <input type="datetime-local" name="continuation_date">
+  </div>
 
-      <label class="mt-3">Notes:</label>
-      <textarea name="notes" rows="4" cols="50" class="form-control mt-2"></textarea>
+  <label>Disposition Date:</label>
+  <input type="date" name="date_disposition">
 
-      <label class="mt-3"><input type="checkbox" name="send_review_links" value="true"> Send Review Links</label>
+  <h2>Notes</h2>
+  <textarea name="notes"></textarea>
 
-      <div id="additional_charges_container"></div>
-      <button type="button" onclick="addAdditionalCharge()">Add Additional Charge</button>
+  <button type="submit">Submit Case Result</button>
+</form>
 
-      <div class="text-center mt-4">
-        <input type="submit" value="Submit Case Result" class="btn btn-success mx-2">
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-secondary mx-2">Dashboard</a>
-        <a href="{{ url_for('dashboard') }}" class="btn btn-outline-danger mx-2">Cancel</a>
-      </div>
-    </form>
+<script>
+function addCharge() {
+  const section = document.getElementById('charges-section');
+  const clone = document.querySelector('.charge-block').cloneNode(true);
+  section.appendChild(clone);
+}
 
-  <script>
-    function toggleContinuationDate() {
-      const disposition = document.getElementById("disposition").value;
-      const wasContinued = document.getElementById("was_continued").value;
-      const container = document.getElementById("continuation_date_container");
-
-      if (disposition === "Continued" || wasContinued === "Yes") {
-        container.style.display = "block";
-      } else {
-        container.style.display = "none";
-      }
-    }
-
-    function togglePlea() {
-        const disposition = document.getElementById("disposition").value;
-        const pleaContainer = document.getElementById("plea_container");
-
-        if (disposition === "Guilty" || disposition === "Not Guilty" || disposition === "Deferred Disposition") {
-            pleaContainer.style.display = "block";
-        } else {
-            pleaContainer.style.display = "none";
-        }
-    }
-
-    document.getElementById("disposition").addEventListener('change', togglePlea);
-
-    // Ensure the toggle runs on page load if "Continued" is pre-selected
-    window.onload = function () {
-      toggleContinuationDate();
-      togglePlea();
-    };
-
-    let additionalChargeIndex = 0;
-
-    function addAdditionalCharge() {
-      const container = document.getElementById("additional_charges_container");
-      const div = document.createElement("div");
-      div.classList.add("additional-charge-group");
-      div.innerHTML = `
-        <hr>
-        <h5 class="mt-4">Additional Charge</h5>
-        <label class="mt-3">Original Charge:</label>
-        <textarea name="additional_charges[${additionalChargeIndex}][original_charge]" rows="3" class="form-control mt-2"></textarea>
-
-        <label class="mt-3">Amended Charge:</label>
-        <textarea name="additional_charges[${additionalChargeIndex}][amended_charge]" rows="3" class="form-control mt-2"></textarea>
-
-        <label class="mt-3">Was the case continued?</label>
-        <select name="additional_charges[${additionalChargeIndex}][was_continued]" class="form-control" onchange="this.nextElementSibling.style.display = this.value === 'Yes' ? 'block' : 'none';">
-          <option value="No">No</option>
-          <option value="Yes">Yes</option>
-        </select>
-        <div style="display: none;">
-          <label class="mt-3">Continuation Date:</label>
-          <input type="date" name="additional_charges[${additionalChargeIndex}][continuation_date]" class="form-control" style="display:inline-block; width:auto;">
-          <input type="time" name="additional_charges[${additionalChargeIndex}][continuation_time]" class="form-control" style="display:inline-block; width:auto;">
-        </div>
-
-        <label class="mt-3">Final Disposition:</label>
-        <select name="additional_charges[${additionalChargeIndex}][disposition]" class="form-control">
-          <option value="">-- Select Disposition --</option>
-          <option value="Not Guilty">Not Guilty</option>
-          <option value="Nolle Prosequi">Nolle Prosequi</option>
-          <option value="Guilty">Guilty</option>
-          <option value="Dismissed">Dismissed</option>
-          <option value="Dismissed with Costs">Dismissed with Costs</option>
-          <option value="Taken Under Advisement for Dismissal">Taken Under Advisement for Dismissal</option>
-          <option value="Deferred Disposition">Deferred Disposition</option>
-          <option value="Other">Other</option>
-        </select>
-        <div>
-          <label class="mt-3">Specify Other Disposition:</label>
-          <input type="text" name="additional_charges[${additionalChargeIndex}][other_disposition]" class="form-control">
-        </div>
-
-        <label class="mt-3">Jail Sentence:</label>
-        <div class="row">
-          <div class="col">
-            <input type="text" name="additional_charges[${additionalChargeIndex}][jail_time_imposed]" placeholder="e.g., 90" class="form-control" style="display:inline-block; width:auto;"> days in jail with 
-            <input type="text" name="additional_charges[${additionalChargeIndex}][jail_time_suspended]" placeholder="e.g., 90" class="form-control" style="display:inline-block; width:auto;"> days suspended
-          </div>
-        </div>
-
-        <label class="mt-3">Fine:</label>
-        <div class="row">
-          <div class="col">
-            $<input type="text" name="additional_charges[${additionalChargeIndex}][fine_imposed]" placeholder="e.g., 1000" class="form-control" style="display:inline-block; width:auto;"> fine with 
-            $<input type="text" name="additional_charges[${additionalChargeIndex}][fine_suspended]" placeholder="e.g., 500" class="form-control" style="display:inline-block; width:auto;"> suspended
-          </div>
-        </div>
-
-        <label class="mt-3">License Suspension:</label>
-        <input type="text" name="additional_charges[${additionalChargeIndex}][license_suspension]" class="form-control">
-
-        <label class="mt-3">Restricted License:</label>
-        <select name="additional_charges[${additionalChargeIndex}][restricted_license]" class="form-control">
-          <option value="">-- Select --</option>
-          <option value="No">No</option>
-          <option value="Yes - Interlock Only">Yes - Interlock Only</option>
-          <option value="Yes - Time and Place Restrictions Only">Yes - Time and Place Restrictions Only</option>
-          <option value="Yes - Interlock and Time and Place Restrictions">Yes - Interlock and Time and Place Restrictions</option>
-        </select>
-
-        <label class="mt-3">Probation Type:</label>
-        <select name="additional_charges[${additionalChargeIndex}][probation_type]" class="form-control">
-          <option value="">-- Select --</option>
-          <option value="Supervised">Supervised</option>
-          <option value="Unsupervised (GGB)">Unsupervised (GGB)</option>
-        </select>
-        <label class="mt-3">Probation Term:</label>
-        <input type="text" name="additional_charges[${additionalChargeIndex}][probation_term]" placeholder="e.g., 12 months" class="form-control">
-
-        <label class="mt-3">Interlock Type:</label>
-        <input type="text" name="additional_charges[${additionalChargeIndex}][interlock_type]" class="form-control">
-
-        <fieldset>
-          <h4 class="mt-4">Other Conditions</h4>
-          <label class="mt-3"><input type="checkbox" name="additional_charges[${additionalChargeIndex}][conditions]" value="VASAP"> VASAP</label><br>
-          <label class="mt-3"><input type="checkbox" name="additional_charges[${additionalChargeIndex}][conditions]" value="VIP"> Victim Impact Panel (VIP)</label><br>
-          <label class="mt-3"><input type="checkbox" name="additional_charges[${additionalChargeIndex}][conditions]" value="Community Service"> Community Service</label><br>
-          <label class="mt-3"><input type="checkbox" name="additional_charges[${additionalChargeIndex}][conditions]" value="Anger Management"> Anger Management</label>
-        </fieldset>
-
-        <label class="mt-3">Notes:</label>
-        <textarea name="additional_charges[${additionalChargeIndex}][notes]" rows="4" cols="50" class="form-control mt-2"></textarea>
-      `;
-      container.appendChild(div);
-      additionalChargeIndex++;
-    }
-  </script>
-    {% endblock %}
+document.getElementById('was_continued').addEventListener('change', function() {
+  document.getElementById('continuation_fields').style.display = this.checked ? 'block' : 'none';
+});
+</script>
