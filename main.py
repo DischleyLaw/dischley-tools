@@ -14,8 +14,9 @@ import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.utils import formataddr
+from requests_oauthlib import OAuth2Session
 
 load_dotenv()
 
@@ -127,6 +128,18 @@ class Charge(db.Model):
     fine_suspended = db.Column(db.String(50))
     license_suspension = db.Column(db.String(100))
     restricted_license = db.Column(db.String(100))
+
+
+# --- Clio Token Model ---
+class ClioToken(db.Model):
+    __tablename__ = 'clio_tokens'
+    id = db.Column(db.Integer, primary_key=True)
+    access_token = db.Column(db.String, nullable=False)
+    refresh_token = db.Column(db.String, nullable=False)
+    expires_at = db.Column(db.DateTime, nullable=False)
+
+    def is_expired(self):
+        return datetime.utcnow() >= self.expires_at
 
 @app.route("/")
 @login_required
@@ -603,5 +616,80 @@ def expungement_form():
 
 
 # Run the Flask app
+
+# --- Clio OAuth Integration ---
+client_id = os.getenv('CLIO_CLIENT_ID')
+client_secret = os.getenv('CLIO_CLIENT_SECRET')
+redirect_uri = os.getenv('CLIO_REDIRECT_URI')
+
+authorization_base_url = 'https://app.clio.com/oauth/authorize'
+token_url = 'https://app.clio.com/oauth/token'
+
+@app.route('/clio/authorize')
+def clio_authorize():
+    clio = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=['read:matters'])
+    authorization_url, state = clio.authorization_url(authorization_base_url)
+    return redirect(authorization_url)
+
+@app.route('/callback')
+def clio_callback():
+    clio = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    token = clio.fetch_token(token_url, client_secret=client_secret,
+                             authorization_response=request.url)
+
+    expires_in = token.get('expires_in')
+    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+
+    existing_token = ClioToken.query.first()
+    if existing_token:
+        db.session.delete(existing_token)
+        db.session.commit()
+
+    new_token = ClioToken(
+        access_token=token['access_token'],
+        refresh_token=token['refresh_token'],
+        expires_at=expires_at
+    )
+    db.session.add(new_token)
+    db.session.commit()
+
+    return "Clio Authorization Successful!"
+
+def get_valid_token():
+    token_entry = ClioToken.query.first()
+    if not token_entry:
+        raise Exception("Clio not authorized. Visit /clio/authorize first.")
+
+    if token_entry.is_expired():
+        extra = {'client_id': client_id, 'client_secret': client_secret}
+        clio = OAuth2Session(client_id, token={
+            'refresh_token': token_entry.refresh_token,
+            'token_type': 'Bearer',
+            'access_token': token_entry.access_token,
+            'expires_in': -30
+        })
+        new_token = clio.refresh_token(token_url, **extra)
+
+        expires_in = new_token.get('expires_in')
+        token_entry.access_token = new_token['access_token']
+        token_entry.refresh_token = new_token['refresh_token']
+        token_entry.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+        db.session.commit()
+
+    return token_entry.access_token
+
+@app.route('/clio/matters')
+def get_matters():
+    access_token = get_valid_token()
+    headers = {'Authorization': f'Bearer {access_token}'}
+    response = requests.get('https://app.clio.com/api/v4/matters', headers=headers)
+
+    if response.status_code == 200:
+        matters = response.json()['data']
+        return {"matters": matters}
+    else:
+        return {"error": "Failed to fetch matters"}, response.status_code
+
+
 if __name__ == "__main__":
     app.run(debug=True)
