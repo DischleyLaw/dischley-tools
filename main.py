@@ -680,7 +680,11 @@ def get_valid_token():
 
 @app.route('/clio/matters')
 def get_matters():
-    access_token = get_valid_token()
+    try:
+        access_token = get_valid_token()
+    except Exception as e:
+        return {"error": f"Token Error: {str(e)}"}, 500
+
     headers = {'Authorization': f'Bearer {access_token}'}
     response = requests.get('https://app.clio.com/api/v4/matters', headers=headers)
 
@@ -688,7 +692,11 @@ def get_matters():
         matters = response.json()['data']
         return {"matters": matters}
     else:
-        return {"error": "Failed to fetch matters"}, response.status_code
+        return {
+            "error": "Failed to fetch matters",
+            "status_code": response.status_code,
+            "details": response.text
+        }, response.status_code
 
 
 if __name__ == "__main__":
