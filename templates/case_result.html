@@ -2,7 +2,7 @@
 {% if submitted %}
 <div class="alert alert-success" role="alert">Form submitted successfully!</div>
 {% endif %}
-<div class="card mb-4">
+<div class="card">
   <div class="card-body">
     <form method="POST">
       <div class="form-group mb-3">
@@ -13,15 +13,15 @@
       <div id="charges-section">
         <h2 class="h5 mt-4 mb-3">Charge Details</h2>
         <div class="charge-block border rounded p-3 mb-3">
-          <div class="form-group mb-2">
+          <div class="form-group mb-3">
             <label for="original_charge">Original Charge:</label>
             <textarea class="form-control" name="original_charge"></textarea>
           </div>
-          <div class="form-group mb-2">
+          <div class="form-group mb-3">
             <label for="amended_charge">Amended Charge:</label>
             <textarea class="form-control" name="amended_charge"></textarea>
           </div>
-          <div class="form-group mb-2">
+          <div class="form-group mb-3">
             <label for="plea">Plea:</label>
             <select class="form-control" name="plea">
               <option value="">Select Plea</option>
@@ -30,7 +30,7 @@
               <option value="No Contest">No Contest</option>
             </select>
           </div>
-          <div class="form-group mb-2">
+          <div class="form-group mb-3">
             <label for="disposition">Disposition:</label>
             <select class="form-control" name="disposition">
               <option value="">Select Disposition</option>
@@ -47,25 +47,25 @@
       <button type="button" class="btn btn-secondary mb-3" onclick="addCharge()">Add Additional Charge</button>
 
       <h2 class="h5 mt-4 mb-3">Sentencing</h2>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="jail_time_imposed">Jail Time Imposed (days):</label>
         <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed">
       </div>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="jail_time_suspended">Jail Time Suspended (days):</label>
         <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended">
       </div>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="fine_imposed">Fine Imposed ($):</label>
         <input type="number" class="form-control" id="fine_imposed" name="fine_imposed">
       </div>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="fine_suspended">Fine Suspended ($):</label>
         <input type="number" class="form-control" id="fine_suspended" name="fine_suspended">
       </div>
 
       <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="probation_type">Probation Type:</label>
         <select class="form-control" name="probation_type" id="probation_type">
           <option value="">None</option>
@@ -73,11 +73,11 @@
           <option value="Unsupervised">Unsupervised</option>
         </select>
       </div>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="probation_term">Probation Term:</label>
         <input type="text" class="form-control" id="probation_term" name="probation_term">
       </div>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <div class="form-check form-check-inline">
           <input class="form-check-input" type="checkbox" name="vasap" id="vasap">
           <label class="form-check-label" for="vasap">VASAP</label>
@@ -101,18 +101,18 @@
       </div>
 
       <h2 class="h5 mt-4 mb-3">Case Status</h2>
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <div class="form-check">
           <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued">
           <label class="form-check-label" for="was_continued">Case Continued?</label>
         </div>
       </div>
-      <div id="continuation_fields" class="mb-2" style="display:none;">
+      <div id="continuation_fields" class="mb-3" style="display:none;">
         <label for="continuation_date">Continuation Date & Time:</label>
         <input type="datetime-local" class="form-control" id="continuation_date" name="continuation_date">
       </div>
 
-      <div class="form-group mb-2">
+      <div class="form-group mb-3">
         <label for="date_disposition">Disposition Date:</label>
         <input type="date" class="form-control" id="date_disposition" name="date_disposition">
       </div>
