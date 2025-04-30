@@ -34,6 +34,11 @@
     padding: 0.75rem 2rem;
     color: #fff;
   }
+  @media (max-width: 600px) {
+    .intake-card {
+      padding: 1.25rem 1rem;
+    }
+  }
 </style>
 <div class="intake-card">
 <h2 class="mb-4 text-center">Case Result Submission</h2>
@@ -78,67 +83,69 @@
         </select>
         <label for="disposition">Disposition:</label>
       </div>
-      <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
+
+      <h4 class="h6 mt-4">Sentencing</h4>
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Jail Time Imposed (days)">
+        <label for="jail_time_imposed">Jail Time Imposed (days):</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Jail Time Suspended (days)">
+        <label for="jail_time_suspended">Jail Time Suspended (days):</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed ($)">
+        <label for="fine_imposed">Fine Imposed ($):</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" name="fine_suspended[]" placeholder="Fine Suspended ($)">
+        <label for="fine_suspended">Fine Suspended ($):</label>
+      </div>
+
+      <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
+      <div class="mb-3 form-floating">
+        <select class="form-control" name="probation_type[]" id="probation_type" placeholder="Probation Type">
+          <option value="" selected>None</option>
+          <option value="Supervised">Supervised</option>
+          <option value="Unsupervised">Unsupervised</option>
+        </select>
+        <label for="probation_type">Probation Type:</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
+        <label for="probation_term">Probation Term:</label>
+      </div>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" placeholder="VASAP">
+          <label class="form-check-label" for="vasap">VASAP</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="vip[]" id="vip" placeholder="VIP">
+          <label class="form-check-label" for="vip">VIP</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" placeholder="Community Service">
+          <label class="form-check-label" for="community_service">Community Service</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" placeholder="Anger Management">
+          <label class="form-check-label" for="anger_management">Anger Management</label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input class="form-check-input" type="checkbox" name="absence_waiver[]" id="absence_waiver" placeholder="Absence Waiver">
+          <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+        </div>
+      </div>
+
       <div class="text-end">
         <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.charge-block').remove(); updateChargeLabels();">Remove</button>
       </div>
     </div>
   </div>
 
-
-
-  <h2 class="h5 mt-4 mb-3">Sentencing</h2>
-  <div class="mb-3 form-floating">
-    <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed" placeholder="Jail Time Imposed (days)">
-    <label for="jail_time_imposed">Jail Time Imposed (days):</label>
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended" placeholder="Jail Time Suspended (days)">
-    <label for="jail_time_suspended">Jail Time Suspended (days):</label>
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="number" class="form-control" id="fine_imposed" name="fine_imposed" placeholder="Fine Imposed ($)">
-    <label for="fine_imposed">Fine Imposed ($):</label>
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="number" class="form-control" id="fine_suspended" name="fine_suspended" placeholder="Fine Suspended ($)">
-    <label for="fine_suspended">Fine Suspended ($):</label>
-  </div>
-
-  <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
-  <div class="mb-3 form-floating">
-    <select class="form-control" name="probation_type" id="probation_type" placeholder="Probation Type">
-      <option value="" selected>None</option>
-      <option value="Supervised">Supervised</option>
-      <option value="Unsupervised">Unsupervised</option>
-    </select>
-    <label for="probation_type">Probation Type:</label>
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="probation_term" name="probation_term" placeholder="Probation Term">
-    <label for="probation_term">Probation Term:</label>
-  </div>
-  <div class="mb-3">
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" name="vasap" id="vasap" placeholder="VASAP">
-      <label class="form-check-label" for="vasap">VASAP</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" name="vip" id="vip" placeholder="VIP">
-      <label class="form-check-label" for="vip">VIP</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" name="community_service" id="community_service" placeholder="Community Service">
-      <label class="form-check-label" for="community_service">Community Service</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" name="anger_management" id="anger_management" placeholder="Anger Management">
-      <label class="form-check-label" for="anger_management">Anger Management</label>
-    </div>
-    <div class="form-check form-check-inline">
-      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" placeholder="Absence Waiver">
-      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
-    </div>
+  <div class="text-center mt-3">
+    <button type="button" class="btn btn-primary" onclick="addCharge()">Add Additional Charge</button>
   </div>
 
   <h2 class="h5 mt-4 mb-3">Case Status</h2>
@@ -180,9 +187,13 @@ function addCharge() {
   const blocks = document.querySelectorAll('.charge-block');
   const clone = blocks[0].cloneNode(true);
 
-  // Clear and rename input fields
-  clone.querySelectorAll('textarea, select').forEach(el => {
-    el.value = "";
+  // Clear inputs in cloned block
+  clone.querySelectorAll('textarea, input, select').forEach(el => {
+    if (el.type === 'checkbox') {
+      el.checked = false;
+    } else {
+      el.value = "";
+    }
   });
 
   const heading = clone.querySelector('h3');
