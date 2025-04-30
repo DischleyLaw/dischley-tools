@@ -2,11 +2,36 @@
 {% block title %}Lead Links{% endblock %}
 {% block content %}
 <div class="container mt-4">
-  <h2>Lead Links</h2>
-  <ul>
-    {% for link in links %}
-      <li><strong>{{ link.name }}</strong>: <a href="{{ link.url }}" target="_blank">{{ link.url }}</a></li>
-    {% endfor %}
-  </ul>
+  <div class="card shadow-sm">
+    <div class="card-body">
+      <h2 class="card-title text-center mb-4">Update Leads</h2>
+      <div class="mb-3">
+        <input type="text" id="leadSearch" class="form-control" placeholder="Search leads..." onkeyup="filterLeads()">
+      </div>
+      <script>
+        function filterLeads() {
+          const input = document.getElementById("leadSearch");
+          const filter = input.value.toLowerCase();
+          const items = document.querySelectorAll(".list-group-item");
+          items.forEach(item => {
+            const name = item.querySelector("strong").textContent.toLowerCase();
+            item.style.display = name.includes(filter) ? "" : "none";
+          });
+        }
+      </script>
+      {% if links %}
+        <ul class="list-group">
+          {% for link in links %}
+            <li class="list-group-item d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center">
+              <strong class="mb-2 mb-md-0">{{ link.name }}</strong>
+              <a href="{{ link.url }}" target="_blank" class="btn btn-sm btn-outline-primary">Update {{ link.name }}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-center text-muted">No leads found.</p>
+      {% endif %}
+    </div>
+  </div>
 </div>
 {% endblock %}

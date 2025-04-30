@@ -42,7 +42,7 @@
   <div class="row justify-content-center">
     <div class="col-6 col-md-3 text-center mb-4">
       <div class="dashboard-tile">
-        <a href="/intake" style="text-decoration: none;">
+        <a href="/intake" class="text-decoration-none" role="button" aria-label="Client Intake Form">
           <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" class="dashboard-icon">
           <div class="dashboard-label">Client Intake</div>
         </a>
@@ -50,7 +50,7 @@
     </div>
     <div class="col-6 col-md-3 text-center mb-4">
       <div class="dashboard-tile">
-        <a href="/case_result" style="text-decoration: none;">
+        <a href="/case_result" class="text-decoration-none" role="button" aria-label="Case Result Submission">
           <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" class="dashboard-icon">
           <div class="dashboard-label">Case Result</div>
         </a>
@@ -58,7 +58,7 @@
     </div>
   </div>
   <div class="text-center mt-4">
-    <a href="/lead-links" class="btn btn-primary btn-lg">View Lead Links</a>
+    <a href="/lead-links" class="btn btn-primary btn-lg" role="button" aria-label="Update Lead">Update Lead</a>
   </div>
 </div>
 {% endblock %}
