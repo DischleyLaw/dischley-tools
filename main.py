@@ -182,9 +182,11 @@ class Charge(db.Model):
 def lead_links():
     links = []
     for lead in Lead.query.order_by(Lead.created_at.desc()).all():
-        token = serializer.dumps(str(lead.id), salt="view-lead")
-        view_url = url_for("update_lead_token", token=token, _external=True)
-        links.append({"name": lead.name, "url": view_url})
+        links.append({
+            "name": lead.name,
+            "id": lead.id,
+            "manage_url": url_for("view_lead", lead_id=lead.id)
+        })
     return render_template("lead-links.html", links=links)
 
 
@@ -320,7 +322,7 @@ def intake():
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
         # Compose HTML email with all submitted fields if present, using required mapping
-        email_html = "<h2>New Lead Information</h2>"
+        email_html = "<h2>New Lead:</h2>"
         email_html += "<ul style='list-style-type:none;padding-left:0;'>"
         field_items = [
             ("Type of Case", case_type),
@@ -364,7 +366,6 @@ def intake():
                 email_html += f"<li><strong>{label}:</strong> {value}</li>"
         email_html += "</ul>"
         email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
-        email_html += f"<p><a href='{update_url}'>Update Lead</a></p>"
         msg.html = email_html
         mail.send(msg)
 
