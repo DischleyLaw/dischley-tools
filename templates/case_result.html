@@ -39,77 +39,77 @@
 <div>
   <div class="card-body">
     <form method="POST">
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="Defendant Name" required>
         <label for="defendant_name">Defendant Name:</label>
-        <input type="text" class="form-control" id="defendant_name" name="defendant_name" required>
       </div>
 
       <div id="charges-section">
         <h2 class="h5 mt-4 mb-3">Charge Details</h2>
         <div class="charge-block border rounded p-3 mb-3">
-          <div class="form-group mb-3">
+          <div class="mb-3 form-floating">
+            <textarea class="form-control" name="original_charge" placeholder="Original Charge" style="height: 80px;"></textarea>
             <label for="original_charge">Original Charge:</label>
-            <textarea class="form-control" name="original_charge"></textarea>
           </div>
-          <div class="form-group mb-3">
+          <div class="mb-3 form-floating">
+            <textarea class="form-control" name="amended_charge" placeholder="Amended Charge" style="height: 80px;"></textarea>
             <label for="amended_charge">Amended Charge:</label>
-            <textarea class="form-control" name="amended_charge"></textarea>
           </div>
-          <div class="form-group mb-3">
-            <label for="plea">Plea:</label>
-            <select class="form-control" name="plea">
-              <option value="">Select Plea</option>
+          <div class="mb-3 form-floating">
+            <select class="form-control" name="plea" placeholder="Plea">
+              <option value="" selected disabled>Select Plea</option>
               <option value="Guilty">Guilty</option>
               <option value="Not Guilty">Not Guilty</option>
               <option value="No Contest">No Contest</option>
             </select>
+            <label for="plea">Plea:</label>
           </div>
-          <div class="form-group mb-3">
-            <label for="disposition">Disposition:</label>
-            <select class="form-control" name="disposition">
-              <option value="">Select Disposition</option>
+          <div class="mb-3 form-floating">
+            <select class="form-control" name="disposition" placeholder="Disposition">
+              <option value="" selected disabled>Select Disposition</option>
               <option value="Guilty">Guilty</option>
               <option value="Not Guilty">Not Guilty</option>
               <option value="Dismissed">Dismissed</option>
               <option value="Nolle Prosequi">Nolle Prosequi</option>
               <option value="Continued">Continued</option>
             </select>
+            <label for="disposition">Disposition:</label>
           </div>
         </div>
       </div>
 
-      <button type="button" class="btn btn-secondary mb-3" onclick="addCharge()">Add Additional Charge</button>
+      <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
 
       <h2 class="h5 mt-4 mb-3">Sentencing</h2>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed" placeholder="Jail Time Imposed (days)">
         <label for="jail_time_imposed">Jail Time Imposed (days):</label>
-        <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed">
       </div>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended" placeholder="Jail Time Suspended (days)">
         <label for="jail_time_suspended">Jail Time Suspended (days):</label>
-        <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended">
       </div>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" id="fine_imposed" name="fine_imposed" placeholder="Fine Imposed ($)">
         <label for="fine_imposed">Fine Imposed ($):</label>
-        <input type="number" class="form-control" id="fine_imposed" name="fine_imposed">
       </div>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="number" class="form-control" id="fine_suspended" name="fine_suspended" placeholder="Fine Suspended ($)">
         <label for="fine_suspended">Fine Suspended ($):</label>
-        <input type="number" class="form-control" id="fine_suspended" name="fine_suspended">
       </div>
 
       <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
-      <div class="form-group mb-3">
-        <label for="probation_type">Probation Type:</label>
-        <select class="form-control" name="probation_type" id="probation_type">
-          <option value="">None</option>
+      <div class="mb-3 form-floating">
+        <select class="form-control" name="probation_type" id="probation_type" placeholder="Probation Type">
+          <option value="" selected>None</option>
           <option value="Supervised">Supervised</option>
           <option value="Unsupervised">Unsupervised</option>
         </select>
+        <label for="probation_type">Probation Type:</label>
       </div>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="text" class="form-control" id="probation_term" name="probation_term" placeholder="Probation Term">
         <label for="probation_term">Probation Term:</label>
-        <input type="text" class="form-control" id="probation_term" name="probation_term">
       </div>
       <div class="form-group mb-3">
         <div class="form-check form-check-inline">
@@ -146,17 +146,18 @@
         <input type="datetime-local" class="form-control" id="continuation_date" name="continuation_date">
       </div>
 
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
+        <input type="date" class="form-control" id="date_disposition" name="date_disposition" placeholder="Disposition Date">
         <label for="date_disposition">Disposition Date:</label>
-        <input type="date" class="form-control" id="date_disposition" name="date_disposition">
       </div>
 
       <h2 class="h5 mt-4 mb-3">Notes</h2>
-      <div class="form-group mb-3">
-        <textarea class="form-control" name="notes"></textarea>
+      <div class="mb-3 form-floating">
+        <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
+        <label for="notes">Notes</label>
       </div>
 
-      <button type="submit" class="btn btn-primary w-100 w-md-auto">Submit Case Result</button>
+      <button type="submit" class="btn btn-primary w-100 mt-3">Submit Case Result</button>
     </form>
   </div>
 </div>
