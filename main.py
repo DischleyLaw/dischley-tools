@@ -20,9 +20,9 @@ def lead_links():
     links = []
     for lead in Lead.query.order_by(Lead.created_at.desc()).all():
         token = serializer.dumps(str(lead.id), salt="view-lead")
-        view_url = url_for("view_lead_token", token=token, _external=True)
+        view_url = url_for("update_lead_token", token=token, _external=True)
         links.append({"name": lead.name, "url": view_url})
-    return render_template("lead_links.html", links=links)
+    return render_template("lead-links.html", links=links)
 import requests
 import os
 from dotenv import load_dotenv
