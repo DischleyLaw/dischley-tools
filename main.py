@@ -240,7 +240,7 @@ def intake():
         db.session.add(new_lead)
         db.session.commit()
 
-        lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
+        lead_url = url_for("admin_edit_lead", lead_id=new_lead.id, _external=True)
 
         # Format court_date if available
         formatted_date = ""
