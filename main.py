@@ -14,15 +14,6 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated_function
 
-@app.route("/lead-links")
-@login_required
-def lead_links():
-    links = []
-    for lead in Lead.query.order_by(Lead.created_at.desc()).all():
-        token = serializer.dumps(str(lead.id), salt="view-lead")
-        view_url = url_for("update_lead_token", token=token, _external=True)
-        links.append({"name": lead.name, "url": view_url})
-    return render_template("lead-links.html", links=links)
 import requests
 import os
 from dotenv import load_dotenv
@@ -183,6 +174,18 @@ class Charge(db.Model):
     fine_suspended = db.Column(db.String(50))
     license_suspension = db.Column(db.String(100))
     restricted_license = db.Column(db.String(100))
+
+
+# --- Lead Links Route ---
+@app.route("/lead-links")
+@login_required
+def lead_links():
+    links = []
+    for lead in Lead.query.order_by(Lead.created_at.desc()).all():
+        token = serializer.dumps(str(lead.id), salt="view-lead")
+        view_url = url_for("update_lead_token", token=token, _external=True)
+        links.append({"name": lead.name, "url": view_url})
+    return render_template("lead-links.html", links=links)
 
 
 # --- Clio Token Model ---
