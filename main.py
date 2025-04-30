@@ -416,7 +416,7 @@ def view_lead_token(token):
     except Exception:
         flash("This link has expired or is invalid.", "danger")
         return redirect(url_for("login"))
-@app.route("/update_lead_token/<token>", methods=["POST"])
+@app.route("/update_lead_token/<token>", methods=["GET", "POST"])
 def update_lead_token(token):
     try:
         lead_id = serializer.loads(token, salt="view-lead", max_age=86400)
