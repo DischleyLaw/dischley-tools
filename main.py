@@ -514,10 +514,10 @@ def case_result():
     submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name')
-        original_charges = request.form.getlist('original_charge')
-        amended_charges = request.form.getlist('amended_charge')
-        pleas = request.form.getlist('plea')
-        dispositions = request.form.getlist('disposition')
+        original_charges = request.form.getlist('original_charge[]')
+        amended_charges = request.form.getlist('amended_charge[]')
+        pleas = request.form.getlist('plea[]')
+        dispositions = request.form.getlist('disposition[]')
 
         jail_time_imposed = request.form.getlist('jail_time_imposed[]')
         jail_time_suspended = request.form.getlist('jail_time_suspended[]')
@@ -541,7 +541,14 @@ def case_result():
         subject = f"Case Result - {defendant_name}"
         email_html = "<h2>Case Result</h2>"
         email_html += f"<p><strong>Defendant:</strong> {defendant_name}</p>"
-        num_charges = max(len(original_charges), len(amended_charges), len(pleas), len(dispositions))
+        all_charge_fields = [
+            original_charges, amended_charges, pleas, dispositions,
+            jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
+            license_suspension, restricted_license, asap_ordered,
+            probation_type, probation_term, vasap, vip,
+            community_service, anger_management, absence_waiver
+        ]
+        num_charges = max(len(field) for field in all_charge_fields)
         if num_charges > 0:
             email_html += "<ul>"
             for i in range(num_charges):
