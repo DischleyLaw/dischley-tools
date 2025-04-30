@@ -1,3 +1,12 @@
+@app.route("/lead-links")
+@login_required
+def lead_links():
+    links = []
+    for lead in Lead.query.order_by(Lead.created_at.desc()).all():
+        token = serializer.dumps(str(lead.id), salt="view-lead")
+        view_url = url_for("view_lead_token", token=token, _external=True)
+        links.append({"name": lead.name, "url": view_url})
+    return render_template("lead_links.html", links=links)
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mail import Mail, Message
 from functools import wraps

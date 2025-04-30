@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Lead Links{% endblock %}
+{% block content %}
+<div class="container mt-4">
+  <h2>Lead Links</h2>
+  <ul>
+    {% for link in links %}
+      <li><strong>{{ link.name }}</strong>: <a href="{{ link.url }}" target="_blank">{{ link.url }}</a></li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}
