@@ -264,10 +264,9 @@ def intake():
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
-        # Compose HTML email with all submitted fields if present
+        # Compose HTML email with all submitted fields if present, using required mapping
         email_html = "<h2>New Lead Information</h2>"
         email_html += "<ul style='list-style-type:none;padding-left:0;'>"
-        # Field mapping: (label, value)
         field_items = [
             ("Type of Case", case_type),
             ("First Name", first_name),
@@ -285,6 +284,7 @@ def intake():
             ("Attorney", data.get("attorney")),
             ("Lead Source", lead_source if lead_source and lead_source != "Other" else None),
             ("Custom Source", custom_source if custom_source else None),
+            # Required mapping for notification:
             ("Send Retainer", "✅" if new_lead.send_retainer else None),
             ("Retainer Amount", new_lead.retainer_amount),
             ("LVM", "✅" if new_lead.lvm else None),
@@ -373,48 +373,47 @@ def update_lead(lead_id):
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
     email_html = "<h2>Lead Updated</h2>"
     email_html += "<ul style='list-style-type:none;padding-left:0;'>"
-    if lead.case_type:
-        email_html += f"<li><strong>Type of Case:</strong> {lead.case_type}</li>"
-    if lead.name:
-        email_html += f"<li><strong>Name:</strong> {lead.name}</li>"
-    if lead.phone:
-        email_html += f"<li><strong>Phone:</strong> {lead.phone}</li>"
-    if lead.email:
-        email_html += f"<li><strong>Email:</strong> {lead.email}</li>"
-    if lead.charges:
-        email_html += f"<li><strong>Charges:</strong> {lead.charges}</li>"
-    if lead.court:
-        email_html += f"<li><strong>Court:</strong> {lead.court}</li>"
+    # Formatting for court date and time
+    formatted_court_date = None
     if lead.court_date:
         try:
             formatted_court_date = datetime.strptime(lead.court_date, "%Y-%m-%d").strftime("%B %d, %Y")
         except ValueError:
             formatted_court_date = lead.court_date
-        email_html += f"<li><strong>Court Date:</strong> {formatted_court_date}</li>"
+    formatted_time = None
     if lead.court_time:
         try:
             formatted_time = datetime.strptime(lead.court_time, "%H:%M").strftime("%I:%M %p")
         except ValueError:
             formatted_time = lead.court_time
-        email_html += f"<li><strong>Court Time:</strong> {formatted_time}</li>"
-    if lead.facts:
-        email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.facts}</li>"
-    if lead.notes:
-        email_html += f"<li><strong>Notes:</strong> {lead.notes}</li>"
-    if lead.homework:
-        email_html += f"<li><strong>Homework:</strong> {lead.homework}</li>"
-    if lead.staff_member:
-        email_html += f"<li><strong>Staff Member:</strong> {lead.staff_member}</li>"
-    if request.form.get("attorney"):
-        email_html += f"<li><strong>Attorney:</strong> {request.form.get('attorney')}</li>"
-    if lead.lead_source or lead.custom_source:
-        source_display = lead.lead_source if lead.lead_source != 'Other' else lead.custom_source
-        email_html += f"<li><strong>Lead Source:</strong> {source_display}</li>"
-    email_html += f"<li><strong>Send Retainer:</strong> {'✅' if lead.send_retainer else '❌'} {f'(${lead.retainer_amount})' if lead.send_retainer and lead.retainer_amount else ''}</li>"
-    email_html += f"<li><strong>LVM:</strong> {'✅' if lead.lvm else '❌'}</li>"
-    email_html += f"<li><strong>Not a PC:</strong> {'✅' if lead.not_pc else '❌'}</li>"
-    email_html += f"<li><strong>Quote:</strong> ${lead.quote or 'N/A'}</li>"
-    email_html += f"<li><strong>Absence Waiver:</strong> {'✅' if lead.absence_waiver else '❌'}</li>"
+    # Compose using the required mapping
+    field_items = [
+        ("Type of Case", lead.case_type),
+        ("Name", lead.name),
+        ("Phone", lead.phone),
+        ("Email", lead.email),
+        ("Charges", lead.charges),
+        ("Court", lead.court),
+        ("Court Date", formatted_court_date),
+        ("Court Time", formatted_time),
+        ("Brief Description of the Facts", lead.facts),
+        ("Notes", lead.notes),
+        ("Homework", lead.homework),
+        ("Staff Member", lead.staff_member),
+        ("Attorney", request.form.get("attorney")),
+        ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
+        ("Custom Source", lead.custom_source if lead.custom_source else None),
+        # Notification fields:
+        ("Send Retainer", "✅" if lead.send_retainer else None),
+        ("Retainer Amount", lead.retainer_amount),
+        ("LVM", "✅" if lead.lvm else None),
+        ("Not a PC", "✅" if lead.not_pc else None),
+        ("Quote", lead.quote),
+        ("Absence Waiver", "✅" if getattr(lead, 'absence_waiver', False) else None),
+    ]
+    for label, value in field_items:
+        if value:
+            email_html += f"<li><strong>{label}:</strong> {value}</li>"
     email_html += "</ul>"
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html

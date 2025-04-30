@@ -35,6 +35,46 @@
       <label for="homework" class="form-label">Homework</label>
       <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
     </div>
+    <div class="mb-3">
+      <label for="court_date" class="form-label">Court Date</label>
+      <input type="date" name="court_date" class="form-control" value="{{ lead.court_date }}">
+    </div>
+    <div class="mb-3">
+      <label for="court_time" class="form-label">Court Time</label>
+      <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
+    </div>
+    <div class="mb-3">
+      <label for="staff_member" class="form-label">Staff Member</label>
+      <input type="text" name="staff_member" class="form-control" value="{{ lead.staff_member }}">
+    </div>
+    <div class="mb-3">
+      <label for="case_type" class="form-label">Case Type</label>
+      <input type="text" name="case_type" class="form-control" value="{{ lead.case_type }}">
+    </div>
+    <div class="mb-3">
+      <label for="lead_source" class="form-label">Lead Source</label>
+      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
+      <label class="form-check-label" for="sendRetainer">Send Retainer</label>
+    </div>
+    <div class="mb-3">
+      <label for="retainer_amount" class="form-label">Retainer Amount</label>
+      <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount }}">
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="lvm" class="form-check-input" id="lvm" {% if lead.lvm %}checked{% endif %}>
+      <label class="form-check-label" for="lvm">Left Voicemail</label>
+    </div>
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="not_pc" class="form-check-input" id="notPC" {% if lead.not_pc %}checked{% endif %}>
+      <label class="form-check-label" for="notPC">Not a Potential Client</label>
+    </div>
+    <div class="mb-3">
+      <label for="quote" class="form-label">Quoted Amount</label>
+      <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
+    </div>
     <button type="submit" class="btn btn-primary">Update Lead</button>
   </form>
 </div>
