@@ -112,6 +112,22 @@
         </a>
       </div>
     </div>
+    <div class="col-6 col-md-3 text-center mb-4">
+      <div class="dashboard-tile">
+        <a href="/lead_list" style="text-decoration: none;">
+          <img src="{{ url_for('static', filename='img/view_leads.png') }}" alt="View Leads" class="dashboard-icon">
+          <div class="dashboard-label">View Leads</div>
+        </a>
+      </div>
+    </div>
   </div>
 </div>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.querySelector('input[name="q"]');
+    if (searchInput) {
+      searchInput.focus();
+    }
+  });
+</script>
 {% endblock %}
