@@ -252,6 +252,14 @@ def intake():
         else:
             formatted_date = "N/A"
 
+        # Format court_time to 12-hour AM/PM if possible
+        formatted_time = ""
+        if new_lead.court_time:
+            try:
+                formatted_time = datetime.strptime(new_lead.court_time, "%H:%M").strftime("%I:%M %p")
+            except ValueError:
+                formatted_time = new_lead.court_time
+
         msg = Message(f"PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
@@ -269,7 +277,7 @@ def intake():
             ("Charges", new_lead.charges),
             ("Court", new_lead.court),
             ("Court Date", formatted_date if formatted_date != "N/A" else None),
-            ("Court Time", new_lead.court_time),
+            ("Court Time", formatted_time),
             ("Facts", new_lead.facts),
             ("Notes", new_lead.notes),
             ("Homework", new_lead.homework),
@@ -377,9 +385,17 @@ def update_lead(lead_id):
     if lead.court:
         email_html += f"<li><strong>Court:</strong> {lead.court}</li>"
     if lead.court_date:
-        email_html += f"<li><strong>Court Date:</strong> {lead.court_date}</li>"
+        try:
+            formatted_court_date = datetime.strptime(lead.court_date, "%Y-%m-%d").strftime("%B %d, %Y")
+        except ValueError:
+            formatted_court_date = lead.court_date
+        email_html += f"<li><strong>Court Date:</strong> {formatted_court_date}</li>"
     if lead.court_time:
-        email_html += f"<li><strong>Court Time:</strong> {lead.court_time}</li>"
+        try:
+            formatted_time = datetime.strptime(lead.court_time, "%H:%M").strftime("%I:%M %p")
+        except ValueError:
+            formatted_time = lead.court_time
+        email_html += f"<li><strong>Court Time:</strong> {formatted_time}</li>"
     if lead.facts:
         email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.facts}</li>"
     if lead.notes:
@@ -583,11 +599,19 @@ def case_result():
         summary_fields = []
         if was_continued:
             if continuation_date:
-                summary_fields.append(f"<li><strong>Case Continued To:</strong> {continuation_date}</li>")
+                try:
+                    formatted_continuation_date = datetime.strptime(continuation_date, "%Y-%m-%d").strftime("%B %d, %Y")
+                except ValueError:
+                    formatted_continuation_date = continuation_date
+                summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
             else:
                 summary_fields.append("<li><strong>Case Continued</strong></li>")
         if date_disposition:
-            summary_fields.append(f"<li><strong>Disposition Date:</strong> {date_disposition}</li>")
+            try:
+                formatted_disposition_date = datetime.strptime(date_disposition, "%Y-%m-%d").strftime("%B %d, %Y")
+            except ValueError:
+                formatted_disposition_date = date_disposition
+            summary_fields.append(f"<li><strong>Disposition Date:</strong> {formatted_disposition_date}</li>")
         if notes:
             summary_fields.append(f"<li><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
         # Also add any additional charge-level fields if not already included (for summary-level context)

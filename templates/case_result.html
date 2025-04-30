@@ -1,8 +1,4 @@
 {% block content %}
-<header class="py-3 px-4 text-center" style="background-color: #002147; color: #fff;">
-  <h1 class="h4 mb-0">Dischley Law, PLLC</h1>
-  <p class="mb-0">Case Result Submission</p>
-</header>
 <style>
   body {
     background: #f8f9fa;
@@ -38,7 +34,7 @@
   }
 </style>
 <div class="intake-card">
-<h2 class="mb-4">Case Result</h2>
+<h2 class="mb-4 text-center">Case Result Submission</h2>
 {% if submitted %}
 <div class="alert alert-success" role="alert">Form submitted successfully!</div>
 {% endif %}
@@ -117,39 +113,37 @@
         <input type="text" class="form-control" id="probation_term" name="probation_term" placeholder="Probation Term">
         <label for="probation_term">Probation Term:</label>
       </div>
-      <div class="form-group mb-3">
+      <div class="mb-3 form-floating">
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vasap" id="vasap">
+          <input class="form-check-input" type="checkbox" name="vasap" id="vasap" placeholder="VASAP">
           <label class="form-check-label" for="vasap">VASAP</label>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vip" id="vip">
+          <input class="form-check-input" type="checkbox" name="vip" id="vip" placeholder="VIP">
           <label class="form-check-label" for="vip">VIP</label>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="community_service" id="community_service">
+          <input class="form-check-input" type="checkbox" name="community_service" id="community_service" placeholder="Community Service">
           <label class="form-check-label" for="community_service">Community Service</label>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="anger_management" id="anger_management">
+          <input class="form-check-input" type="checkbox" name="anger_management" id="anger_management" placeholder="Anger Management">
           <label class="form-check-label" for="anger_management">Anger Management</label>
         </div>
         <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver">
+          <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" placeholder="Absence Waiver">
           <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
         </div>
       </div>
 
       <h2 class="h5 mt-4 mb-3">Case Status</h2>
-      <div class="form-group mb-3">
-        <div class="form-check">
-          <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued">
-          <label class="form-check-label" for="was_continued">Case Continued?</label>
-        </div>
+      <div class="mb-3 form-floating">
+        <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued" placeholder="Case Continued?">
+        <label class="form-check-label" for="was_continued">Case Continued?</label>
       </div>
-      <div id="continuation_fields" class="mb-3" style="display:none;">
-        <label for="continuation_date">Continuation Date & Time:</label>
-        <input type="datetime-local" class="form-control" id="continuation_date" name="continuation_date">
+      <div id="continuation_fields" class="mb-3 form-floating" style="display:none;">
+        <input type="datetime-local" class="form-control" id="continuation_date" name="continuation_date" placeholder="Continuation Date & Time">
+        <label for="continuation_date">Continuation Date &amp; Time:</label>
       </div>
 
       <div class="mb-3 form-floating">
