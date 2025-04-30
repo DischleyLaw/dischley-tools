@@ -284,13 +284,25 @@ def intake():
             ("Attorney", data.get("attorney")),
             ("Lead Source", lead_source if lead_source and lead_source != "Other" else None),
             ("Custom Source", custom_source if custom_source else None),
-            # Required mapping for notification:
             ("Send Retainer", "✅" if new_lead.send_retainer else None),
             ("Retainer Amount", new_lead.retainer_amount),
             ("LVM", "✅" if new_lead.lvm else None),
             ("Not a PC", "✅" if new_lead.not_pc else None),
             ("Quote", new_lead.quote),
             ("Absence Waiver", "✅" if getattr(new_lead, 'absence_waiver', False) else None),
+            ("DUI - Blood Taken", data.get("dui_blood_taken")),
+            ("DUI - Refusal Charge", data.get("dui_refusal")),
+            ("DUI - Prior Offenses", data.get("dui_prior_offenses")),
+            ("DUI - Interlock Required", data.get("dui_interlock")),
+            ("Protective Order - Petitioner", data.get("po_petitioner")),
+            ("Protective Order - Relationship", data.get("po_relationship")),
+            ("Protective Order - Type of Order", data.get("po_order_type")),
+            ("Expungement - Original Charge", data.get("exp_original_charge")),
+            ("Expungement - Disposition", data.get("exp_disposition")),
+            ("Expungement - Basis", data.get("exp_basis")),
+            ("Civil - Opposing Party", data.get("civil_opposing_party")),
+            ("Civil - Nature of Dispute", data.get("civil_dispute")),
+            ("Civil - Amount in Controversy", data.get("civil_amount")),
         ]
         for label, value in field_items:
             if value:
@@ -403,7 +415,6 @@ def update_lead(lead_id):
         ("Attorney", request.form.get("attorney")),
         ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
         ("Custom Source", lead.custom_source if lead.custom_source else None),
-        # Notification fields:
         ("Send Retainer", "✅" if lead.send_retainer else None),
         ("Retainer Amount", lead.retainer_amount),
         ("LVM", "✅" if lead.lvm else None),

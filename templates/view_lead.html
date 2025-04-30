@@ -67,7 +67,11 @@
       <label for="caseTypeDropdown" class="form-label">Type of Case</label>
     </div>
     <div class="mb-3 form-floating">
-      <input type="text" name="attorney" class="form-control" placeholder="Attorney" value="{{ lead.attorney if lead.attorney }}">
+      <select name="attorney" id="attorney" class="form-select">
+        <option value="">-- Select Attorney --</option>
+        <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+        <option value="David Dischley" {% if lead.attorney == "David Dischley" %}selected{% endif %}>David Dischley</option>
+      </select>
       <label for="attorney" class="form-label">Attorney</label>
     </div>
     <div class="mb-3">
@@ -80,7 +84,7 @@
     </div>
     <div class="mb-3">
       <label for="retainer_amount" class="form-label">Retainer Amount</label>
-      <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount }}">
+      <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount or '' }}">
     </div>
     <div class="mb-3 form-check">
       <input type="checkbox" name="lvm" class="form-check-input" id="lvm" {% if lead.lvm %}checked{% endif %}>

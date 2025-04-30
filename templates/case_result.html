@@ -51,15 +51,15 @@
     <div class="charge-block border rounded p-3 mb-3">
       <h3 class="h6">Charge 1</h3>
       <div class="mb-3 form-floating">
-        <textarea class="form-control" name="original_charge" placeholder="Original Charge" style="height: 80px;"></textarea>
+        <textarea class="form-control" name="original_charge[]" placeholder="Original Charge" style="height: 80px;"></textarea>
         <label for="original_charge">Original Charge:</label>
       </div>
       <div class="mb-3 form-floating">
-        <textarea class="form-control" name="amended_charge" placeholder="Amended Charge" style="height: 80px;"></textarea>
+        <textarea class="form-control" name="amended_charge[]" placeholder="Amended Charge" style="height: 80px;"></textarea>
         <label for="amended_charge">Amended Charge:</label>
       </div>
       <div class="mb-3 form-floating">
-        <select class="form-control" name="plea" placeholder="Plea">
+        <select class="form-control" name="plea[]" placeholder="Plea">
           <option value="" selected disabled>Select Plea</option>
           <option value="Guilty">Guilty</option>
           <option value="Not Guilty">Not Guilty</option>
@@ -68,7 +68,7 @@
         <label for="plea">Plea:</label>
       </div>
       <div class="mb-3 form-floating">
-        <select class="form-control" name="disposition" placeholder="Disposition">
+        <select class="form-control" name="disposition[]" placeholder="Disposition">
           <option value="" selected disabled>Select Disposition</option>
           <option value="Guilty">Guilty</option>
           <option value="Not Guilty">Not Guilty</option>
@@ -78,13 +78,14 @@
         </select>
         <label for="disposition">Disposition:</label>
       </div>
+      <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
       <div class="text-end">
         <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.charge-block').remove(); updateChargeLabels();">Remove</button>
       </div>
     </div>
   </div>
 
-  <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
+
 
   <h2 class="h5 mt-4 mb-3">Sentencing</h2>
   <div class="mb-3 form-floating">
@@ -176,23 +177,21 @@
 <script>
 function addCharge() {
   const section = document.getElementById('charges-section');
-  const clone = document.querySelector('.charge-block').cloneNode(true);
-  // Clear input fields in the cloned block
-  Array.from(clone.querySelectorAll('textarea, select')).forEach(el => el.value = "");
-  section.appendChild(clone);
-
   const blocks = document.querySelectorAll('.charge-block');
-  blocks.forEach((block, index) => {
-    const heading = block.querySelector('h3');
-    if (!heading) {
-      const h3 = document.createElement('h3');
-      h3.className = 'h6';
-      h3.textContent = `Charge ${index + 1}`;
-      block.prepend(h3);
-    } else {
-      heading.textContent = `Charge ${index + 1}`;
-    }
+  const clone = blocks[0].cloneNode(true);
+
+  // Clear and rename input fields
+  clone.querySelectorAll('textarea, select').forEach(el => {
+    el.value = "";
   });
+
+  const heading = clone.querySelector('h3');
+  if (heading) {
+    heading.textContent = `Charge ${blocks.length + 1}`;
+  }
+
+  section.appendChild(clone);
+  updateChargeLabels();
 }
 
 function updateChargeLabels() {
