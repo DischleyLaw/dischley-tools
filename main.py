@@ -593,8 +593,10 @@ def case_result():
                     email_html += "</ul></li>"
                 email_html += "</ul></li>"
             email_html += "</ul>"
-        # Add summary-level fields if present and not already included above
+
+        # Extra fields
         summary_fields = []
+
         if was_continued:
             if continuation_date:
                 try:
@@ -604,56 +606,17 @@ def case_result():
                 summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
             else:
                 summary_fields.append("<li><strong>Case Continued</strong></li>")
+
         if date_disposition:
             try:
                 formatted_disposition_date = datetime.strptime(date_disposition, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 formatted_disposition_date = date_disposition
             summary_fields.append(f"<li><strong>Disposition Date:</strong> {formatted_disposition_date}</li>")
+
         if notes:
             summary_fields.append(f"<li><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
-        # If no charges, add any sentencing/probation fields from index 0 if present
-        if num_charges == 0:
-            if len(jail_time_imposed) > 0 and jail_time_imposed[0]:
-                if len(jail_time_suspended) > 0 and jail_time_suspended[0]:
-                    summary_fields.append(f"<li><strong>Jail:</strong> {jail_time_imposed[0]} days with {jail_time_suspended[0]} days suspended</li>")
-                else:
-                    summary_fields.append(f"<li><strong>Jail:</strong> {jail_time_imposed[0]} days</li>")
-            elif len(jail_time_suspended) > 0 and jail_time_suspended[0]:
-                summary_fields.append(f"<li><strong>Jail Suspended:</strong> {jail_time_suspended[0]} days</li>")
-            if len(fine_imposed) > 0 and fine_imposed[0]:
-                if len(fine_suspended) > 0 and fine_suspended[0]:
-                    summary_fields.append(f"<li><strong>Fine:</strong> ${fine_imposed[0]} with ${fine_suspended[0]} suspended</li>")
-                else:
-                    summary_fields.append(f"<li><strong>Fine:</strong> ${fine_imposed[0]}</li>")
-            elif len(fine_suspended) > 0 and fine_suspended[0]:
-                summary_fields.append(f"<li><strong>Fine Suspended:</strong> ${fine_suspended[0]}</li>")
-            if len(license_suspension) > 0 and license_suspension[0]:
-                summary_fields.append(f"<li><strong>License Suspension:</strong> {license_suspension[0]}</li>")
-            if len(restricted_license) > 0 and restricted_license[0]:
-                summary_fields.append(f"<li><strong>Restricted License:</strong> {restricted_license[0]}</li>")
-            if len(asap_ordered) > 0 and asap_ordered[0]:
-                summary_fields.append(f"<li><strong>ASAP Ordered:</strong> {asap_ordered[0]}</li>")
-            # Conditions of Probation
-            probation_fields = []
-            if len(probation_type) > 0 and probation_type[0]:
-                probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[0]}</li>")
-            if len(probation_term) > 0 and probation_term[0]:
-                probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[0]}</li>")
-            if len(vasap) > 0 and vasap[0]:
-                probation_fields.append(f"<li><strong>VASAP:</strong> Yes</li>")
-            if len(vip) > 0 and vip[0]:
-                probation_fields.append(f"<li><strong>VIP:</strong> Yes</li>")
-            if len(community_service) > 0 and community_service[0]:
-                probation_fields.append(f"<li><strong>Community Service:</strong> Yes</li>")
-            if len(anger_management) > 0 and anger_management[0]:
-                probation_fields.append(f"<li><strong>Anger Management:</strong> Yes</li>")
-            if len(absence_waiver) > 0 and absence_waiver[0]:
-                probation_fields.append(f"<li><strong>Absence Waiver:</strong> Yes</li>")
-            if probation_fields:
-                summary_fields.append("<li><strong>Conditions of Probation:</strong><ul>")
-                summary_fields.extend(probation_fields)
-                summary_fields.append("</ul></li>")
+
         if summary_fields:
             email_html += "<ul>"
             email_html += "".join(summary_fields)
