@@ -44,7 +44,13 @@ migrate = Migrate(app, db)
 @login_required
 def admin_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
-    return render_template("admin_leads.html", leads=leads)
+    # Enhance: add URLs for each lead's detail page
+    leads_with_links = []
+    for lead in leads:
+        lead_dict = lead.__dict__.copy()
+        lead_dict["detail_url"] = url_for("view_lead", lead_id=lead.id)
+        leads_with_links.append(lead_dict)
+    return render_template("admin_leads.html", leads=leads, leads_with_links=leads_with_links)
 
 # --- Admin Edit Lead ---
 @app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
@@ -216,7 +222,7 @@ def intake():
             court_time=data.get("court_time"),
             court=data.get("court"),
             notes=data.get("notes"),
-            homework=data.get("homework"),
+            homework=data.get("facts"),
             send_retainer=False,
             lvm=False,
             not_pc=False,
@@ -247,53 +253,39 @@ def intake():
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
-        email_lines = ["NEW LEAD INFORMATION\n"]
-
-        if case_type:
-            email_lines.append(f"Type of Case: {case_type}\n")
-
-        if first_name:
-            email_lines.append(f"First Name: {first_name}\n")
-
-        if last_name:
-            email_lines.append(f"Last Name: {last_name}\n")
-
-        if new_lead.phone:
-            email_lines.append(f"Phone Number: {new_lead.phone}\n")
-
-        if new_lead.email:
-            email_lines.append(f"Email: {new_lead.email}\n")
-
-        if new_lead.charges:
-            email_lines.append(f"Charges: {new_lead.charges}\n")
-
-        if new_lead.court:
-            email_lines.append(f"Court: {new_lead.court}\n")
-
-        if formatted_date != "N/A":
-            email_lines.append(f"Court Date: {formatted_date}\n")
-
-        if new_lead.court_time:
-            email_lines.append(f"Court Time: {new_lead.court_time}\n")
-
-        if new_lead.homework:
-            email_lines.append(f"Brief Description of the Facts: {new_lead.homework}\n")
-
-        if new_lead.notes:
-            email_lines.append(f"Notes: {new_lead.notes}\n")
-
-        if staff_member:
-            email_lines.append(f"Staff Member: {staff_member}\n")
-        if data.get("attorney"):
-            email_lines.append(f"Attorney: {data.get('attorney')}\n")
-
-        if lead_source or custom_source:
-            source_display = lead_source if lead_source != 'Other' else custom_source
-            email_lines.append(f"Lead Source: {source_display}\n")
-
-        email_lines.append(f"\nManage Lead: {lead_url}")
-
-        msg.body = "\n".join(email_lines)
+        # Compose HTML email with all submitted fields if present
+        email_html = "<h2>New Lead Information</h2>"
+        email_html += "<ul style='list-style-type:none;padding-left:0;'>"
+        # Field mapping: (label, value)
+        field_items = [
+            ("Type of Case", case_type),
+            ("First Name", first_name),
+            ("Last Name", last_name),
+            ("Phone Number", new_lead.phone),
+            ("Email", new_lead.email),
+            ("Charges", new_lead.charges),
+            ("Court", new_lead.court),
+            ("Court Date", formatted_date if formatted_date != "N/A" else None),
+            ("Court Time", new_lead.court_time),
+            ("Facts", data.get("facts")),
+            ("Notes", new_lead.notes),
+            ("Staff Member", staff_member),
+            ("Attorney", data.get("attorney")),
+            ("Lead Source", lead_source if lead_source and lead_source != "Other" else None),
+            ("Custom Source", custom_source if custom_source else None),
+            ("Send Retainer", "✅" if new_lead.send_retainer else None),
+            ("Retainer Amount", new_lead.retainer_amount),
+            ("LVM", "✅" if new_lead.lvm else None),
+            ("Not a PC", "✅" if new_lead.not_pc else None),
+            ("Quote", new_lead.quote),
+            ("Absence Waiver", "✅" if getattr(new_lead, 'absence_waiver', False) else None),
+        ]
+        for label, value in field_items:
+            if value:
+                email_html += f"<li><strong>{label}:</strong> {value}</li>"
+        email_html += "</ul>"
+        email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
+        msg.html = email_html
         mail.send(msg)
 
         # Clio
@@ -355,60 +347,47 @@ def update_lead(lead_id):
 
     db.session.commit()
 
-    # Prepare update email
+    # Prepare update email (HTML)
     msg = Message(f"Lead Updated: {lead.name}",
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    update_lines = ["LEAD UPDATED\n"]
-
+    email_html = "<h2>Lead Updated</h2>"
+    email_html += "<ul style='list-style-type:none;padding-left:0;'>"
     if lead.case_type:
-        update_lines.append(f"Type of Case: {lead.case_type}\n")
-
+        email_html += f"<li><strong>Type of Case:</strong> {lead.case_type}</li>"
     if lead.name:
-        update_lines.append(f"Name: {lead.name}\n")
-
+        email_html += f"<li><strong>Name:</strong> {lead.name}</li>"
     if lead.phone:
-        update_lines.append(f"Phone: {lead.phone}\n")
-
+        email_html += f"<li><strong>Phone:</strong> {lead.phone}</li>"
     if lead.email:
-        update_lines.append(f"Email: {lead.email}\n")
-
+        email_html += f"<li><strong>Email:</strong> {lead.email}</li>"
     if lead.charges:
-        update_lines.append(f"Charges: {lead.charges}\n")
-
+        email_html += f"<li><strong>Charges:</strong> {lead.charges}</li>"
     if lead.court:
-        update_lines.append(f"Court: {lead.court}\n")
-
+        email_html += f"<li><strong>Court:</strong> {lead.court}</li>"
     if lead.court_date:
-        update_lines.append(f"Court Date: {lead.court_date}\n")
-
+        email_html += f"<li><strong>Court Date:</strong> {lead.court_date}</li>"
     if lead.court_time:
-        update_lines.append(f"Court Time: {lead.court_time}\n")
-
+        email_html += f"<li><strong>Court Time:</strong> {lead.court_time}</li>"
     if lead.homework:
-        update_lines.append(f"Brief Description of the Facts: {lead.homework}\n")
-
+        email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.homework}</li>"
     if lead.notes:
-        update_lines.append(f"Notes: {lead.notes}\n")
-
+        email_html += f"<li><strong>Notes:</strong> {lead.notes}</li>"
     if lead.staff_member:
-        update_lines.append(f"Staff Member: {lead.staff_member}\n")
-
+        email_html += f"<li><strong>Staff Member:</strong> {lead.staff_member}</li>"
     if request.form.get("attorney"):
-        update_lines.append(f"Attorney: {request.form.get('attorney')}\n")
-
+        email_html += f"<li><strong>Attorney:</strong> {request.form.get('attorney')}</li>"
     if lead.lead_source or lead.custom_source:
         source_display = lead.lead_source if lead.lead_source != 'Other' else lead.custom_source
-        update_lines.append(f"Lead Source: {source_display}\n")
-
-    update_lines.append(f"Send Retainer: {'✅' if lead.send_retainer else '❌'} {f'(${lead.retainer_amount})' if lead.send_retainer else ''}\n")
-    update_lines.append(f"LVM: {'✅' if lead.lvm else '❌'}\n")
-    update_lines.append(f"Not a PC: {'✅' if lead.not_pc else '❌'}\n")
-    update_lines.append(f"Quote: ${lead.quote or 'N/A'}\n")
-    update_lines.append(f"Absence Waiver: {'✅' if lead.absence_waiver else '❌'}\n")
-    update_lines.append(f"\nView Lead: {url_for('view_lead', lead_id=lead.id, _external=True)}")
-
-    msg.body = "\n".join(update_lines)
+        email_html += f"<li><strong>Lead Source:</strong> {source_display}</li>"
+    email_html += f"<li><strong>Send Retainer:</strong> {'✅' if lead.send_retainer else '❌'} {f'(${lead.retainer_amount})' if lead.send_retainer and lead.retainer_amount else ''}</li>"
+    email_html += f"<li><strong>LVM:</strong> {'✅' if lead.lvm else '❌'}</li>"
+    email_html += f"<li><strong>Not a PC:</strong> {'✅' if lead.not_pc else '❌'}</li>"
+    email_html += f"<li><strong>Quote:</strong> ${lead.quote or 'N/A'}</li>"
+    email_html += f"<li><strong>Absence Waiver:</strong> {'✅' if lead.absence_waiver else '❌'}</li>"
+    email_html += "</ul>"
+    email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>View Lead</a></p>"
+    msg.html = email_html
     mail.send(msg)
 
     # Optional: Send auto-email to client if LVM is checked and client email exists
@@ -491,63 +470,159 @@ def case_result():
         pleas = request.form.getlist('plea')
         dispositions = request.form.getlist('disposition')
 
-        jail_time_imposed = request.form.get('jail_time_imposed')
-        jail_time_suspended = request.form.get('jail_time_suspended')
-        fine_imposed = request.form.get('fine_imposed')
-        fine_suspended = request.form.get('fine_suspended')
+        jail_time_imposed = request.form.get('jail_time_imposed', '').strip()
+        jail_time_suspended = request.form.get('jail_time_suspended', '').strip()
+        fine_imposed = request.form.get('fine_imposed', '').strip()
+        fine_suspended = request.form.get('fine_suspended', '').strip()
 
-        probation_type = request.form.get('probation_type')
-        probation_term = request.form.get('probation_term')
-        vasap = 'Yes' if request.form.get('vasap') else 'No'
-        vip = 'Yes' if request.form.get('vip') else 'No'
-        community_service = 'Yes' if request.form.get('community_service') else 'No'
-        anger_management = 'Yes' if request.form.get('anger_management') else 'No'
-        absence_waiver = 'Yes' if request.form.get('absence_waiver') else 'No'
+        probation_type = request.form.get('probation_type', '').strip()
+        probation_term = request.form.get('probation_term', '').strip()
+        vasap = request.form.get('vasap')
+        vip = request.form.get('vip')
+        community_service = request.form.get('community_service')
+        anger_management = request.form.get('anger_management')
+        absence_waiver = request.form.get('absence_waiver')
 
-        was_continued = request.form.get('was_continued')
-        continuation_date = request.form.get('continuation_date')
-        date_disposition = request.form.get('date_disposition')
-        notes = request.form.get('notes')
+        # Additional fields to be conditionally included
+        license_suspension = request.form.get('license_suspension', '').strip()
+        restricted_license = request.form.get('restricted_license', '').strip()
+        asap_ordered = request.form.get('asap_ordered', '').strip()
+        was_continued = request.form.get('was_continued', '').strip()
+        continuation_date = request.form.get('continuation_date', '').strip()
+        date_disposition = request.form.get('date_disposition', '').strip()
+        notes = request.form.get('notes', '').strip()
 
-        msg_body = f"CASE RESULT\n\nDefendant: {defendant_name}\n\n"
+        # Convert checkboxes to Yes/No if present
+        vasap_val = 'Yes' if vasap else None
+        vip_val = 'Yes' if vip else None
+        community_service_val = 'Yes' if community_service else None
+        anger_management_val = 'Yes' if anger_management else None
+        absence_waiver_val = 'Yes' if absence_waiver else None
 
-        for i in range(len(original_charges)):
-            msg_body += f"Charge {i+1}:\n"
-            if original_charges[i]:
-                msg_body += f"  Original Charge: {original_charges[i]}\n"
-            if amended_charges[i]:
-                msg_body += f"  Amended Charge: {amended_charges[i]}\n"
-            if pleas[i]:
-                msg_body += f"  Plea: {pleas[i]}\n"
-            if dispositions[i]:
-                msg_body += f"  Disposition: {dispositions[i]}\n"
-            msg_body += "\n"
-
-        msg_body += f"Jail: {jail_time_imposed} days with {jail_time_suspended} days suspended\n"
-        msg_body += f"Fine: ${fine_imposed} with ${fine_suspended} suspended\n\n"
-
-        msg_body += f"Conditions of Probation:\n"
-        msg_body += f"  Probation Type: {probation_type}\n"
-        msg_body += f"  Probation Term: {probation_term}\n"
-        msg_body += f"  VASAP: {vasap}\n"
-        msg_body += f"  VIP: {vip}\n"
-        msg_body += f"  Community Service: {community_service}\n"
-        msg_body += f"  Anger Management: {anger_management}\n"
-        msg_body += f"  Absence Waiver: {absence_waiver}\n\n"
-
+        subject = f"Case Result - {defendant_name}"
+        email_html = "<h2>Case Result</h2>"
+        email_html += f"<p><strong>Defendant:</strong> {defendant_name}</p>"
+        num_charges = max(len(original_charges), len(amended_charges), len(pleas), len(dispositions))
+        if num_charges > 0:
+            email_html += "<ul>"
+            for i in range(num_charges):
+                email_html += f"<li><strong>Charge {i+1}:</strong><ul>"
+                if i < len(original_charges) and original_charges[i]:
+                    email_html += f"<li><strong>Original Charge:</strong> {original_charges[i]}</li>"
+                if i < len(amended_charges) and amended_charges[i]:
+                    email_html += f"<li><strong>Amended Charge:</strong> {amended_charges[i]}</li>"
+                if i < len(pleas) and pleas[i]:
+                    email_html += f"<li><strong>Plea:</strong> {pleas[i]}</li>"
+                if i < len(dispositions) and dispositions[i]:
+                    email_html += f"<li><strong>Disposition:</strong> {dispositions[i]}</li>"
+                # Add charge-level fields if not empty
+                if jail_time_imposed:
+                    if jail_time_suspended and jail_time_suspended != "0" and jail_time_suspended != "":
+                        email_html += f"<li><strong>Jail:</strong> {jail_time_imposed} days with {jail_time_suspended} days suspended</li>"
+                    else:
+                        email_html += f"<li><strong>Jail:</strong> {jail_time_imposed} days</li>"
+                elif jail_time_suspended and jail_time_suspended != "0":
+                    email_html += f"<li><strong>Jail Suspended:</strong> {jail_time_suspended} days</li>"
+                if fine_imposed:
+                    if fine_suspended and fine_suspended != "0" and fine_suspended != "":
+                        email_html += f"<li><strong>Fine:</strong> ${fine_imposed} with ${fine_suspended} suspended</li>"
+                    else:
+                        email_html += f"<li><strong>Fine:</strong> ${fine_imposed}</li>"
+                elif fine_suspended and fine_suspended != "0":
+                    email_html += f"<li><strong>Fine Suspended:</strong> ${fine_suspended}</li>"
+                # Add additional charge-level fields if they are not empty
+                if license_suspension:
+                    email_html += f"<li><strong>License Suspension:</strong> {license_suspension}</li>"
+                if restricted_license:
+                    email_html += f"<li><strong>Restricted License:</strong> {restricted_license}</li>"
+                if asap_ordered:
+                    email_html += f"<li><strong>ASAP Ordered:</strong> {asap_ordered}</li>"
+                # Conditions of Probation
+                probation_fields = []
+                if probation_type:
+                    probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type}</li>")
+                if probation_term:
+                    probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term}</li>")
+                if vasap_val:
+                    probation_fields.append(f"<li><strong>VASAP:</strong> {vasap_val}</li>")
+                if vip_val:
+                    probation_fields.append(f"<li><strong>VIP:</strong> {vip_val}</li>")
+                if community_service_val:
+                    probation_fields.append(f"<li><strong>Community Service:</strong> {community_service_val}</li>")
+                if anger_management_val:
+                    probation_fields.append(f"<li><strong>Anger Management:</strong> {anger_management_val}</li>")
+                if absence_waiver_val:
+                    probation_fields.append(f"<li><strong>Absence Waiver:</strong> {absence_waiver_val}</li>")
+                if probation_fields:
+                    email_html += "<li><strong>Conditions of Probation:</strong><ul>"
+                    email_html += "".join(probation_fields)
+                    email_html += "</ul></li>"
+                email_html += "</ul></li>"
+            email_html += "</ul>"
+        # Add summary-level fields if present and not already included above
+        summary_fields = []
         if was_continued:
-            msg_body += f"Case Continued To: {continuation_date}\n"
+            if continuation_date:
+                summary_fields.append(f"<li><strong>Case Continued To:</strong> {continuation_date}</li>")
+            else:
+                summary_fields.append("<li><strong>Case Continued</strong></li>")
         if date_disposition:
-            msg_body += f"Disposition Date: {date_disposition}\n"
+            summary_fields.append(f"<li><strong>Disposition Date:</strong> {date_disposition}</li>")
         if notes:
-            msg_body += f"\nNotes:\n{notes}\n"
-
-        msg = Message(f"Case Result - {defendant_name}", recipients=["attorneys@dischleylaw.com"])
-        msg.body = msg_body
+            summary_fields.append(f"<li><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
+        # Also add any additional charge-level fields if not already included (for summary-level context)
+        # Only add if not already above (if not per-charge or if user didn't fill out per-charge)
+        # For this implementation, we already added them above per charge, so skip here unless required.
+        # But if no charges, add them here:
+        if num_charges == 0:
+            if jail_time_imposed:
+                if jail_time_suspended and jail_time_suspended != "0" and jail_time_suspended != "":
+                    summary_fields.append(f"<li><strong>Jail:</strong> {jail_time_imposed} days with {jail_time_suspended} days suspended</li>")
+                else:
+                    summary_fields.append(f"<li><strong>Jail:</strong> {jail_time_imposed} days</li>")
+            elif jail_time_suspended and jail_time_suspended != "0":
+                summary_fields.append(f"<li><strong>Jail Suspended:</strong> {jail_time_suspended} days</li>")
+            if fine_imposed:
+                if fine_suspended and fine_suspended != "0" and fine_suspended != "":
+                    summary_fields.append(f"<li><strong>Fine:</strong> ${fine_imposed} with ${fine_suspended} suspended</li>")
+                else:
+                    summary_fields.append(f"<li><strong>Fine:</strong> ${fine_imposed}</li>")
+            elif fine_suspended and fine_suspended != "0":
+                summary_fields.append(f"<li><strong>Fine Suspended:</strong> ${fine_suspended}</li>")
+            if license_suspension:
+                summary_fields.append(f"<li><strong>License Suspension:</strong> {license_suspension}</li>")
+            if restricted_license:
+                summary_fields.append(f"<li><strong>Restricted License:</strong> {restricted_license}</li>")
+            if asap_ordered:
+                summary_fields.append(f"<li><strong>ASAP Ordered:</strong> {asap_ordered}</li>")
+            # Conditions of Probation
+            probation_fields = []
+            if probation_type:
+                probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type}</li>")
+            if probation_term:
+                probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term}</li>")
+            if vasap_val:
+                probation_fields.append(f"<li><strong>VASAP:</strong> {vasap_val}</li>")
+            if vip_val:
+                probation_fields.append(f"<li><strong>VIP:</strong> {vip_val}</li>")
+            if community_service_val:
+                probation_fields.append(f"<li><strong>Community Service:</strong> {community_service_val}</li>")
+            if anger_management_val:
+                probation_fields.append(f"<li><strong>Anger Management:</strong> {anger_management_val}</li>")
+            if absence_waiver_val:
+                probation_fields.append(f"<li><strong>Absence Waiver:</strong> {absence_waiver_val}</li>")
+            if probation_fields:
+                summary_fields.append("<li><strong>Conditions of Probation:</strong><ul>")
+                summary_fields.extend(probation_fields)
+                summary_fields.append("</ul></li>")
+        if summary_fields:
+            email_html += "<ul>"
+            email_html += "".join(summary_fields)
+            email_html += "</ul>"
+        msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
+        msg.html = email_html
         mail.send(msg)
-
         return redirect(url_for('update_success'))
-
     return render_template('case_result.html')
 
 @app.route("/case_result_success")
