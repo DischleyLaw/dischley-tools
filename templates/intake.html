@@ -1,69 +1,124 @@
 {% extends "base.html" %}
 {% block title %}Client Intake{% endblock %}
 {% block content %}
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<div class="card">
-  <div class="card-body">
-    <h2 class="mb-4">Client Intake Form</h2>
-    {% if submitted %}
-      <p style="color: green;"><strong>Form submitted successfully!</strong></p>
-    {% endif %}
-    <form method="POST">
+<style>
+  body {
+    background: #f8f9fa;
+  }
+  .intake-card {
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 6px 32px rgba(0,0,0,0.07), 0 1.5px 6px rgba(0,0,0,0.03);
+    max-width: 540px;
+    margin: 3rem auto;
+    padding: 2.5rem 2rem;
+    border: 1px solid #eaeaea;
+  }
+  .intake-card h2 {
+    font-weight: 600;
+    color: #002147;
+    font-size: 2rem;
+    letter-spacing: -1px;
+  }
+  .form-label {
+    color: #212529;
+    font-weight: 500;
+    font-size: 1.08rem;
+    margin-bottom: 0.25rem;
+  }
+  .form-control, .form-select, textarea.form-control {
+    font-size: 1.15rem;
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+    padding: 0.7rem 1rem;
+    background: #f9fafb;
+    min-height: 3rem;
+  }
+  .form-floating > .form-control, .form-floating > .form-select {
+    background: #f9fafb;
+    border-radius: 0.5rem;
+  }
+  .form-floating > label {
+    color: #2a2a2a;
+    font-size: 1rem;
+    opacity: .85;
+  }
+  .btn-primary {
+    background: #002147;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1.15rem;
+    padding: 0.75rem 2rem;
+    transition: background 0.2s;
+  }
+  .btn-primary:hover, .btn-primary:focus {
+    background: #00112a;
+  }
+  textarea.form-control {
+    min-height: 4rem;
+  }
+  .mb-3 {
+    margin-bottom: 1.5rem !important;
+  }
+  @media (max-width: 600px) {
+    .intake-card {
+      padding: 1.25rem 0.5rem;
+    }
+  }
+</style>
+<div class="intake-card">
+  <h2 class="mb-4">Client Intake Form</h2>
+  {% if submitted %}
+    <p style="color: green;"><strong>Form submitted successfully!</strong></p>
+  {% endif %}
+  <form method="POST" autocomplete="off">
+    <div class="mb-3 form-floating">
+      <select name="staff_member" class="form-select" id="staffMemberSelect" placeholder="Staff Member">
+        <option value="">-- Select Staff Member --</option>
+        <option value="Tatum Brownlee">Tatum Brownlee</option>
+        <option value="Nicole Purvis">Nicole Purvis</option>
+        <option value="Patrick O'Brien">Patrick O'Brien</option>
+        <option value="David Dischley">David Dischley</option>
+      </select>
+      <label for="staffMemberSelect" class="form-label">Staff Member</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <select name="case_type" id="caseTypeDropdown" class="form-select" placeholder="Type of Case">
+        <option value="">-- Select Case Type --</option>
+        <option value="Criminal">Criminal</option>
+        <option value="DUI">DUI</option>
+        <option value="Traffic">Traffic</option>
+        <option value="Protective Order">Protective Order</option>
+        <option value="Expungement">Expungement</option>
+        <option value="Probation Violation">Probation Violation</option>
+        <option value="Civil">Civil</option>
+      </select>
+      <label for="caseTypeDropdown" class="form-label">Type of Case</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <input type="text" name="first_name" id="firstNameInput" required class="form-control" placeholder="First Name">
+      <label for="firstNameInput" class="form-label">First Name</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <input type="text" name="last_name" id="lastNameInput" class="form-control" placeholder="Last Name">
+      <label for="lastNameInput" class="form-label">Last Name</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <input type="tel" name="phone" id="phoneInput" class="form-control" placeholder="Phone Number">
+      <label for="phoneInput" class="form-label">Phone Number</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <input type="email" name="email" id="emailInput" class="form-control" placeholder="Email">
+      <label for="emailInput" class="form-label">Email</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <textarea name="charges" id="chargesInput" style="height: 100px;" class="form-control" placeholder="Charges"></textarea>
+      <label for="chargesInput" class="form-label">Charges</label>
+    </div>
 
-      <div class="form-group">
-        <label>Staff Member:</label>
-        <select name="staff_member">
-          <option value="">-- Select Staff Member --</option>
-          <option value="Tatum Brownlee">Tatum Brownlee</option>
-          <option value="Nicole Purvis">Nicole Purvis</option>
-          <option value="Patrick O'Brien">Patrick O'Brien</option>
-          <option value="David Dischley">David Dischley</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>Type of Case:</label>
-        <select name="case_type" id="caseTypeDropdown">
-          <option value="">-- Select Case Type --</option>
-          <option value="Criminal">Criminal</option>
-          <option value="DUI">DUI</option>
-          <option value="Traffic">Traffic</option>
-          <option value="Protective Order">Protective Order</option>
-          <option value="Expungement">Expungement</option>
-          <option value="Probation Violation">Probation Violation</option>
-          <option value="Civil">Civil</option>
-        </select>
-      </div>
-
-      <div class="form-group">
-        <label>First Name:</label>
-        <input type="text" name="first_name" required>
-      </div>
-
-      <div class="form-group">
-        <label>Last Name:</label>
-        <input type="text" name="last_name">
-      </div>
-
-      <div class="form-group">
-        <label>Phone Number:</label>
-        <input type="tel" name="phone">
-      </div>
-
-      <div class="form-group">
-        <label>Email:</label>
-        <input type="email" name="email">
-      </div>
-
-      <div class="form-group">
-        <label>Charges:</label>
-        <textarea name="charges" rows="4" style="width:100%;"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Court:</label>
-        <select name="court">
-          <option value="">-- Select Court --</option>
+    <div class="mb-3 form-floating">
+      <select name="court" class="form-select" id="courtSelect" placeholder="Court">
+        <option value="">-- Select Court --</option>
           <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
           <option value="Alexandria City General District Court">Alexandria City General District Court</option>
           <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
@@ -127,149 +182,238 @@
           <option value="Warren County General District Court">Warren County General District Court</option>
           <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
           <option value="Winchester General District Court">Winchester General District Court</option>
-        </select>
+      </select>
+      <label for="courtSelect" class="form-label">Court</label>
+    </div>
+    <div class="mb-3 row g-2">
+      <div class="col-12 col-md-6 form-floating mb-3 mb-md-0">
+        <input type="date" name="court_date" id="courtDateInput" class="form-control" placeholder="Court Date">
+        <label for="courtDateInput" class="form-label">Court Date</label>
+        <input type="hidden" name="court_date_formatted" id="courtDateFormatted">
       </div>
+      <div class="col-12 col-md-6 form-floating">
+        <input type="time" name="court_time" id="courtTimeInput" class="form-control" placeholder="Court Time">
+        <label for="courtTimeInput" class="form-label">Court Time</label>
+      </div>
+    </div>
+    <div class="mb-3 form-floating">
+      <textarea name="facts" id="factsInput" style="height: 100px;" class="form-control" placeholder="Facts"></textarea>
+      <label for="factsInput" class="form-label">Facts</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <textarea name="notes" id="notesInput" style="height: 100px;" class="form-control" placeholder="Notes"></textarea>
+      <label for="notesInput" class="form-label">Notes</label>
+    </div>
 
-      <div class="form-group">
-        <label>Court Date:</label>
-        <input type="date" name="court_date">
-      </div>
-
-      <div class="form-group">
-        <label>Court Time:</label>
-        <input type="time" name="court_time">
-      </div>
-
-      <div class="form-group">
-        <label>Brief Description of the Facts:</label>
-        <textarea name="facts" rows="4" style="width:100%;"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Notes:</label>
-        <textarea name="notes" rows="4" style="width:100%;"></textarea>
-      </div>
-
-      <div class="form-group">
-        <label>Lead Source:</label>
-        <select name="lead_source" id="leadSourceDropdown" onchange="toggleOtherSourceInput()">
-          <option value="">-- Select Source --</option>
-          <option value="Avvo">Avvo</option>
-          <option value="Facebook">Facebook</option>
-          <option value="Google Ad">Google Ad</option>
-          <option value="Justia">Justia</option>
-          <option value="LinkedIn">LinkedIn</option>
-          <option value="Martindale">Martindale</option>
-          <option value="Previous Client">Previous Client</option>
-          <option value="Referral">Referral</option>
-          <option value="Referred by a Previous Client">Referred by a Previous Client</option>
-          <option value="SuperLawyers">SuperLawyers</option>
-          <option value="Twitter">Twitter</option>
-          <option value="Unknown">Unknown</option>
-          <option value="Website">Website</option>
-          <option value="Yelp">Yelp</option>
-          <option value="Other">Other</option>
-        </select>
-      </div>
-
-      <div id="otherSourceInput" style="display: none;" class="form-group">
-        <label>Other Lead Source:</label>
-        <input type="text" name="lead_source_other">
-      </div>
+    <div class="mb-3 form-floating">
+      <select name="lead_source" id="leadSourceDropdown" onchange="toggleOtherSourceInput()" class="form-select" placeholder="Lead Source">
+        <option value="">-- Select Source --</option>
+        <option value="Avvo">Avvo</option>
+        <option value="Facebook">Facebook</option>
+        <option value="Google Ad">Google Ad</option>
+        <option value="Justia">Justia</option>
+        <option value="LinkedIn">LinkedIn</option>
+        <option value="Martindale">Martindale</option>
+        <option value="Previous Client">Previous Client</option>
+        <option value="Referral">Referral</option>
+        <option value="Referred by a Previous Client">Referred by a Previous Client</option>
+        <option value="SuperLawyers">SuperLawyers</option>
+        <option value="Twitter">Twitter</option>
+        <option value="Unknown">Unknown</option>
+        <option value="Website">Website</option>
+        <option value="Yelp">Yelp</option>
+        <option value="Other">Other</option>
+      </select>
+      <label for="leadSourceDropdown" class="form-label">Lead Source</label>
+    </div>
+    <div id="otherSourceInput" style="display: none;" class="mb-3 form-floating">
+      <input type="text" name="lead_source_other" id="leadSourceOtherInput" class="form-control" placeholder="Other Lead Source">
+      <label for="leadSourceOtherInput" class="form-label">Other Lead Source</label>
+    </div>
 
       <div id="duiFields" style="display: none;">
-        <div class="form-group">
-          <label>Was Blood Taken?</label>
-          <select name="dui_blood_taken">
-            <option value="">-- Select --</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Was Blood Taken?</label>
+            <select name="dui_blood_taken" class="form-control">
+              <option value="">-- Select --</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Refusal Charge?</label>
-          <select name="dui_refusal">
-            <option value="">-- Select --</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Refusal Charge?</label>
+            <select name="dui_refusal" class="form-control">
+              <option value="">-- Select --</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Prior Offenses?</label>
-          <input type="number" name="dui_prior_offenses" min="0">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Prior Offenses?</label>
+            <input type="number" name="dui_prior_offenses" min="0" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Interlock Required?</label>
-          <select name="dui_interlock">
-            <option value="">-- Select --</option>
-            <option value="Yes">Yes</option>
-            <option value="No">No</option>
-          </select>
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Interlock Required?</label>
+            <select name="dui_interlock" class="form-control">
+              <option value="">-- Select --</option>
+              <option value="Yes">Yes</option>
+              <option value="No">No</option>
+            </select>
+          </div>
         </div>
       </div>
-
       <div id="protectiveFields" style="display: none;">
-        <div class="form-group">
-          <label>Petitioner Name:</label>
-          <input type="text" name="po_petitioner">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Petitioner Name:</label>
+            <input type="text" name="po_petitioner" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Relationship:</label>
-          <input type="text" name="po_relationship">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Relationship:</label>
+            <input type="text" name="po_relationship" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Type of Order:</label>
-          <select name="po_order_type">
-            <option value="">-- Select --</option>
-            <option value="Emergency">Emergency</option>
-            <option value="Preliminary">Preliminary</option>
-            <option value="Permanent">Permanent</option>
-          </select>
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Type of Order:</label>
+            <select name="po_order_type" class="form-control">
+              <option value="">-- Select --</option>
+              <option value="Emergency">Emergency</option>
+              <option value="Preliminary">Preliminary</option>
+              <option value="Permanent">Permanent</option>
+            </select>
+          </div>
         </div>
       </div>
-
       <div id="expungementFields" style="display: none;">
-        <div class="form-group">
-          <label>Original Charge:</label>
-          <input type="text" name="exp_original_charge">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Original Charge:</label>
+            <input type="text" name="exp_original_charge" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Disposition:</label>
-          <input type="text" name="exp_disposition">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Disposition:</label>
+            <input type="text" name="exp_disposition" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Basis for Expungement:</label>
-          <input type="text" name="exp_basis">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Basis for Expungement:</label>
+            <input type="text" name="exp_basis" class="form-control">
+          </div>
         </div>
       </div>
-
       <div id="civilFields" style="display: none;">
-        <div class="form-group">
-          <label>Opposing Party:</label>
-          <input type="text" name="civil_opposing_party">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Opposing Party:</label>
+            <input type="text" name="civil_opposing_party" class="form-control">
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Nature of Dispute:</label>
-          <textarea name="civil_dispute" rows="2"></textarea>
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Nature of Dispute:</label>
+            <textarea name="civil_dispute" rows="2" class="form-control"></textarea>
+          </div>
         </div>
-
-        <div class="form-group">
-          <label>Amount in Controversy:</label>
-          <input type="text" name="civil_amount">
+        <div class="mb-3">
+          <div class="form-group">
+            <label>Amount in Controversy:</label>
+            <input type="text" name="civil_amount" class="form-control">
+          </div>
         </div>
       </div>
 
-      <button type="submit">Submit</button>
-    </form>
-  </div>
+    <div id="duiFields" style="display: none;">
+      <div class="mb-3 form-floating">
+        <select name="dui_blood_taken" id="duiBloodTaken" class="form-select" placeholder="Was Blood Taken?">
+          <option value="">-- Select --</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+        <label for="duiBloodTaken" class="form-label">Was Blood Taken?</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <select name="dui_refusal" id="duiRefusal" class="form-select" placeholder="Refusal Charge?">
+          <option value="">-- Select --</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+        <label for="duiRefusal" class="form-label">Refusal Charge?</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="number" name="dui_prior_offenses" id="duiPrior" min="0" class="form-control" placeholder="Prior Offenses?">
+        <label for="duiPrior" class="form-label">Prior Offenses?</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <select name="dui_interlock" id="duiInterlock" class="form-select" placeholder="Interlock Required?">
+          <option value="">-- Select --</option>
+          <option value="Yes">Yes</option>
+          <option value="No">No</option>
+        </select>
+        <label for="duiInterlock" class="form-label">Interlock Required?</label>
+      </div>
+    </div>
+    <div id="protectiveFields" style="display: none;">
+      <div class="mb-3 form-floating">
+        <input type="text" name="po_petitioner" id="poPetitioner" class="form-control" placeholder="Petitioner Name">
+        <label for="poPetitioner" class="form-label">Petitioner Name</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="text" name="po_relationship" id="poRelationship" class="form-control" placeholder="Relationship">
+        <label for="poRelationship" class="form-label">Relationship</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <select name="po_order_type" id="poOrderType" class="form-select" placeholder="Type of Order">
+          <option value="">-- Select --</option>
+          <option value="Emergency">Emergency</option>
+          <option value="Preliminary">Preliminary</option>
+          <option value="Permanent">Permanent</option>
+        </select>
+        <label for="poOrderType" class="form-label">Type of Order</label>
+      </div>
+    </div>
+    <div id="expungementFields" style="display: none;">
+      <div class="mb-3 form-floating">
+        <input type="text" name="exp_original_charge" id="expOriginalCharge" class="form-control" placeholder="Original Charge">
+        <label for="expOriginalCharge" class="form-label">Original Charge</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="text" name="exp_disposition" id="expDisposition" class="form-control" placeholder="Disposition">
+        <label for="expDisposition" class="form-label">Disposition</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="text" name="exp_basis" id="expBasis" class="form-control" placeholder="Basis for Expungement">
+        <label for="expBasis" class="form-label">Basis for Expungement</label>
+      </div>
+    </div>
+    <div id="civilFields" style="display: none;">
+      <div class="mb-3 form-floating">
+        <input type="text" name="civil_opposing_party" id="civilOpposingParty" class="form-control" placeholder="Opposing Party">
+        <label for="civilOpposingParty" class="form-label">Opposing Party</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <textarea name="civil_dispute" id="civilDispute" style="height: 70px;" class="form-control" placeholder="Nature of Dispute"></textarea>
+        <label for="civilDispute" class="form-label">Nature of Dispute</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <input type="text" name="civil_amount" id="civilAmount" class="form-control" placeholder="Amount in Controversy">
+        <label for="civilAmount" class="form-label">Amount in Controversy</label>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 mt-3">Submit</button>
+  </form>
 </div>
 {% endblock %}
 <script>
@@ -306,5 +450,26 @@
     // Ensure Other Lead Source is visible if "Other" is selected on reload
     toggleOtherSourceInput();
     document.getElementById("leadSourceDropdown").addEventListener("change", toggleOtherSourceInput);
+
+    // Format court date as "Month Day, Year" to hidden input
+    const courtDateInput = document.getElementById("courtDateInput");
+    const courtDateFormatted = document.getElementById("courtDateFormatted");
+    function updateFormattedCourtDate() {
+      if (courtDateInput.value) {
+        const dateObj = new Date(courtDateInput.value);
+        if (!isNaN(dateObj)) {
+          const options = { year: "numeric", month: "long", day: "numeric" };
+          courtDateFormatted.value = dateObj.toLocaleDateString("en-US", options);
+        } else {
+          courtDateFormatted.value = "";
+        }
+      } else {
+        courtDateFormatted.value = "";
+      }
+    }
+    courtDateInput.addEventListener("change", updateFormattedCourtDate);
+    updateFormattedCourtDate();
+    // Also update before submit in case of browser autofill
+    courtDateInput.form && courtDateInput.form.addEventListener("submit", updateFormattedCourtDate);
   });
 </script>

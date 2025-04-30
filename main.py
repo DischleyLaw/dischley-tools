@@ -66,7 +66,7 @@ def admin_edit_lead(lead_id):
         lead.court_time = request.form.get("court_time", lead.court_time)
         lead.court = request.form.get("court", lead.court)
         lead.notes = request.form.get("notes", lead.notes)
-        lead.homework = request.form.get("homework", lead.homework)
+        lead.facts = request.form.get("facts", lead.facts)
         lead.lead_source = request.form.get("lead_source", lead.lead_source)
         lead.case_type = request.form.get("case_type", lead.case_type)
         lead.staff_member = request.form.get("staff_member", lead.staff_member)
@@ -84,7 +84,7 @@ class Lead(db.Model):
     court_time = db.Column(db.String(20))
     court = db.Column(db.String(200))
     notes = db.Column(db.Text)
-    homework = db.Column(db.Text)
+    facts = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     send_retainer = db.Column(db.Boolean, default=False)
     retainer_amount = db.Column(db.String(50))
@@ -222,7 +222,7 @@ def intake():
             court_time=data.get("court_time"),
             court=data.get("court"),
             notes=data.get("notes"),
-            homework=data.get("facts"),
+            facts=data.get("facts"),
             send_retainer=False,
             lvm=False,
             not_pc=False,
@@ -249,7 +249,7 @@ def intake():
         else:
             formatted_date = "N/A"
 
-        msg = Message(f"New Lead - PC: {last_name}, {first_name}",
+        msg = Message(f"PC: {last_name}, {first_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
@@ -267,7 +267,7 @@ def intake():
             ("Court", new_lead.court),
             ("Court Date", formatted_date if formatted_date != "N/A" else None),
             ("Court Time", new_lead.court_time),
-            ("Facts", data.get("facts")),
+            ("Facts", new_lead.facts),
             ("Notes", new_lead.notes),
             ("Staff Member", staff_member),
             ("Attorney", data.get("attorney")),
@@ -295,7 +295,7 @@ def intake():
                 "from_last": new_lead.name.split()[-1],
                 "from_email": new_lead.email,
                 "from_phone": new_lead.phone,
-                "from_message": f"Case Type: {case_type}, Charges: {new_lead.charges}, Notes: {new_lead.notes}, Homework: {new_lead.homework}",
+                "from_message": f"Case Type: {case_type}, Charges: {new_lead.charges}, Notes: {new_lead.notes}, Facts: {new_lead.facts}",
                 "referring_url": "http://127.0.0.1:5000/intake",
                 "from_source": custom_source or lead_source
             },
@@ -334,7 +334,7 @@ def update_lead(lead_id):
     lead.court_time = request.form.get("court_time", lead.court_time)
     lead.court = request.form.get("court", lead.court)
     lead.notes = request.form.get("notes", lead.notes)
-    lead.homework = request.form.get("homework", lead.homework)
+    lead.facts = request.form.get("facts", lead.facts)
     lead.send_retainer = 'send_retainer' in request.form
     lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
     lead.lvm = 'lvm' in request.form
@@ -369,8 +369,8 @@ def update_lead(lead_id):
         email_html += f"<li><strong>Court Date:</strong> {lead.court_date}</li>"
     if lead.court_time:
         email_html += f"<li><strong>Court Time:</strong> {lead.court_time}</li>"
-    if lead.homework:
-        email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.homework}</li>"
+    if lead.facts:
+        email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.facts}</li>"
     if lead.notes:
         email_html += f"<li><strong>Notes:</strong> {lead.notes}</li>"
     if lead.staff_member:
@@ -393,6 +393,13 @@ def update_lead(lead_id):
     # Optional: Send auto-email to client if LVM is checked and client email exists
     if lead.lvm and lead.email:
         client_name = lead.name if lead.name else "there"
+        # Extract attorney from form
+        attorney = request.form.get("attorney", "")
+        # Set callback number conditionally
+        if "patrick" in attorney.lower():
+            callback_number = "571-352-1733"
+        else:
+            callback_number = "703-851-7137"
         auto_msg = Message(
             "Thank You for Your Inquiry",
             recipients=[lead.email],
@@ -405,11 +412,11 @@ Thank you for contacting Dischley Law, PLLC regarding your legal matter. We appr
 
 We attempted to reach you by phone but were unable to connect. At your convenience, please feel free to return our call so we can discuss your case in more detail and answer any questions you may have.
 
-You can reach us at (703) 635-2424. We look forward to speaking with you.
+You can reach us at ({callback_number}). We look forward to speaking with you.
 
 Best regards,
 Dischley Law, PLLC
-(703) 635-2424
+({callback_number})
 attorneys@dischleylaw.com
 www.dischleylaw.com
 """
