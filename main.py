@@ -107,16 +107,27 @@ class Lead(db.Model):
     staff_member = db.Column(db.String(100))
     absence_waiver = db.Column(db.Boolean, default=False)
     homework = db.Column(db.Text)
-    # New homework checkboxes/fields
-    homework_reckless = db.Column(db.Boolean, default=False)
-    homework_aggressive = db.Column(db.Boolean, default=False)
+    # New homework checkboxes/fields (revised list, specified order)
+    homework_driving_record = db.Column(db.Boolean, default=False)
+    homework_reckless_program = db.Column(db.Boolean, default=False)
     homework_driver_improvement = db.Column(db.Boolean, default=False)
+    homework_speedometer = db.Column(db.Boolean, default=False)
     homework_community_service = db.Column(db.Boolean, default=False)
     homework_community_service_hours = db.Column(db.String(20))
     homework_substance_evaluation = db.Column(db.Boolean, default=False)
-    homework_driving_record = db.Column(db.Boolean, default=False)
     homework_asap = db.Column(db.Boolean, default=False)
     homework_shoplifting = db.Column(db.Boolean, default=False)
+    homework_medical_conditions = db.Column(db.Boolean, default=False)
+    homework_photos = db.Column(db.Boolean, default=False)
+    homework_shoplifting_program = db.Column(db.Boolean, default=False)
+    homework_military_awards = db.Column(db.Boolean, default=False)
+    homework_dd214 = db.Column(db.Boolean, default=False)
+    homework_community_involvement = db.Column(db.Boolean, default=False)
+    homework_anger_management_courseforcourt = db.Column(db.Boolean, default=False)
+    homework_vasap = db.Column(db.Boolean, default=False)
+    homework_substance_abuse_treatment = db.Column(db.Boolean, default=False)
+    homework_substance_abuse_counseling = db.Column(db.Boolean, default=False)
+    homework_transcripts = db.Column(db.Boolean, default=False)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -425,16 +436,27 @@ def update_lead(lead_id):
     lead.absence_waiver = 'absence_waiver' in request.form
     lead.homework = request.form.get("homework", lead.homework)
 
-    # New homework checkbox fields
-    lead.homework_reckless = 'homework_reckless' in request.form
-    lead.homework_aggressive = 'homework_aggressive' in request.form
+    # New homework checkbox fields (revised list, specified order)
+    lead.homework_driving_record = 'homework_driving_record' in request.form
+    lead.homework_reckless_program = 'homework_reckless_program' in request.form
     lead.homework_driver_improvement = 'homework_driver_improvement' in request.form
+    lead.homework_speedometer = 'homework_speedometer' in request.form
     lead.homework_community_service = 'homework_community_service' in request.form
     lead.homework_community_service_hours = request.form.get('homework_community_service_hours', '')
     lead.homework_substance_evaluation = 'homework_substance_evaluation' in request.form
-    lead.homework_driving_record = 'homework_driving_record' in request.form
     lead.homework_asap = 'homework_asap' in request.form
     lead.homework_shoplifting = 'homework_shoplifting' in request.form
+    lead.homework_medical_conditions = 'homework_medical_conditions' in request.form
+    lead.homework_photos = 'homework_photos' in request.form
+    lead.homework_shoplifting_program = 'homework_shoplifting_program' in request.form
+    lead.homework_military_awards = 'homework_military_awards' in request.form
+    lead.homework_dd214 = 'homework_dd214' in request.form
+    lead.homework_community_involvement = 'homework_community_involvement' in request.form
+    lead.homework_anger_management_courseforcourt = 'homework_anger_management_courseforcourt' in request.form
+    lead.homework_vasap = 'homework_vasap' in request.form
+    lead.homework_substance_abuse_treatment = 'homework_substance_abuse_treatment' in request.form
+    lead.homework_substance_abuse_counseling = 'homework_substance_abuse_counseling' in request.form
+    lead.homework_transcripts = 'homework_transcripts' in request.form
 
     db.session.commit()
 
@@ -497,6 +519,20 @@ def update_lead(lead_id):
     if lead.homework_driving_record: email_html += "<li><strong>Driving Record:</strong> ✅</li>"
     if lead.homework_asap: email_html += "<li><strong>Pre-enroll in ASAP:</strong> ✅</li>"
     if lead.homework_shoplifting: email_html += "<li><strong>Shoplifting Class:</strong> ✅</li>"
+    # Additional homework fields for email
+    if getattr(lead, "homework_reckless_program", None): email_html += "<li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
+    if getattr(lead, "homework_speedometer", None): email_html += "<li><strong>Speedometer Calibration:</strong> ✅</li>"
+    if getattr(lead, "homework_medical_conditions", None): email_html += "<li><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
+    if getattr(lead, "homework_photos", None): email_html += "<li><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
+    if getattr(lead, "homework_shoplifting_program", None): email_html += "<li><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>"
+    if getattr(lead, "homework_military_awards", None): email_html += "<li><strong>Copies of Military Awards:</strong> ✅</li>"
+    if getattr(lead, "homework_dd214", None): email_html += "<li><strong>Copy of DD-214:</strong> ✅</li>"
+    if getattr(lead, "homework_community_involvement", None): email_html += "<li><strong>Community Involvement List:</strong> ✅</li>"
+    if getattr(lead, "homework_anger_management_courseforcourt", None): email_html += "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
+    if getattr(lead, "homework_vasap", None): email_html += "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>"
+    if getattr(lead, "homework_substance_abuse_treatment", None): email_html += "<li><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
+    if getattr(lead, "homework_substance_abuse_counseling", None): email_html += "<li><strong>Substance Abuse Counseling:</strong> ✅</li>"
+    if getattr(lead, "homework_transcripts", None): email_html += "<li><strong>High School or College Transcripts:</strong> ✅</li>"
     email_html += "</ul>"
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
@@ -591,6 +627,9 @@ def case_result():
         pleas = request.form.getlist('plea[]')
         dispositions = request.form.getlist('disposition[]')
 
+        # NEW: get disposition_paragraphs for custom narrative per charge
+        disposition_paragraphs = request.form.getlist('disposition_paragraph[]')
+
         jail_time_imposed = request.form.getlist('jail_time_imposed[]')
         jail_time_suspended = request.form.getlist('jail_time_suspended[]')
         fine_imposed = request.form.getlist('fine_imposed[]')
@@ -625,6 +664,7 @@ def case_result():
             community_service, anger_management
         ]
         num_charges = max(len(field) for field in all_charge_fields)
+        skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
             email_html += "<ul>"
             for i in range(num_charges):
@@ -637,53 +677,59 @@ def case_result():
                     email_html += f"<li><strong>Plea:</strong> {pleas[i]}</li>"
                 if i < len(dispositions) and dispositions[i]:
                     email_html += f"<li><strong>Disposition:</strong> {dispositions[i]}</li>"
-                # Per-charge sentencing/probation fields:
-                if i < len(jail_time_imposed) and jail_time_imposed[i]:
-                    if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                        email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended</li>"
-                    else:
-                        email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days</li>"
-                if i < len(fine_imposed) and fine_imposed[i]:
-                    if i < len(fine_suspended) and fine_suspended[i]:
-                        email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
-                    else:
-                        email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
-                # License Suspension: Only show check if "Yes"
-                if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
-                    email_html += "<li><strong>License Suspension:</strong> ✅</li>"
-                # Compose restricted license info: include type and term if granted
-                if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
-                    restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
-                    details = []
-                    if i < len(restricted_license_type) and restricted_license_type[i]:
-                        details.append(f"Type: {restricted_license_type[i]}")
-                    if i < len(license_suspension_term) and license_suspension_term[i]:
-                        details.append(f"Term: {license_suspension_term[i]}")
-                    if details:
-                        restricted_info += f" ({'; '.join(details)})"
-                    restricted_info += "</li>"
-                    email_html += restricted_info
-                # ASAP Ordered: Only show if "Yes"
-                if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                    email_html += "<li><strong>ASAP Ordered:</strong> ✅</li>"
-                # Probation
-                probation_fields = []
-                if i < len(probation_type) and probation_type[i]:
-                    probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[i]}</li>")
-                if i < len(probation_term) and probation_term[i]:
-                    probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[i]}</li>")
-                if i < len(vasap) and vasap[i].strip().lower() == "yes":
-                    probation_fields.append(f"<li><strong>VASAP:</strong> ✅</li>")
-                if i < len(vip) and vip[i].strip().lower() == "yes":
-                    probation_fields.append(f"<li><strong>VIP:</strong> ✅</li>")
-                if i < len(community_service) and community_service[i].strip().lower() == "yes":
-                    probation_fields.append(f"<li><strong>Community Service:</strong> ✅</li>")
-                if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
-                    probation_fields.append(f"<li><strong>Anger Management:</strong> ✅</li>")
-                if probation_fields:
-                    email_html += "<li><strong>Conditions of Probation:</strong><ul>"
-                    email_html += "".join(probation_fields)
-                    email_html += "</ul></li>"
+                # NEW: If disposition in skip_dispositions, include disposition paragraph
+                if i < len(dispositions) and dispositions[i] in skip_dispositions:
+                    if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
+                        email_html += f"<li><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}</li>"
+                # Only render jail, fine, probation, license fields if not in skip_dispositions
+                if i < len(dispositions) and dispositions[i] not in skip_dispositions:
+                    # Per-charge sentencing/probation fields:
+                    if i < len(jail_time_imposed) and jail_time_imposed[i]:
+                        if i < len(jail_time_suspended) and jail_time_suspended[i]:
+                            email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended</li>"
+                        else:
+                            email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days</li>"
+                    if i < len(fine_imposed) and fine_imposed[i]:
+                        if i < len(fine_suspended) and fine_suspended[i]:
+                            email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
+                        else:
+                            email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
+                    # License Suspension: Only show check if "Yes"
+                    if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
+                        email_html += "<li><strong>License Suspension:</strong> ✅</li>"
+                    # Compose restricted license info: include type and term if granted
+                    if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
+                        restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
+                        details = []
+                        if i < len(restricted_license_type) and restricted_license_type[i]:
+                            details.append(f"Type: {restricted_license_type[i]}")
+                        if i < len(license_suspension_term) and license_suspension_term[i]:
+                            details.append(f"Term: {license_suspension_term[i]}")
+                        if details:
+                            restricted_info += f" ({'; '.join(details)})"
+                        restricted_info += "</li>"
+                        email_html += restricted_info
+                    # ASAP Ordered: Only show if "Yes"
+                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
+                        email_html += "<li><strong>ASAP Ordered:</strong> ✅</li>"
+                    # Probation
+                    probation_fields = []
+                    if i < len(probation_type) and probation_type[i]:
+                        probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[i]}</li>")
+                    if i < len(probation_term) and probation_term[i]:
+                        probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[i]}</li>")
+                    if i < len(vasap) and vasap[i].strip().lower() == "yes":
+                        probation_fields.append(f"<li><strong>VASAP:</strong> ✅</li>")
+                    if i < len(vip) and vip[i].strip().lower() == "yes":
+                        probation_fields.append(f"<li><strong>VIP:</strong> ✅</li>")
+                    if i < len(community_service) and community_service[i].strip().lower() == "yes":
+                        probation_fields.append(f"<li><strong>Community Service:</strong> ✅</li>")
+                    if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
+                        probation_fields.append(f"<li><strong>Anger Management:</strong> ✅</li>")
+                    if probation_fields:
+                        email_html += "<li><strong>Conditions of Probation:</strong><ul>"
+                        email_html += "".join(probation_fields)
+                        email_html += "</ul></li>"
                 email_html += "</ul></li>"
             email_html += "</ul>"
 
@@ -729,6 +775,12 @@ def case_result():
         mail.send(msg)
 
         # Save to database, including send_review_links and new fields
+        # Store the first non-empty disposition_paragraph[] in other_disposition
+        disposition_narrative = ""
+        for paragraph in disposition_paragraphs:
+            if paragraph:
+                disposition_narrative = paragraph
+                break
         case_result_obj = CaseResult(
             defendant_name=defendant_name,
             notes=notes,
@@ -737,7 +789,8 @@ def case_result():
             continuation_date=continuation_date,
             send_review_links=send_review_links,
             license_suspension_term=", ".join(filter(None, license_suspension_term)) if license_suspension_term else None,
-            restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None
+            restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None,
+            other_disposition=disposition_narrative
         )
         db.session.add(case_result_obj)
         db.session.commit()
