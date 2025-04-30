@@ -99,6 +99,16 @@ class Lead(db.Model):
     staff_member = db.Column(db.String(100))
     absence_waiver = db.Column(db.Boolean, default=False)
     homework = db.Column(db.Text)
+    # New homework checkboxes/fields
+    homework_reckless = db.Column(db.Boolean, default=False)
+    homework_aggressive = db.Column(db.Boolean, default=False)
+    homework_driver_improvement = db.Column(db.Boolean, default=False)
+    homework_community_service = db.Column(db.Boolean, default=False)
+    homework_community_service_hours = db.Column(db.String(20))
+    homework_substance_evaluation = db.Column(db.Boolean, default=False)
+    homework_driving_record = db.Column(db.Boolean, default=False)
+    homework_asap = db.Column(db.Boolean, default=False)
+    homework_shoplifting = db.Column(db.Boolean, default=False)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -123,6 +133,9 @@ class CaseResult(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     charges = db.relationship('Charge', backref='case_result', cascade="all, delete-orphan")
     send_review_links = db.Column(db.Boolean, default=False)
+    # New fields for license suspension term and restricted license type
+    license_suspension_term = db.Column(db.String(100))
+    restricted_license_type = db.Column(db.String(100))
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -378,6 +391,17 @@ def update_lead(lead_id):
     lead.absence_waiver = 'absence_waiver' in request.form
     lead.homework = request.form.get("homework", lead.homework)
 
+    # New homework checkbox fields
+    lead.homework_reckless = 'homework_reckless' in request.form
+    lead.homework_aggressive = 'homework_aggressive' in request.form
+    lead.homework_driver_improvement = 'homework_driver_improvement' in request.form
+    lead.homework_community_service = 'homework_community_service' in request.form
+    lead.homework_community_service_hours = request.form.get('homework_community_service_hours', '')
+    lead.homework_substance_evaluation = 'homework_substance_evaluation' in request.form
+    lead.homework_driving_record = 'homework_driving_record' in request.form
+    lead.homework_asap = 'homework_asap' in request.form
+    lead.homework_shoplifting = 'homework_shoplifting' in request.form
+
     db.session.commit()
 
     # Prepare update email (HTML)
@@ -426,6 +450,19 @@ def update_lead(lead_id):
     for label, value in field_items:
         if value:
             email_html += f"<li><strong>{label}:</strong> {value}</li>"
+    # Add homework checkboxes to email
+    if lead.homework_reckless: email_html += "<li><strong>Reckless Driving Course:</strong> ✅</li>"
+    if lead.homework_aggressive: email_html += "<li><strong>Aggressive Driving Course:</strong> ✅</li>"
+    if lead.homework_driver_improvement: email_html += "<li><strong>Driver Improvement Course:</strong> ✅</li>"
+    if lead.homework_community_service:
+        email_html += "<li><strong>Community Service:</strong> ✅"
+        if lead.homework_community_service_hours:
+            email_html += f" ({lead.homework_community_service_hours} hours)"
+        email_html += "</li>"
+    if lead.homework_substance_evaluation: email_html += "<li><strong>Substance Abuse Evaluation:</strong> ✅</li>"
+    if lead.homework_driving_record: email_html += "<li><strong>Driving Record:</strong> ✅</li>"
+    if lead.homework_asap: email_html += "<li><strong>Pre-enroll in ASAP:</strong> ✅</li>"
+    if lead.homework_shoplifting: email_html += "<li><strong>Shoplifting Class:</strong> ✅</li>"
     email_html += "</ul>"
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
@@ -526,6 +563,9 @@ def case_result():
         fine_suspended = request.form.getlist('fine_suspended[]')
         license_suspension = request.form.getlist('license_suspension[]')
         restricted_license = request.form.getlist('restricted_license[]')
+        # New: Retrieve restricted_license_type and license_suspension_term
+        license_suspension_term = request.form.getlist('license_suspension_term[]')
+        restricted_license_type = request.form.getlist('restricted_license_type[]')
         asap_ordered = request.form.getlist('asap_ordered[]')
         probation_type = request.form.getlist('probation_type[]')
         probation_term = request.form.getlist('probation_term[]')
@@ -577,8 +617,18 @@ def case_result():
                         email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
                 if i < len(license_suspension) and license_suspension[i]:
                     email_html += f"<li><strong>License Suspension:</strong> {license_suspension[i]}</li>"
-                if i < len(restricted_license) and restricted_license[i]:
-                    email_html += f"<li><strong>Restricted License:</strong> {restricted_license[i]}</li>"
+                # Compose restricted license info: include type and term if granted
+                if i < len(restricted_license) and restricted_license[i] == "Yes":
+                    restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
+                    details = []
+                    if i < len(restricted_license_type) and restricted_license_type[i]:
+                        details.append(f"Type: {restricted_license_type[i]}")
+                    if i < len(license_suspension_term) and license_suspension_term[i]:
+                        details.append(f"Term: {license_suspension_term[i]}")
+                    if details:
+                        restricted_info += f" ({'; '.join(details)})"
+                    restricted_info += "</li>"
+                    email_html += restricted_info
                 if i < len(asap_ordered) and asap_ordered[i]:
                     email_html += f"<li><strong>ASAP Ordered:</strong> {asap_ordered[i]}</li>"
                 # Probation
@@ -645,15 +695,16 @@ def case_result():
         msg.html = email_html
         mail.send(msg)
 
-        # Save to database, including send_review_links
+        # Save to database, including send_review_links and new fields
         case_result_obj = CaseResult(
             defendant_name=defendant_name,
             notes=notes,
             date_disposition=date_disposition,
             was_continued=was_continued,
             continuation_date=continuation_date,
-            send_review_links=send_review_links
-            # Add other fields if necessary
+            send_review_links=send_review_links,
+            license_suspension_term=", ".join(filter(None, license_suspension_term)) if license_suspension_term else None,
+            restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None
         )
         db.session.add(case_result_obj)
         db.session.commit()
