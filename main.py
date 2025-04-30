@@ -240,7 +240,8 @@ def intake():
         db.session.add(new_lead)
         db.session.commit()
 
-        lead_url = url_for("admin_edit_lead", lead_id=new_lead.id, _external=True)
+        lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
+        admin_edit_url = url_for("admin_edit_lead", lead_id=new_lead.id, _external=True)
 
         # Format court_date if available
         formatted_date = ""
@@ -296,7 +297,8 @@ def intake():
             if value:
                 email_html += f"<li><strong>{label}:</strong> {value}</li>"
         email_html += "</ul>"
-        email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
+        email_html += f"<p><a href='{lead_url}'>View Lead</a></p>"
+        email_html += f"<p><a href='{admin_edit_url}'>Edit Lead (Admin Only)</a></p>"
         msg.html = email_html
         mail.send(msg)
 

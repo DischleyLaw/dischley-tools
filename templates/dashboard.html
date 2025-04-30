@@ -39,6 +39,38 @@
 </style>
 <h2 class="mb-4 text-center">Dashboard</h2>
 <div class="container">
+  <div class="mb-4">
+    <h4 class="text-center">Search or Filter Leads</h4>
+    <form action="/admin/leads" method="get" class="row g-2 justify-content-center">
+      <div class="col-12 col-md-4">
+        <input type="text" name="q" class="form-control" placeholder="Search by name, email, or charge...">
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="case_type" class="form-select">
+          <option value="">All Case Types</option>
+          <option value="Criminal">Criminal</option>
+          <option value="DUI">DUI</option>
+          <option value="Traffic">Traffic</option>
+          <option value="Expungement">Expungement</option>
+          <option value="Civil">Civil</option>
+          <option value="Probation Violation">Probation Violation</option>
+          <option value="Protective Order">Protective Order</option>
+        </select>
+      </div>
+      <div class="col-6 col-md-2">
+        <select name="staff_member" class="form-select">
+          <option value="">All Staff</option>
+          <option value="Tatum Brownlee">Tatum Brownlee</option>
+          <option value="Nicole Purvis">Nicole Purvis</option>
+          <option value="Patrick O'Brien">Patrick O'Brien</option>
+          <option value="David Dischley">David Dischley</option>
+        </select>
+      </div>
+      <div class="col-12 col-md-2">
+        <button type="submit" class="btn btn-primary w-100">Filter</button>
+      </div>
+    </form>
+  </div>
   <div class="row justify-content-center">
     <div class="col-6 col-md-3 text-center mb-4">
       <div class="dashboard-tile">
@@ -69,6 +101,14 @@
         <a href="/admin/leads" style="text-decoration: none;">
           <img src="{{ url_for('static', filename='img/admin_panel.png') }}" alt="Admin Panel" class="dashboard-icon">
           <div class="dashboard-label">Admin Panel</div>
+        </a>
+      </div>
+    </div>
+    <div class="col-6 col-md-3 text-center mb-4">
+      <div class="dashboard-tile">
+        <a href="/admin/leads" style="text-decoration: none;">
+          <img src="{{ url_for('static', filename='img/manage_lead.png') }}" alt="Manage Lead" class="dashboard-icon">
+          <div class="dashboard-label">Manage Lead</div>
         </a>
       </div>
     </div>
