@@ -499,6 +499,7 @@ def update_success():
 @app.route("/case_result", methods=["GET", "POST"])
 @login_required
 def case_result():
+    submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name')
         original_charges = request.form.getlist('original_charge')
@@ -666,8 +667,9 @@ def case_result():
         msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
         msg.html = email_html
         mail.send(msg)
+        submitted = True
         return redirect(url_for('update_success'))
-    return render_template('case_result.html')
+    return render_template('case_result.html', submitted=submitted)
 
 @app.route("/case_result_success")
 def case_result_success():
