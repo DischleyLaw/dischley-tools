@@ -2,7 +2,17 @@ from flask import Flask, render_template, request, redirect, url_for, session, s
 from flask_mail import Mail, Message
 from functools import wraps
 
+
 app = Flask(__name__)
+
+# --- Login Required Decorator ---
+def login_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if "user" not in session:
+            return redirect(url_for("login"))
+        return f(*args, **kwargs)
+    return decorated_function
 
 @app.route("/lead-links")
 @login_required
@@ -13,17 +23,6 @@ def lead_links():
         view_url = url_for("view_lead_token", token=token, _external=True)
         links.append({"name": lead.name, "url": view_url})
     return render_template("lead_links.html", links=links)
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
-from flask_mail import Mail, Message
-from functools import wraps
-
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if "user" not in session:
-            return redirect(url_for("login"))
-        return f(*args, **kwargs)
-    return decorated_function
 import requests
 import os
 from dotenv import load_dotenv
