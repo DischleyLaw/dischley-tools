@@ -32,15 +32,7 @@
       <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
     </div>
     <div class="mb-3">
-      <label for="homework" class="form-label">Homework</label>
-      <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
-    </div>
-    <div class="mb-3">
-      <label class="form-label">Additional Homework:</label>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_reckless" id="homework_reckless">
-        <label class="form-check-label" for="homework_reckless">Reckless Driving Course</label>
-      </div>
+      <label class="form-label">Homework:</label>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_aggressive" id="homework_aggressive">
         <label class="form-check-label" for="homework_aggressive">Aggressive Driving Course</label>
@@ -72,6 +64,14 @@
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_shoplifting" id="homework_shoplifting">
         <label class="form-check-label" for="homework_shoplifting">Shoplifting Class</label>
+      </div>
+      <div class="mb-3 form-check">
+        <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
+        <label class="form-check-label" for="toggleAdditionalHomework">Additional Homework</label>
+      </div>
+      <div class="mb-3" id="additionalHomeworkBox" style="display: none;">
+        <label for="homework" class="form-label">Additional Homework Notes</label>
+        <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
       </div>
     </div>
     <div class="mb-3">
@@ -146,6 +146,12 @@
     const csHours = document.getElementById("communityServiceHours");
     csCheckbox.addEventListener("change", function () {
       csHours.style.display = this.checked ? "block" : "none";
+    });
+
+    const toggleHomework = document.getElementById("toggleAdditionalHomework");
+    const homeworkBox = document.getElementById("additionalHomeworkBox");
+    toggleHomework.addEventListener("change", function () {
+      homeworkBox.style.display = this.checked ? "block" : "none";
     });
   });
 </script>

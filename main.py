@@ -615,8 +615,9 @@ def case_result():
                         email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
                     else:
                         email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
-                if i < len(license_suspension) and license_suspension[i]:
-                    email_html += f"<li><strong>License Suspension:</strong> {license_suspension[i]}</li>"
+                # License Suspension: Only show check if "Yes"
+                if i < len(license_suspension) and license_suspension[i] == "Yes":
+                    email_html += "<li><strong>License Suspension:</strong> ✅</li>"
                 # Compose restricted license info: include type and term if granted
                 if i < len(restricted_license) and restricted_license[i] == "Yes":
                     restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
@@ -629,24 +630,25 @@ def case_result():
                         restricted_info += f" ({'; '.join(details)})"
                     restricted_info += "</li>"
                     email_html += restricted_info
-                if i < len(asap_ordered) and asap_ordered[i]:
-                    email_html += f"<li><strong>ASAP Ordered:</strong> {asap_ordered[i]}</li>"
+                # ASAP Ordered: Only show if "Yes"
+                if i < len(asap_ordered) and asap_ordered[i] == "Yes":
+                    email_html += "<li><strong>ASAP Ordered:</strong> ✅</li>"
                 # Probation
                 probation_fields = []
                 if i < len(probation_type) and probation_type[i]:
                     probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[i]}</li>")
                 if i < len(probation_term) and probation_term[i]:
                     probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[i]}</li>")
-                if i < len(vasap) and vasap[i]:
-                    probation_fields.append(f"<li><strong>VASAP:</strong> Yes</li>")
-                if i < len(vip) and vip[i]:
-                    probation_fields.append(f"<li><strong>VIP:</strong> Yes</li>")
-                if i < len(community_service) and community_service[i]:
-                    probation_fields.append(f"<li><strong>Community Service:</strong> Yes</li>")
-                if i < len(anger_management) and anger_management[i]:
-                    probation_fields.append(f"<li><strong>Anger Management:</strong> Yes</li>")
-                if i < len(absence_waiver) and absence_waiver[i]:
-                    probation_fields.append(f"<li><strong>Absence Waiver:</strong> Yes</li>")
+                if i < len(vasap) and vasap[i] == "Yes":
+                    probation_fields.append(f"<li><strong>VASAP:</strong> ✅</li>")
+                if i < len(vip) and vip[i] == "Yes":
+                    probation_fields.append(f"<li><strong>VIP:</strong> ✅</li>")
+                if i < len(community_service) and community_service[i] == "Yes":
+                    probation_fields.append(f"<li><strong>Community Service:</strong> ✅</li>")
+                if i < len(anger_management) and anger_management[i] == "Yes":
+                    probation_fields.append(f"<li><strong>Anger Management:</strong> ✅</li>")
+                if i < len(absence_waiver) and absence_waiver[i] == "Yes":
+                    probation_fields.append(f"<li><strong>Absence Waiver:</strong> ✅</li>")
                 if probation_fields:
                     email_html += "<li><strong>Conditions of Probation:</strong><ul>"
                     email_html += "".join(probation_fields)
