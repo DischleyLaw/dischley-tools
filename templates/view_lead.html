@@ -65,6 +65,10 @@
         <input class="form-check-input" type="checkbox" name="homework_shoplifting" id="homework_shoplifting">
         <label class="form-check-label" for="homework_shoplifting">Shoplifting Class</label>
       </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
+        <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+      </div>
       <div class="mb-3 form-check">
         <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
         <label class="form-check-label" for="toggleAdditionalHomework">Additional Homework</label>

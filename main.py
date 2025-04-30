@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mail import Mail, Message
 from functools import wraps
 
@@ -18,12 +18,20 @@ from datetime import datetime, timedelta
 from email.utils import formataddr
 from requests_oauthlib import OAuth2Session
 
+from itsdangerous import URLSafeTimedSerializer
+
 load_dotenv()
 
 app = Flask(__name__)
 app.secret_key = "supersecretkey"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leads.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+# Set session expiration to 24 hours of inactivity
+from datetime import timedelta
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+
+# Token serializer for secure lead viewing
+serializer = URLSafeTimedSerializer(app.secret_key)
 
 # Email config
 app.config['MAIL_SERVER'] = 'smtp.gmail.com'
@@ -181,6 +189,7 @@ def login():
         username = request.form.get("username")
         password = request.form.get("password")
         if username == "admin" and password == "dischley123":
+            session.permanent = True
             session["user"] = username
             return redirect(url_for("dashboard"))
         return render_template("login.html", error="Invalid credentials")
@@ -254,7 +263,9 @@ def intake():
         db.session.add(new_lead)
         db.session.commit()
 
-        lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
+        # Generate secure tokenized link for viewing the lead (valid for 24 hours)
+        token = serializer.dumps(str(new_lead.id), salt="view-lead")
+        lead_url = url_for("view_lead_token", token=token, _external=True)
 
         # Format court_date if available
         formatted_date = ""
@@ -366,6 +377,18 @@ def view_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     return render_template("view_lead.html", lead=lead)
 
+
+# --- Token-based view for leads (no login required, valid for 24 hours) ---
+@app.route("/view_lead_token/<token>")
+def view_lead_token(token):
+    try:
+        lead_id = serializer.loads(token, salt="view-lead", max_age=86400)
+        lead = Lead.query.get_or_404(lead_id)
+        return render_template("view_lead.html", lead=lead)
+    except Exception:
+        flash("This link has expired or is invalid.", "danger")
+        return redirect(url_for("login"))
+
 @app.route("/lead/<int:lead_id>/update", methods=["POST"])
 @login_required
 def update_lead(lead_id):
@@ -445,7 +468,7 @@ def update_lead(lead_id):
         ("LVM", "✅" if lead.lvm else None),
         ("Not a PC", "✅" if lead.not_pc else None),
         ("Quote", lead.quote),
-        ("Absence Waiver", "✅" if getattr(lead, 'absence_waiver', False) else None),
+        ("Absence Waiver", "✅" if lead.absence_waiver else None),
     ]
     for label, value in field_items:
         if value:
@@ -573,7 +596,6 @@ def case_result():
         vip = request.form.getlist('vip[]')
         community_service = request.form.getlist('community_service[]')
         anger_management = request.form.getlist('anger_management[]')
-        absence_waiver = request.form.getlist('absence_waiver[]')
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
         continuation_time = request.form.get('continuation_time', '').strip()
@@ -589,7 +611,7 @@ def case_result():
             jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
             license_suspension, restricted_license, asap_ordered,
             probation_type, probation_term, vasap, vip,
-            community_service, anger_management, absence_waiver
+            community_service, anger_management
         ]
         num_charges = max(len(field) for field in all_charge_fields)
         if num_charges > 0:
@@ -616,10 +638,10 @@ def case_result():
                     else:
                         email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
                 # License Suspension: Only show check if "Yes"
-                if i < len(license_suspension) and license_suspension[i] == "Yes":
+                if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
                     email_html += "<li><strong>License Suspension:</strong> ✅</li>"
                 # Compose restricted license info: include type and term if granted
-                if i < len(restricted_license) and restricted_license[i] == "Yes":
+                if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
                     restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
                     details = []
                     if i < len(restricted_license_type) and restricted_license_type[i]:
@@ -631,7 +653,7 @@ def case_result():
                     restricted_info += "</li>"
                     email_html += restricted_info
                 # ASAP Ordered: Only show if "Yes"
-                if i < len(asap_ordered) and asap_ordered[i] == "Yes":
+                if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
                     email_html += "<li><strong>ASAP Ordered:</strong> ✅</li>"
                 # Probation
                 probation_fields = []
@@ -639,16 +661,14 @@ def case_result():
                     probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[i]}</li>")
                 if i < len(probation_term) and probation_term[i]:
                     probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[i]}</li>")
-                if i < len(vasap) and vasap[i] == "Yes":
+                if i < len(vasap) and vasap[i].strip().lower() == "yes":
                     probation_fields.append(f"<li><strong>VASAP:</strong> ✅</li>")
-                if i < len(vip) and vip[i] == "Yes":
+                if i < len(vip) and vip[i].strip().lower() == "yes":
                     probation_fields.append(f"<li><strong>VIP:</strong> ✅</li>")
-                if i < len(community_service) and community_service[i] == "Yes":
+                if i < len(community_service) and community_service[i].strip().lower() == "yes":
                     probation_fields.append(f"<li><strong>Community Service:</strong> ✅</li>")
-                if i < len(anger_management) and anger_management[i] == "Yes":
+                if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
                     probation_fields.append(f"<li><strong>Anger Management:</strong> ✅</li>")
-                if i < len(absence_waiver) and absence_waiver[i] == "Yes":
-                    probation_fields.append(f"<li><strong>Absence Waiver:</strong> ✅</li>")
                 if probation_fields:
                     email_html += "<li><strong>Conditions of Probation:</strong><ul>"
                     email_html += "".join(probation_fields)
