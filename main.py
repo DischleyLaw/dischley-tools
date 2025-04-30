@@ -240,7 +240,7 @@ def intake():
         db.session.add(new_lead)
         db.session.commit()
 
-        lead_url = url_for("view_lead", lead_id=new_lead.id, _external=True)
+        lead_url = url_for("view_lead", value=new_lead.id, _external=True)
 
         # Format court_date if available
         formatted_date = ""
@@ -415,7 +415,7 @@ def update_lead(lead_id):
     email_html += f"<li><strong>Quote:</strong> ${lead.quote or 'N/A'}</li>"
     email_html += f"<li><strong>Absence Waiver:</strong> {'✅' if lead.absence_waiver else '❌'}</li>"
     email_html += "</ul>"
-    email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
+    email_html += f"<p><a href='{url_for('view_lead', value=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
     mail.send(msg)
 
