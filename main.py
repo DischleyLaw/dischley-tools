@@ -535,8 +535,10 @@ def case_result():
         absence_waiver = request.form.getlist('absence_waiver[]')
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
+        continuation_time = request.form.get('continuation_time', '').strip()
         date_disposition = request.form.get('date_disposition', '').strip()
         notes = request.form.get('notes', '').strip()
+        send_review_links = 'send_review_links' in request.form
 
         subject = f"Case Result - {defendant_name}"
         email_html = "<h2>Case Result</h2>"
@@ -610,7 +612,14 @@ def case_result():
                     formatted_continuation_date = datetime.strptime(continuation_date, "%Y-%m-%d").strftime("%B %d, %Y")
                 except ValueError:
                     formatted_continuation_date = continuation_date
-                summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
+                if continuation_time:
+                    try:
+                        formatted_continuation_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p")
+                    except ValueError:
+                        formatted_continuation_time = continuation_time
+                    summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</li>")
+                else:
+                    summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
             else:
                 summary_fields.append("<li><strong>Case Continued</strong></li>")
 
