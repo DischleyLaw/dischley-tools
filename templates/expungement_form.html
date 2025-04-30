@@ -2,40 +2,55 @@
 <html>
 <head>
     <title>Expungement Petition Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 <body>
     <h1>Expungement Petition Generator</h1>
-    <form method="POST">
-        <label>Select County:</label>
-        <select name="county" required>
-            {% for county in counties %}
+    <div class="card">
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label>Select County:</label>
+            <select name="county" required class="form-control">
+              {% for county in counties %}
                 <option value="{{ county }}">{{ county }}</option>
-            {% endfor %}
-        </select><br><br>
+              {% endfor %}
+            </select>
+          </div>
 
-        <label>Final Disposition:</label>
-        <select name="final_disposition" required>
-            <option>Nolle Prosequi</option>
-            <option>Not Guilty</option>
-            <option>Otherwise Dismissed</option>
-        </select><br><br>
+          <div class="mb-3">
+            <label>Final Disposition:</label>
+            <select name="final_disposition" required class="form-control">
+              <option>Nolle Prosequi</option>
+              <option>Not Guilty</option>
+              <option>Otherwise Dismissed</option>
+            </select>
+          </div>
 
-        <label>Type of Expungement:</label>
-        <select name="expungement_type" required>
-            <option>Expungement of Right</option>
-            <option>Manifest Injustice</option>
-        </select><br><br>
+          <div class="mb-3">
+            <label>Type of Expungement:</label>
+            <select name="expungement_type" required class="form-control">
+              <option>Expungement of Right</option>
+              <option>Manifest Injustice</option>
+            </select>
+          </div>
 
-        <label>Manifest Injustice Details:</label>
-        <input type="text" name="manifest_injustice"><br><br>
+          <div class="mb-3">
+            <label>Manifest Injustice Details:</label>
+            <input type="text" name="manifest_injustice" class="form-control">
+          </div>
 
-        <!-- Example of dynamic fields -->
-        {% for field in fields %}
-            <label>{{ field }}:</label>
-            <input type="text" name="{{ field }}"><br><br>
-        {% endfor %}
+          <!-- Example of dynamic fields -->
+          {% for field in fields %}
+            <div class="mb-3">
+              <label>{{ field }}:</label>
+              <input type="text" name="{{ field }}" class="form-control">
+            </div>
+          {% endfor %}
 
-        <button type="submit">Generate Document</button>
-    </form>
+          <button type="submit" class="btn btn-primary w-100 w-md-auto">Generate Document</button>
+        </form>
+      </div>
+    </div>
 </body>
 </html>

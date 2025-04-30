@@ -407,32 +407,31 @@ def update_lead(lead_id):
     if lead.lvm and lead.email:
         client_name = lead.name if lead.name else "there"
         # Extract attorney from form, stripping whitespace
-        attorney = request.form.get("attorney", "").strip()
+        attorney = request.form.get("attorney", "An Attorney").strip()
         # Set callback number conditionally
         if "patrick" in attorney.lower():
             callback_number = "571-352-1733"
         else:
             callback_number = "703-851-7137"
+        reply_email = "patrick@dischleylaw.com" if "patrick" in attorney.lower() else "david@dischleylaw.com"
         auto_msg = Message(
             "Thank You for Your Inquiry",
             recipients=[lead.email],
-            sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER'))
+            sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER')),
+            reply_to=[reply_email, "attorneys@dischleylaw.com"]
         )
-        auto_msg.body = f"""
-Dear {client_name},
+        auto_msg.body = f"""Dear {client_name},
 
 Thank you for contacting Dischley Law, PLLC regarding your legal matter. We appreciate the opportunity to assist you.
 
 We attempted to reach you by phone but were unable to connect. At your convenience, please feel free to return our call so we can discuss your case in more detail and answer any questions you may have.
 
-You can reach us at ({callback_number}). We look forward to speaking with you.
+You can reach us at {callback_number}. We look forward to speaking with you.
 
 Best regards,
 {attorney}
 Dischley Law, PLLC
-({callback_number})
-attorneys@dischleylaw.com
-www.dischleylaw.com
+{callback_number}
 """
         mail.send(auto_msg)
 

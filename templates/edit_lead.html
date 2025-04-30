@@ -1,7 +1,17 @@
 <h2>Edit Lead</h2>
-<form method="POST">
-  Name: <input type="text" name="name" value="{{ lead.name }}"><br>
-  Phone: <input type="text" name="phone" value="{{ lead.phone }}"><br>
-  Email: <input type="email" name="email" value="{{ lead.email }}"><br>
-  <button type="submit">Save</button>
-</form>
+<div class="card">
+  <div class="card-body">
+    <form method="POST">
+      <div class="mb-3">
+        Name: <input type="text" name="name" value="{{ lead.name }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        Phone: <input type="text" name="phone" value="{{ lead.phone }}" class="form-control">
+      </div>
+      <div class="mb-3">
+        Email: <input type="email" name="email" value="{{ lead.email }}" class="form-control">
+      </div>
+      <button type="submit" class="btn btn-primary w-100 w-md-auto">Save</button>
+    </form>
+  </div>
+</div>

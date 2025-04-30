@@ -3,19 +3,70 @@
 {% block title %}Case Result Submitted{% endblock %}
 
 {% block content %}
-<div class="card mt-5 shadow-sm">
-  <div class="card-body text-center">
-    <h2 class="mb-4">✅ Case Result Submitted Successfully</h2>
-    <p class="mb-4">Thank you. The case result has been recorded and notifications have been sent.</p>
-    <ul class="list-unstyled mb-4">
-      <li><strong>📧 Client Email Sent:</strong> Confirmation email dispatched if applicable.</li>
-      <li><strong>👥 Staff Notified:</strong> Internal team received a detailed summary.</li>
-      <li><strong>⭐ Review Request:</strong> Sent if selected.</li>
-    </ul>
-    <div class="d-flex justify-content-center gap-3">
-      <a href="{{ url_for('case_result') }}" class="btn btn-success btn-lg">Submit Another Case Result</a>
-      <a href="{{ url_for('dashboard') }}" class="btn btn-outline-primary btn-lg">Back to Dashboard</a>
-    </div>
+<style>
+  body {
+    background-color: #f8f9fa;
+  }
+  .card {
+    background-color: white;
+    padding: 2rem;
+    max-width: 480px;
+    margin: 3rem auto;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    border-radius: 0.25rem;
+  }
+</style>
+
+<div class="card">
+  <div class="text-center mb-4">
+    <h2>✅ Case Result Submitted Successfully</h2>
+    <p>Thank you. The case result has been recorded and notifications have been sent.</p>
   </div>
+  <ul class="list-unstyled mb-4">
+    <li><strong>📧 Client Email Sent:</strong> Confirmation email dispatched if applicable.</li>
+    <li><strong>👥 Staff Notified:</strong> Internal team received a detailed summary.</li>
+    <li><strong>⭐ Review Request:</strong> Sent if selected.</li>
+  </ul>
+  <form id="caseResultForm" method="post" action="{{ url_for('case_result') }}">
+    <div class="form-floating mb-3">
+      <input type="text" class="form-control" id="caseNumber" name="case_number" placeholder="Case Number" required>
+      <label for="caseNumber">Case Number</label>
+    </div>
+    <div class="form-floating mb-3">
+      <input type="date" class="form-control" id="courtDate" name="court_date" placeholder="Court Date" required>
+      <label for="courtDate">Court Date</label>
+    </div>
+    <div class="form-floating mb-3">
+      <select class="form-select" id="result" name="result" required>
+        <option value="" selected disabled>Select Result</option>
+        <option value="Guilty">Guilty</option>
+        <option value="Not Guilty">Not Guilty</option>
+        <option value="Dismissed">Dismissed</option>
+      </select>
+      <label for="result">Result</label>
+    </div>
+    <button type="submit" class="btn btn-primary w-100 mt-3">Submit Case Result</button>
+  </form>
 </div>
+
+<script>
+  document.getElementById('caseResultForm').addEventListener('submit', function(event) {
+    const courtDateInput = document.getElementById('courtDate');
+    if (courtDateInput.value) {
+      const date = new Date(courtDateInput.value);
+      const options = { year: 'numeric', month: 'long', day: 'numeric' };
+      const formattedDate = date.toLocaleDateString('en-US', options);
+      // Create a hidden input to send formatted date
+      let formattedInput = document.getElementById('formattedCourtDate');
+      if (!formattedInput) {
+        formattedInput = document.createElement('input');
+        formattedInput.type = 'hidden';
+        formattedInput.name = 'formatted_court_date';
+        formattedInput.id = 'formattedCourtDate';
+        this.appendChild(formattedInput);
+      }
+      formattedInput.value = formattedDate;
+    }
+  });
+</script>
 {% endblock %}

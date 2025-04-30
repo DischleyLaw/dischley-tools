@@ -12,30 +12,32 @@
   }
 </style>
 <h2 class="mb-4 text-center">Dashboard</h2>
-<div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 30px;">
-  <div style="text-align: center;">
-    <a href="/intake">
-      <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" class="dashboard-icon">
-      <div>Client Intake</div>
-    </a>
-  </div>
-  <div style="text-align: center;">
-    <a href="/case_result">
-      <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" class="dashboard-icon">
-      <div>Submit Case Result</div>
-    </a>
-  </div>
-  <div style="text-align: center;">
-    <a href="/expungement">
-      <img src="{{ url_for('static', filename='img/expungement_generator.png') }}" alt="Expungement Generator" class="dashboard-icon">
-      <div>Expungement Generator</div>
-    </a>
-  </div>
-  <div style="text-align: center;">
-    <a href="/admin/leads">
-      <img src="{{ url_for('static', filename='img/admin_panel.png') }}" alt="Admin Panel" class="dashboard-icon">
-      <div>Admin Panel</div>
-    </a>
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-6 col-md-3 text-center mb-4">
+      <a href="/intake">
+        <img src="{{ url_for('static', filename='img/client_intake.png') }}" alt="Client Intake" class="dashboard-icon">
+        <div>Client Intake</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3 text-center mb-4">
+      <a href="/case_result">
+        <img src="{{ url_for('static', filename='img/case_results.png') }}" alt="Case Results" class="dashboard-icon">
+        <div>Case Result</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3 text-center mb-4">
+      <a href="/expungement">
+        <img src="{{ url_for('static', filename='img/expungement_generator.png') }}" alt="Expungement Generator" class="dashboard-icon">
+        <div>Expungement Generator</div>
+      </a>
+    </div>
+    <div class="col-6 col-md-3 text-center mb-4">
+      <a href="/admin/leads">
+        <img src="{{ url_for('static', filename='img/admin_panel.png') }}" alt="Admin Panel" class="dashboard-icon">
+        <div>Admin Panel</div>
+      </a>
+    </div>
   </div>
 </div>
 {% endblock %}
