@@ -551,7 +551,7 @@ def update_lead(lead_id):
             callback_number = "703-851-7137"
             reply_email = "david@dischleylaw.com"
         auto_msg = Message(
-            "Thank You for Your Inquiry",
+            "Dischley Law, PLLC:  Thank You for Your Inquiry",
             recipients=[lead.email],
             sender=("Dischley Law, PLLC", os.getenv('MAIL_DEFAULT_SENDER')),
             reply_to=[reply_email, "attorneys@dischleylaw.com"]
@@ -567,7 +567,10 @@ You can reach us at {callback_number}. We look forward to speaking with you.
 Best regards,
 {attorney}
 Dischley Law, PLLC
+9255 Center Street, Suite 300B
+Manassas, VA 20110
 {callback_number}
+{reply_email}
 """
         mail.send(auto_msg)
 
