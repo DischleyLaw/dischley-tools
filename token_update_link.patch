@@ -1,0 +1,25 @@
+diff --git a/main.py b/main.py
+index abcdef1..1234567 100644
+--- a/main.py
++++ b/main.py
+@@ def intake():
+         token = serializer.dumps(str(new_lead.id), salt="view-lead")
+         lead_url = url_for("view_lead_token", token=token, _external=True)
+
++        update_token = serializer.dumps(str(new_lead.id), salt="view-lead")
++        update_url = url_for("update_lead_token", token=update_token, _external=True)
+
+         ...
+         email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
++        email_html += f"<p><a href='{update_url}'>Update Lead</a></p>"
+
+         ...
+@@
++@app.route("/update_lead_token/<token>", methods=["POST"])
++def update_lead_token(token):
++    try:
++        lead_id = serializer.loads(token, salt="view-lead", max_age=86400)
++        return update_lead(lead_id)
++    except Exception:
++        flash("This update link has expired or is invalid.", "danger")
++        return redirect(url_for("login"))
