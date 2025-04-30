@@ -83,6 +83,31 @@
         </select>
         <label for="disposition">Disposition:</label>
       </div>
+      <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input class="form-check-input license-suspension-checkbox" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
+          <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
+        </div>
+      </div>
+      <div class="mb-3 form-floating license-suspension-term" style="display: none;">
+        <input type="text" class="form-control" name="license_suspension_term[]" placeholder="Suspension Term">
+        <label>Suspension Term</label>
+      </div>
+
+      <div class="mb-3 form-check restricted-license-toggle" style="display: none;">
+        <input class="form-check-input restricted-license-checkbox" type="checkbox" name="restricted_license[]" value="Yes" id="restricted_license_1">
+        <label class="form-check-label" for="restricted_license_1">Restricted License Granted?</label>
+      </div>
+
+      <div class="mb-3 form-floating restricted-license-type" style="display: none;">
+        <select class="form-control" name="restricted_license_type[]">
+          <option value="" selected disabled>Select Restriction Type</option>
+          <option value="II Only">II Only</option>
+          <option value="Time and Place with Interlock">Time and Place with Interlock</option>
+          <option value="Time and Place Only">Time and Place Only</option>
+        </select>
+        <label>Restriction Type</label>
+      </div>
 
       <h4 class="h6 mt-4">Sentencing</h4>
       <div class="mb-3 form-floating">
@@ -166,11 +191,6 @@
     </div>
   </div>
 
-  <div class="mb-3 form-floating">
-    <input type="date" class="form-control" id="date_disposition" name="date_disposition" placeholder="Disposition Date">
-    <label for="date_disposition">Disposition Date:</label>
-  </div>
-
   <h2 class="h5 mt-4 mb-3">Notes</h2>
   <div class="mb-3 form-floating">
     <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
@@ -192,7 +212,7 @@ function addCharge() {
   const blocks = document.querySelectorAll('.charge-block');
   const clone = blocks[0].cloneNode(true);
 
-  // Clear inputs in cloned block
+  // Clear values
   clone.querySelectorAll('textarea, input, select').forEach(el => {
     if (el.type === 'checkbox') {
       el.checked = false;
@@ -201,6 +221,12 @@ function addCharge() {
     }
   });
 
+  // Hide conditional fields in the clone
+  clone.querySelectorAll('.license-suspension-term, .restricted-license-toggle, .restricted-license-type').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  // Update heading
   const heading = clone.querySelector('h3');
   if (heading) {
     heading.textContent = `Charge ${blocks.length + 1}`;
@@ -225,8 +251,39 @@ function updateChargeLabels() {
   });
 }
 
+// License suspension, restricted license toggle logic
+document.addEventListener('change', function(e) {
+  if (e.target.classList.contains('license-suspension-checkbox')) {
+    const chargeBlock = e.target.closest('.charge-block');
+    const termInput = chargeBlock.querySelector('.license-suspension-term');
+    const restrictedToggle = chargeBlock.querySelector('.restricted-license-toggle');
+    if (e.target.checked) {
+      if (termInput) termInput.style.display = 'block';
+      if (restrictedToggle) restrictedToggle.style.display = 'block';
+    } else {
+      if (termInput) termInput.style.display = 'none';
+      if (restrictedToggle) restrictedToggle.style.display = 'none';
+      const restrictedCheckbox = chargeBlock.querySelector('.restricted-license-checkbox');
+      const restrictionType = chargeBlock.querySelector('.restricted-license-type');
+      if (restrictedCheckbox) restrictedCheckbox.checked = false;
+      if (restrictionType) restrictionType.style.display = 'none';
+    }
+  }
+
+  if (e.target.classList.contains('restricted-license-checkbox')) {
+    const chargeBlock = e.target.closest('.charge-block');
+    const restrictionType = chargeBlock.querySelector('.restricted-license-type');
+    if (e.target.checked) {
+      if (restrictionType) restrictionType.style.display = 'block';
+    } else {
+      if (restrictionType) restrictionType.style.display = 'none';
+    }
+  }
+});
+
 document.getElementById('was_continued').addEventListener('change', function() {
-  document.getElementById('continuation_fields').style.display = this.checked ? 'flex' : 'none';
+  const isContinued = this.checked;
+  document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
 });
 </script>
 {% endblock %}

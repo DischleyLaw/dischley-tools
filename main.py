@@ -122,6 +122,7 @@ class CaseResult(db.Model):
     date_disposition = db.Column(db.String(20))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
     charges = db.relationship('Charge', backref='case_result', cascade="all, delete-orphan")
+    send_review_links = db.Column(db.Boolean, default=False)
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -633,6 +634,9 @@ def case_result():
         if notes:
             summary_fields.append(f"<li><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
 
+        if send_review_links:
+            summary_fields.append("<li><strong>Review Links Requested:</strong> Yes</li>")
+
         if summary_fields:
             email_html += "<ul>"
             email_html += "".join(summary_fields)
@@ -640,6 +644,20 @@ def case_result():
         msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
         msg.html = email_html
         mail.send(msg)
+
+        # Save to database, including send_review_links
+        case_result_obj = CaseResult(
+            defendant_name=defendant_name,
+            notes=notes,
+            date_disposition=date_disposition,
+            was_continued=was_continued,
+            continuation_date=continuation_date,
+            send_review_links=send_review_links
+            # Add other fields if necessary
+        )
+        db.session.add(case_result_obj)
+        db.session.commit()
+
         submitted = True
         return redirect(url_for('update_success'))
     return render_template('case_result.html', submitted=submitted)
