@@ -315,7 +315,7 @@ def intake():
             except ValueError:
                 formatted_time = new_lead.court_time
 
-        msg = Message(f"PC: {last_name}, {first_name}",
+        msg = Message(f"PC: {first_name} {last_name}",
                       recipients=["attorneys@dischleylaw.com"],
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
@@ -429,7 +429,6 @@ def update_lead_token(token):
         return redirect(url_for("login"))
 
 @app.route("/lead/<int:lead_id>/update", methods=["POST"])
-@login_required
 def update_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
 
@@ -524,8 +523,7 @@ def update_lead(lead_id):
         if value:
             email_html += f"<li><strong>{label}:</strong> {value}</li>"
     # Add homework checkboxes to email
-    if lead.homework_reckless: email_html += "<li><strong>Reckless Driving Course:</strong> ✅</li>"
-    if lead.homework_aggressive: email_html += "<li><strong>Aggressive Driving Course:</strong> ✅</li>"
+    if getattr(lead, "homework_reckless_program", None): email_html += "<li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
     if lead.homework_driver_improvement: email_html += "<li><strong>Driver Improvement Course:</strong> ✅</li>"
     if lead.homework_community_service:
         email_html += "<li><strong>Community Service:</strong> ✅"
@@ -537,7 +535,6 @@ def update_lead(lead_id):
     if lead.homework_asap: email_html += "<li><strong>Pre-enroll in ASAP:</strong> ✅</li>"
     if lead.homework_shoplifting: email_html += "<li><strong>Shoplifting Class:</strong> ✅</li>"
     # Additional homework fields for email
-    if getattr(lead, "homework_reckless_program", None): email_html += "<li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
     if getattr(lead, "homework_speedometer", None): email_html += "<li><strong>Speedometer Calibration:</strong> ✅</li>"
     if getattr(lead, "homework_medical_conditions", None): email_html += "<li><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
     if getattr(lead, "homework_photos", None): email_html += "<li><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
