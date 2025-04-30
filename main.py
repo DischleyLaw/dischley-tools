@@ -266,6 +266,8 @@ def intake():
         # Generate secure tokenized link for viewing the lead (valid for 24 hours)
         token = serializer.dumps(str(new_lead.id), salt="view-lead")
         lead_url = url_for("view_lead_token", token=token, _external=True)
+        update_token = serializer.dumps(str(new_lead.id), salt="view-lead")
+        update_url = url_for("update_lead_token", token=update_token, _external=True)
 
         # Format court_date if available
         formatted_date = ""
@@ -334,6 +336,7 @@ def intake():
                 email_html += f"<li><strong>{label}:</strong> {value}</li>"
         email_html += "</ul>"
         email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
+        email_html += f"<p><a href='{update_url}'>Update Lead</a></p>"
         msg.html = email_html
         mail.send(msg)
 
@@ -387,6 +390,14 @@ def view_lead_token(token):
         return render_template("view_lead.html", lead=lead)
     except Exception:
         flash("This link has expired or is invalid.", "danger")
+        return redirect(url_for("login"))
+@app.route("/update_lead_token/<token>", methods=["POST"])
+def update_lead_token(token):
+    try:
+        lead_id = serializer.loads(token, salt="view-lead", max_age=86400)
+        return update_lead(lead_id)
+    except Exception:
+        flash("This update link has expired or is invalid.", "danger")
         return redirect(url_for("login"))
 
 @app.route("/lead/<int:lead_id>/update", methods=["POST"])
