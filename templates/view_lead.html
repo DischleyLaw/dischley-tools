@@ -1,22 +1,41 @@
 {% extends "base.html" %}
 {% block content %}
-<h2>All Leads</h2>
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Phone</th>
-    <th>Email</th>
-    <th>Date</th>
-    <th>Action</th>
-  </tr>
-  {% for lead in leads %}
-  <tr>
-    <td>{{ lead.name }}</td>
-    <td>{{ lead.phone }}</td>
-    <td>{{ lead.email }}</td>
-    <td>{{ lead.created_at.strftime('%B %d, %Y') }}</td>
-    <td><a href="{{ url_for('view_lead', lead_id=lead.id) }}">View / Edit</a></td>
-  </tr>
-  {% endfor %}
-</table>
+<div class="intake-card">
+  <h2 class="mb-4">Manage Lead</h2>
+  <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
+    <div class="mb-3">
+      <label for="name" class="form-label">Name</label>
+      <input type="text" name="name" class="form-control" value="{{ lead.name }}">
+    </div>
+    <div class="mb-3">
+      <label for="phone" class="form-label">Phone</label>
+      <input type="tel" name="phone" class="form-control" value="{{ lead.phone }}">
+    </div>
+    <div class="mb-3">
+      <label for="email" class="form-label">Email</label>
+      <input type="email" name="email" class="form-control" value="{{ lead.email }}">
+    </div>
+    <div class="mb-3">
+      <label for="court" class="form-label">Court</label>
+      <input type="text" name="court" class="form-control" value="{{ lead.court }}">
+    </div>
+    <div class="mb-3">
+      <label for="charges" class="form-label">Charges</label>
+      <textarea name="charges" class="form-control">{{ lead.charges }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="facts" class="form-label">Facts</label>
+      <textarea name="facts" class="form-control">{{ lead.facts }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="notes" class="form-label">Notes</label>
+      <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
+    </div>
+    <div class="mb-3">
+      <label for="homework" class="form-label">Homework</label>
+      <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Update Lead</button>
+  </form>
+</div>
 {% endblock %}
