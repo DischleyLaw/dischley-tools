@@ -49,6 +49,7 @@
   <div id="charges-section">
     <h2 class="h5 mt-4 mb-3">Charge Details</h2>
     <div class="charge-block border rounded p-3 mb-3">
+      <h3 class="h6">Charge 1</h3>
       <div class="mb-3 form-floating">
         <textarea class="form-control" name="original_charge" placeholder="Original Charge" style="height: 80px;"></textarea>
         <label for="original_charge">Original Charge:</label>
@@ -76,6 +77,9 @@
           <option value="Continued">Continued</option>
         </select>
         <label for="disposition">Disposition:</label>
+      </div>
+      <div class="text-end">
+        <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.charge-block').remove(); updateChargeLabels();">Remove</button>
       </div>
     </div>
   </div>
@@ -176,6 +180,34 @@ function addCharge() {
   // Clear input fields in the cloned block
   Array.from(clone.querySelectorAll('textarea, select')).forEach(el => el.value = "");
   section.appendChild(clone);
+
+  const blocks = document.querySelectorAll('.charge-block');
+  blocks.forEach((block, index) => {
+    const heading = block.querySelector('h3');
+    if (!heading) {
+      const h3 = document.createElement('h3');
+      h3.className = 'h6';
+      h3.textContent = `Charge ${index + 1}`;
+      block.prepend(h3);
+    } else {
+      heading.textContent = `Charge ${index + 1}`;
+    }
+  });
+}
+
+function updateChargeLabels() {
+  const blocks = document.querySelectorAll('.charge-block');
+  blocks.forEach((block, index) => {
+    const heading = block.querySelector('h3');
+    if (!heading) {
+      const h3 = document.createElement('h3');
+      h3.className = 'h6';
+      h3.textContent = `Charge ${index + 1}`;
+      block.prepend(h3);
+    } else {
+      heading.textContent = `Charge ${index + 1}`;
+    }
+  });
 }
 
 document.getElementById('was_continued').addEventListener('change', function() {
