@@ -297,8 +297,7 @@ def intake():
             if value:
                 email_html += f"<li><strong>{label}:</strong> {value}</li>"
         email_html += "</ul>"
-        email_html += f"<p><a href='{lead_url}'>View Lead</a></p>"
-        email_html += f"<p><a href='{admin_edit_url}'>Edit Lead (Admin Only)</a></p>"
+        email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
         msg.html = email_html
         mail.send(msg)
 
