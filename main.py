@@ -67,6 +67,7 @@ def admin_edit_lead(lead_id):
         lead.court = request.form.get("court", lead.court)
         lead.notes = request.form.get("notes", lead.notes)
         lead.facts = request.form.get("facts", lead.facts)
+        lead.homework = request.form.get("homework", lead.homework)
         lead.lead_source = request.form.get("lead_source", lead.lead_source)
         lead.case_type = request.form.get("case_type", lead.case_type)
         lead.staff_member = request.form.get("staff_member", lead.staff_member)
@@ -97,6 +98,7 @@ class Lead(db.Model):
     charges = db.Column(db.Text)
     staff_member = db.Column(db.String(100))
     absence_waiver = db.Column(db.Boolean, default=False)
+    homework = db.Column(db.Text)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -233,6 +235,7 @@ def intake():
             case_type=case_type,
             charges=data.get("charges"),
             staff_member=staff_member,
+            homework=data.get("homework"),
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -269,6 +272,7 @@ def intake():
             ("Court Time", new_lead.court_time),
             ("Facts", new_lead.facts),
             ("Notes", new_lead.notes),
+            ("Homework", new_lead.homework),
             ("Staff Member", staff_member),
             ("Attorney", data.get("attorney")),
             ("Lead Source", lead_source if lead_source and lead_source != "Other" else None),
@@ -295,7 +299,13 @@ def intake():
                 "from_last": new_lead.name.split()[-1],
                 "from_email": new_lead.email,
                 "from_phone": new_lead.phone,
-                "from_message": f"Case Type: {case_type}, Charges: {new_lead.charges}, Notes: {new_lead.notes}, Facts: {new_lead.facts}",
+                "from_message": (
+                    f"Case Type: {case_type}, "
+                    f"Charges: {new_lead.charges}, "
+                    f"Notes: {new_lead.notes}, "
+                    f"Facts: {new_lead.facts}, "
+                    f"Homework: {new_lead.homework}"
+                ),
                 "referring_url": "http://127.0.0.1:5000/intake",
                 "from_source": custom_source or lead_source
             },
@@ -344,6 +354,7 @@ def update_lead(lead_id):
     lead.custom_source = request.form.get("custom_source", lead.custom_source)
     lead.staff_member = request.form.get("staff_member", lead.staff_member)
     lead.absence_waiver = 'absence_waiver' in request.form
+    lead.homework = request.form.get("homework", lead.homework)
 
     db.session.commit()
 
@@ -373,6 +384,8 @@ def update_lead(lead_id):
         email_html += f"<li><strong>Brief Description of the Facts:</strong> {lead.facts}</li>"
     if lead.notes:
         email_html += f"<li><strong>Notes:</strong> {lead.notes}</li>"
+    if lead.homework:
+        email_html += f"<li><strong>Homework:</strong> {lead.homework}</li>"
     if lead.staff_member:
         email_html += f"<li><strong>Staff Member:</strong> {lead.staff_member}</li>"
     if request.form.get("attorney"):
@@ -393,8 +406,8 @@ def update_lead(lead_id):
     # Optional: Send auto-email to client if LVM is checked and client email exists
     if lead.lvm and lead.email:
         client_name = lead.name if lead.name else "there"
-        # Extract attorney from form
-        attorney = request.form.get("attorney", "")
+        # Extract attorney from form, stripping whitespace
+        attorney = request.form.get("attorney", "").strip()
         # Set callback number conditionally
         if "patrick" in attorney.lower():
             callback_number = "571-352-1733"
@@ -415,6 +428,7 @@ We attempted to reach you by phone but were unable to connect. At your convenien
 You can reach us at ({callback_number}). We look forward to speaking with you.
 
 Best regards,
+{attorney}
 Dischley Law, PLLC
 ({callback_number})
 attorneys@dischleylaw.com
