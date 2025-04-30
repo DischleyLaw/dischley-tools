@@ -80,8 +80,15 @@
           <option value="Dismissed">Dismissed</option>
           <option value="Nolle Prosequi">Nolle Prosequi</option>
           <option value="Continued">Continued</option>
+          <option value="Deferred">Deferred</option>
+          <option value="298.02">298.02</option>
+          <option value="General Continuance">General Continuance</option>
         </select>
         <label for="disposition">Disposition:</label>
+      </div>
+      <div class="mb-3 form-floating disposition-paragraph" style="display: none;">
+        <textarea class="form-control" name="disposition_paragraph[]" placeholder="Disposition Narrative" style="height: 100px;"></textarea>
+        <label>Disposition Narrative</label>
       </div>
       <div class="mb-3">
         <div class="form-check form-check-inline">
@@ -109,57 +116,55 @@
         <label>Restriction Type</label>
       </div>
 
-      <h4 class="h6 mt-4">Sentencing</h4>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Jail Time Imposed (days)">
-        <label for="jail_time_imposed">Jail Time Imposed (days):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Jail Time Suspended (days)">
-        <label for="jail_time_suspended">Jail Time Suspended (days):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed ($)">
-        <label for="fine_imposed">Fine Imposed ($):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" name="fine_suspended[]" placeholder="Fine Suspended ($)">
-        <label for="fine_suspended">Fine Suspended ($):</label>
-      </div>
+      <div class="sentencing-and-probation">
+        <h4 class="h6 mt-4">Sentencing</h4>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Jail Time Imposed (days)">
+          <label for="jail_time_imposed">Jail Time Imposed (days):</label>
+        </div>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Jail Time Suspended (days)">
+          <label for="jail_time_suspended">Jail Time Suspended (days):</label>
+        </div>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed ($)">
+          <label for="fine_imposed">Fine Imposed ($):</label>
+        </div>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="fine_suspended[]" placeholder="Fine Suspended ($)">
+          <label for="fine_suspended">Fine Suspended ($):</label>
+        </div>
 
-      <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
-      <div class="mb-3 form-floating">
-        <select class="form-control" name="probation_type[]" id="probation_type" placeholder="Probation Type">
-          <option value="" selected>None</option>
-          <option value="Supervised">Supervised</option>
-          <option value="Unsupervised">Unsupervised</option>
-        </select>
-        <label for="probation_type">Probation Type:</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
-        <label for="probation_term">Probation Term:</label>
-      </div>
-      <div class="mb-3">
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" placeholder="VASAP">
-          <label class="form-check-label" for="vasap">VASAP</label>
+        <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
+        <div class="mb-3 form-floating">
+          <select class="form-control" name="probation_type[]" id="probation_type" placeholder="Probation Type">
+            <option value="" selected>None</option>
+            <option value="Supervised">Supervised</option>
+            <option value="Unsupervised">Unsupervised</option>
+          </select>
+          <label for="probation_type">Probation Type:</label>
         </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vip[]" id="vip" placeholder="VIP">
-          <label class="form-check-label" for="vip">VIP</label>
+        <div class="mb-3 form-floating">
+          <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
+          <label for="probation_term">Probation Term:</label>
         </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" placeholder="Community Service">
-          <label class="form-check-label" for="community_service">Community Service</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" placeholder="Anger Management">
-          <label class="form-check-label" for="anger_management">Anger Management</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="absence_waiver[]" id="absence_waiver" placeholder="Absence Waiver">
-          <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+        <div class="mb-3">
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" placeholder="VASAP">
+            <label class="form-check-label" for="vasap">VASAP</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="vip[]" id="vip" placeholder="VIP">
+            <label class="form-check-label" for="vip">VIP</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" placeholder="Community Service">
+            <label class="form-check-label" for="community_service">Community Service</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" placeholder="Anger Management">
+            <label class="form-check-label" for="anger_management">Anger Management</label>
+          </div>
         </div>
       </div>
 
@@ -226,6 +231,8 @@ function addCharge() {
     el.style.display = 'none';
   });
 
+  clone.querySelector('.disposition-paragraph').style.display = 'none';
+
   // Update heading
   const heading = clone.querySelector('h3');
   if (heading) {
@@ -277,6 +284,21 @@ document.addEventListener('change', function(e) {
       if (restrictionType) restrictionType.style.display = 'block';
     } else {
       if (restrictionType) restrictionType.style.display = 'none';
+    }
+  }
+  
+  if (e.target.name === 'disposition[]') {
+    const block = e.target.closest('.charge-block');
+    const textAreaBlock = block.querySelector('.disposition-paragraph');
+    const val = e.target.value;
+    if (["Deferred", "298.02", "General Continuance"].includes(val)) {
+      textAreaBlock.style.display = 'block';
+      const sentencingBlock = block.querySelector('.sentencing-and-probation');
+      if (sentencingBlock) sentencingBlock.style.display = 'none';
+    } else {
+      textAreaBlock.style.display = 'none';
+      const sentencingBlock = block.querySelector('.sentencing-and-probation');
+      if (sentencingBlock) sentencingBlock.style.display = 'block';
     }
   }
 });

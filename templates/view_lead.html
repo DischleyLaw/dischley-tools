@@ -34,12 +34,20 @@
     <div class="mb-3">
       <label class="form-label">Homework:</label>
       <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_aggressive" id="homework_aggressive">
-        <label class="form-check-label" for="homework_aggressive">Aggressive Driving Course</label>
+        <input class="form-check-input" type="checkbox" name="homework_driving_record" id="homework_driving_record">
+        <label class="form-check-label" for="homework_driving_record">Driving Record</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_reckless_program" id="homework_reckless_program">
+        <label class="form-check-label" for="homework_reckless_program">Reckless/Aggressive Driving Program</label>
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_driver_improvement" id="homework_driver_improvement">
         <label class="form-check-label" for="homework_driver_improvement">Driver Improvement Course</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_speedometer" id="homework_speedometer">
+        <label class="form-check-label" for="homework_speedometer">Speedometer Calibration</label>
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_community_service" id="homework_community_service">
@@ -54,10 +62,6 @@
         <label class="form-check-label" for="homework_substance_evaluation">Substance Abuse Evaluation</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_driving_record" id="homework_driving_record">
-        <label class="form-check-label" for="homework_driving_record">Driving Record</label>
-      </div>
-      <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_asap" id="homework_asap">
         <label class="form-check-label" for="homework_asap">Pre-enroll in ASAP</label>
       </div>
@@ -66,8 +70,48 @@
         <label class="form-check-label" for="homework_shoplifting">Shoplifting Class</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
-        <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+        <input class="form-check-input" type="checkbox" name="homework_medical_conditions" id="homework_medical_conditions">
+        <label class="form-check-label" for="homework_medical_conditions">List of Medical Conditions / Surgeries</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_photos" id="homework_photos">
+        <label class="form-check-label" for="homework_photos">Photographs of Scene (Field Sobriety Testing)</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_shoplifting_program" id="homework_shoplifting_program">
+        <label class="form-check-label" for="homework_shoplifting_program">Shoplifting Theft Offenders Program</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_military_awards" id="homework_military_awards">
+        <label class="form-check-label" for="homework_military_awards">Copies of Military Awards</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_dd214" id="homework_dd214">
+        <label class="form-check-label" for="homework_dd214">Copy of DD-214</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_community_involvement" id="homework_community_involvement">
+        <label class="form-check-label" for="homework_community_involvement">List of Community Involvement</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_anger_management_courseforcourt" id="homework_anger_management_courseforcourt">
+        <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management: Courseforcourt.com</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_vasap" id="homework_vasap">
+        <label class="form-check-label" for="homework_vasap">Pre-Enroll in VASAP</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_substance_abuse_treatment" id="homework_substance_abuse_treatment">
+        <label class="form-check-label" for="homework_substance_abuse_treatment">Substance Abuse Evaluation / Follow-up Treatment</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_substance_abuse_counseling" id="homework_substance_abuse_counseling">
+        <label class="form-check-label" for="homework_substance_abuse_counseling">Substance Abuse Counseling</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
+        <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
       </div>
       <div class="mb-3 form-check">
         <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
@@ -120,6 +164,10 @@
     <div class="mb-3">
       <label for="lead_source" class="form-label">Lead Source</label>
       <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
+      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
     </div>
     <div class="mb-3 form-check">
       <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
