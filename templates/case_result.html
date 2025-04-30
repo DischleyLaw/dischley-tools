@@ -1,4 +1,7 @@
 {% block content %}
+{% extends "base.html" %}
+{% block title %}Case Result{% endblock %}
+{% block content %}
 <style>
   body {
     background: #f8f9fa;
@@ -38,128 +41,133 @@
 {% if submitted %}
 <div class="alert alert-success" role="alert">Form submitted successfully!</div>
 {% endif %}
-<div>
-  <div class="card-body">
-    <form method="POST">
-      <div class="mb-3 form-floating">
-        <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="Defendant Name" required>
-        <label for="defendant_name">Defendant Name:</label>
-      </div>
-
-      <div id="charges-section">
-        <h2 class="h5 mt-4 mb-3">Charge Details</h2>
-        <div class="charge-block border rounded p-3 mb-3">
-          <div class="mb-3 form-floating">
-            <textarea class="form-control" name="original_charge" placeholder="Original Charge" style="height: 80px;"></textarea>
-            <label for="original_charge">Original Charge:</label>
-          </div>
-          <div class="mb-3 form-floating">
-            <textarea class="form-control" name="amended_charge" placeholder="Amended Charge" style="height: 80px;"></textarea>
-            <label for="amended_charge">Amended Charge:</label>
-          </div>
-          <div class="mb-3 form-floating">
-            <select class="form-control" name="plea" placeholder="Plea">
-              <option value="" selected disabled>Select Plea</option>
-              <option value="Guilty">Guilty</option>
-              <option value="Not Guilty">Not Guilty</option>
-              <option value="No Contest">No Contest</option>
-            </select>
-            <label for="plea">Plea:</label>
-          </div>
-          <div class="mb-3 form-floating">
-            <select class="form-control" name="disposition" placeholder="Disposition">
-              <option value="" selected disabled>Select Disposition</option>
-              <option value="Guilty">Guilty</option>
-              <option value="Not Guilty">Not Guilty</option>
-              <option value="Dismissed">Dismissed</option>
-              <option value="Nolle Prosequi">Nolle Prosequi</option>
-              <option value="Continued">Continued</option>
-            </select>
-            <label for="disposition">Disposition:</label>
-          </div>
-        </div>
-      </div>
-
-      <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
-
-      <h2 class="h5 mt-4 mb-3">Sentencing</h2>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed" placeholder="Jail Time Imposed (days)">
-        <label for="jail_time_imposed">Jail Time Imposed (days):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended" placeholder="Jail Time Suspended (days)">
-        <label for="jail_time_suspended">Jail Time Suspended (days):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" id="fine_imposed" name="fine_imposed" placeholder="Fine Imposed ($)">
-        <label for="fine_imposed">Fine Imposed ($):</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="number" class="form-control" id="fine_suspended" name="fine_suspended" placeholder="Fine Suspended ($)">
-        <label for="fine_suspended">Fine Suspended ($):</label>
-      </div>
-
-      <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
-      <div class="mb-3 form-floating">
-        <select class="form-control" name="probation_type" id="probation_type" placeholder="Probation Type">
-          <option value="" selected>None</option>
-          <option value="Supervised">Supervised</option>
-          <option value="Unsupervised">Unsupervised</option>
-        </select>
-        <label for="probation_type">Probation Type:</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <input type="text" class="form-control" id="probation_term" name="probation_term" placeholder="Probation Term">
-        <label for="probation_term">Probation Term:</label>
-      </div>
-      <div class="mb-3 form-floating">
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vasap" id="vasap" placeholder="VASAP">
-          <label class="form-check-label" for="vasap">VASAP</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="vip" id="vip" placeholder="VIP">
-          <label class="form-check-label" for="vip">VIP</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="community_service" id="community_service" placeholder="Community Service">
-          <label class="form-check-label" for="community_service">Community Service</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="anger_management" id="anger_management" placeholder="Anger Management">
-          <label class="form-check-label" for="anger_management">Anger Management</label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" placeholder="Absence Waiver">
-          <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
-        </div>
-      </div>
-
-      <h2 class="h5 mt-4 mb-3">Case Status</h2>
-      <div class="mb-3 form-floating">
-        <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued" placeholder="Case Continued?">
-        <label class="form-check-label" for="was_continued">Case Continued?</label>
-      </div>
-      <div id="continuation_fields" class="mb-3 form-floating" style="display:none;">
-        <input type="datetime-local" class="form-control" id="continuation_date" name="continuation_date" placeholder="Continuation Date & Time">
-        <label for="continuation_date">Continuation Date &amp; Time:</label>
-      </div>
-
-      <div class="mb-3 form-floating">
-        <input type="date" class="form-control" id="date_disposition" name="date_disposition" placeholder="Disposition Date">
-        <label for="date_disposition">Disposition Date:</label>
-      </div>
-
-      <h2 class="h5 mt-4 mb-3">Notes</h2>
-      <div class="mb-3 form-floating">
-        <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
-        <label for="notes">Notes</label>
-      </div>
-
-      <button type="submit" class="btn btn-primary w-100 mt-3">Submit Case Result</button>
-    </form>
+<form method="POST" autocomplete="off">
+  <div class="mb-3 form-floating">
+    <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="Defendant Name" required>
+    <label for="defendant_name">Defendant Name:</label>
   </div>
+
+  <div id="charges-section">
+    <h2 class="h5 mt-4 mb-3">Charge Details</h2>
+    <div class="charge-block border rounded p-3 mb-3">
+      <div class="mb-3 form-floating">
+        <textarea class="form-control" name="original_charge" placeholder="Original Charge" style="height: 80px;"></textarea>
+        <label for="original_charge">Original Charge:</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <textarea class="form-control" name="amended_charge" placeholder="Amended Charge" style="height: 80px;"></textarea>
+        <label for="amended_charge">Amended Charge:</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <select class="form-control" name="plea" placeholder="Plea">
+          <option value="" selected disabled>Select Plea</option>
+          <option value="Guilty">Guilty</option>
+          <option value="Not Guilty">Not Guilty</option>
+          <option value="No Contest">No Contest</option>
+        </select>
+        <label for="plea">Plea:</label>
+      </div>
+      <div class="mb-3 form-floating">
+        <select class="form-control" name="disposition" placeholder="Disposition">
+          <option value="" selected disabled>Select Disposition</option>
+          <option value="Guilty">Guilty</option>
+          <option value="Not Guilty">Not Guilty</option>
+          <option value="Dismissed">Dismissed</option>
+          <option value="Nolle Prosequi">Nolle Prosequi</option>
+          <option value="Continued">Continued</option>
+        </select>
+        <label for="disposition">Disposition:</label>
+      </div>
+    </div>
+  </div>
+
+  <button type="button" class="btn btn-primary w-100 mt-3" onclick="addCharge()">Add Additional Charge</button>
+
+  <h2 class="h5 mt-4 mb-3">Sentencing</h2>
+  <div class="mb-3 form-floating">
+    <input type="number" class="form-control" id="jail_time_imposed" name="jail_time_imposed" placeholder="Jail Time Imposed (days)">
+    <label for="jail_time_imposed">Jail Time Imposed (days):</label>
+  </div>
+  <div class="mb-3 form-floating">
+    <input type="number" class="form-control" id="jail_time_suspended" name="jail_time_suspended" placeholder="Jail Time Suspended (days)">
+    <label for="jail_time_suspended">Jail Time Suspended (days):</label>
+  </div>
+  <div class="mb-3 form-floating">
+    <input type="number" class="form-control" id="fine_imposed" name="fine_imposed" placeholder="Fine Imposed ($)">
+    <label for="fine_imposed">Fine Imposed ($):</label>
+  </div>
+  <div class="mb-3 form-floating">
+    <input type="number" class="form-control" id="fine_suspended" name="fine_suspended" placeholder="Fine Suspended ($)">
+    <label for="fine_suspended">Fine Suspended ($):</label>
+  </div>
+
+  <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
+  <div class="mb-3 form-floating">
+    <select class="form-control" name="probation_type" id="probation_type" placeholder="Probation Type">
+      <option value="" selected>None</option>
+      <option value="Supervised">Supervised</option>
+      <option value="Unsupervised">Unsupervised</option>
+    </select>
+    <label for="probation_type">Probation Type:</label>
+  </div>
+  <div class="mb-3 form-floating">
+    <input type="text" class="form-control" id="probation_term" name="probation_term" placeholder="Probation Term">
+    <label for="probation_term">Probation Term:</label>
+  </div>
+  <div class="mb-3">
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="vasap" id="vasap" placeholder="VASAP">
+      <label class="form-check-label" for="vasap">VASAP</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="vip" id="vip" placeholder="VIP">
+      <label class="form-check-label" for="vip">VIP</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="community_service" id="community_service" placeholder="Community Service">
+      <label class="form-check-label" for="community_service">Community Service</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="anger_management" id="anger_management" placeholder="Anger Management">
+      <label class="form-check-label" for="anger_management">Anger Management</label>
+    </div>
+    <div class="form-check form-check-inline">
+      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" placeholder="Absence Waiver">
+      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+    </div>
+  </div>
+
+  <h2 class="h5 mt-4 mb-3">Case Status</h2>
+  <div class="mb-3">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued" placeholder="Case Continued?">
+      <label class="form-check-label" for="was_continued">Case Continued?</label>
+    </div>
+  </div>
+  <div class="mb-3 row g-2" id="continuation_fields" style="display:none;">
+    <div class="col-12 col-md-6 form-floating mb-3 mb-md-0">
+      <input type="date" class="form-control" id="continuation_date" name="continuation_date" placeholder="Continuation Date">
+      <label for="continuation_date">Continuation Date</label>
+    </div>
+    <div class="col-12 col-md-6 form-floating">
+      <input type="time" class="form-control" id="continuation_time" name="continuation_time" placeholder="Continuation Time">
+      <label for="continuation_time">Continuation Time</label>
+    </div>
+  </div>
+
+  <div class="mb-3 form-floating">
+    <input type="date" class="form-control" id="date_disposition" name="date_disposition" placeholder="Disposition Date">
+    <label for="date_disposition">Disposition Date:</label>
+  </div>
+
+  <h2 class="h5 mt-4 mb-3">Notes</h2>
+  <div class="mb-3 form-floating">
+    <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
+    <label for="notes">Notes</label>
+  </div>
+
+  <button type="submit" class="btn btn-primary w-100 mt-3">Submit Case Result</button>
+</form>
 </div>
 
 <script>
@@ -172,8 +180,7 @@ function addCharge() {
 }
 
 document.getElementById('was_continued').addEventListener('change', function() {
-  document.getElementById('continuation_fields').style.display = this.checked ? 'block' : 'none';
+  document.getElementById('continuation_fields').style.display = this.checked ? 'flex' : 'none';
 });
 </script>
-</div>
 {% endblock %}
