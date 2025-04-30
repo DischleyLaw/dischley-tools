@@ -424,12 +424,13 @@ def update_lead(lead_id):
         client_name = lead.name if lead.name else "there"
         # Extract attorney from form, stripping whitespace
         attorney = request.form.get("attorney", "An Attorney").strip()
-        # Set callback number conditionally
-        if "patrick" in attorney.lower():
+        # Set callback number and reply email based on explicit attorney name check
+        if "patrick o'brien" in attorney.lower():
             callback_number = "571-352-1733"
+            reply_email = "patrick@dischleylaw.com"
         else:
             callback_number = "703-851-7137"
-        reply_email = "patrick@dischleylaw.com" if "patrick" in attorney.lower() else "david@dischleylaw.com"
+            reply_email = "david@dischleylaw.com"
         auto_msg = Message(
             "Thank You for Your Inquiry",
             recipients=[lead.email],

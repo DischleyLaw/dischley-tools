@@ -43,13 +43,32 @@
       <label for="court_time" class="form-label">Court Time</label>
       <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
     </div>
-    <div class="mb-3">
-      <label for="staff_member" class="form-label">Staff Member</label>
-      <input type="text" name="staff_member" class="form-control" value="{{ lead.staff_member }}">
+    <div class="mb-3 form-floating">
+      <select name="staff_member" class="form-select" id="staffMemberSelect">
+        <option value="">-- Select Staff Member --</option>
+        <option value="Tatum Brownlee" {% if lead.staff_member == "Tatum Brownlee" %}selected{% endif %}>Tatum Brownlee</option>
+        <option value="Nicole Purvis" {% if lead.staff_member == "Nicole Purvis" %}selected{% endif %}>Nicole Purvis</option>
+        <option value="Patrick O'Brien" {% if lead.staff_member == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+        <option value="David Dischley" {% if lead.staff_member == "David Dischley" %}selected{% endif %}>David Dischley</option>
+      </select>
+      <label for="staffMemberSelect" class="form-label">Staff Member</label>
     </div>
-    <div class="mb-3">
-      <label for="case_type" class="form-label">Case Type</label>
-      <input type="text" name="case_type" class="form-control" value="{{ lead.case_type }}">
+    <div class="mb-3 form-floating">
+      <select name="case_type" id="caseTypeDropdown" class="form-select">
+        <option value="">-- Select Case Type --</option>
+        <option value="Criminal" {% if lead.case_type == "Criminal" %}selected{% endif %}>Criminal</option>
+        <option value="DUI" {% if lead.case_type == "DUI" %}selected{% endif %}>DUI</option>
+        <option value="Traffic" {% if lead.case_type == "Traffic" %}selected{% endif %}>Traffic</option>
+        <option value="Protective Order" {% if lead.case_type == "Protective Order" %}selected{% endif %}>Protective Order</option>
+        <option value="Expungement" {% if lead.case_type == "Expungement" %}selected{% endif %}>Expungement</option>
+        <option value="Probation Violation" {% if lead.case_type == "Probation Violation" %}selected{% endif %}>Probation Violation</option>
+        <option value="Civil" {% if lead.case_type == "Civil" %}selected{% endif %}>Civil</option>
+      </select>
+      <label for="caseTypeDropdown" class="form-label">Type of Case</label>
+    </div>
+    <div class="mb-3 form-floating">
+      <input type="text" name="attorney" class="form-control" placeholder="Attorney" value="{{ lead.attorney if lead.attorney }}">
+      <label for="attorney" class="form-label">Attorney</label>
     </div>
     <div class="mb-3">
       <label for="lead_source" class="form-label">Lead Source</label>
