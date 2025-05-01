@@ -113,6 +113,10 @@
         <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
         <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
       </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_no_hw" id="homework_no_hw">
+        <label class="form-check-label" for="homework_no_hw">NO HW</label>
+      </div>
       <div class="mb-3 form-check">
         <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
         <label class="form-check-label" for="toggleAdditionalHomework">Additional Homework</label>
@@ -153,6 +157,10 @@
       </select>
       <label for="caseTypeDropdown" class="form-label">Type of Case</label>
     </div>
+    <div class="mb-3">
+      <label for="lead_source" class="form-label">Lead Source</label>
+      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+    </div>
     <div class="mb-3 form-floating">
       <select name="attorney" id="attorney" class="form-select">
         <option value="">-- Select Attorney --</option>
@@ -161,13 +169,9 @@
       </select>
       <label for="attorney" class="form-label">Attorney</label>
     </div>
-    <div class="mb-3">
-      <label class="form-label"><strong>Status:</strong></label>
-      <div>Calling</div>
-    </div>
-    <div class="mb-3">
-      <label for="lead_source" class="form-label">Lead Source</label>
-      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+    <div class="mb-3 form-check">
+      <input type="checkbox" name="calling" class="form-check-input" id="calling" {% if lead.calling %}checked{% endif %}>
+      <label class="form-check-label" for="calling">Calling</label>
     </div>
     <div class="form-check">
       <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
@@ -189,7 +193,11 @@
       <input type="checkbox" name="not_pc" class="form-check-input" id="notPC" {% if lead.not_pc %}checked{% endif %}>
       <label class="form-check-label" for="notPC">Not a Potential Client</label>
     </div>
-    <div class="mb-3">
+    <div class="mb-3 form-check">
+      <input type="checkbox" class="form-check-input" id="toggleQuote" name="toggle_quote">
+      <label class="form-check-label" for="toggleQuote">Quote Given</label>
+    </div>
+    <div class="mb-3" id="quoteAmountField" style="display: none;">
       <label for="quote" class="form-label">Quoted Amount</label>
       <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
     </div>
@@ -208,6 +216,13 @@
     const homeworkBox = document.getElementById("additionalHomeworkBox");
     toggleHomework.addEventListener("change", function () {
       homeworkBox.style.display = this.checked ? "block" : "none";
+    });
+
+    // Quote toggle logic
+    const toggleQuote = document.getElementById("toggleQuote");
+    const quoteField = document.getElementById("quoteAmountField");
+    toggleQuote.addEventListener("change", function () {
+      quoteField.style.display = this.checked ? "block" : "none";
     });
   });
 </script>

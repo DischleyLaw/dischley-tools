@@ -134,6 +134,10 @@ class Lead(db.Model):
     homework_substance_abuse_counseling = db.Column(db.Boolean, default=False)
     homework_transcripts = db.Column(db.Boolean, default=False)
     calling = db.Column(db.Boolean, default=False)
+    homework_additional = db.Column(db.Boolean, default=False)
+    homework_additional_notes = db.Column(db.String(200))
+    # New field: NO HW
+    homework_no_hw = db.Column(db.Boolean, default=False)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -483,12 +487,18 @@ def update_lead(lead_id):
     lead.homework_substance_abuse_treatment = 'homework_substance_abuse_treatment' in request.form
     lead.homework_substance_abuse_counseling = 'homework_substance_abuse_counseling' in request.form
     lead.homework_transcripts = 'homework_transcripts' in request.form
+    # New: homework_no_hw
+    lead.homework_no_hw = 'homework_no_hw' in request.form
 
     # --- New logic for "Calling" field ---
     if 'calling' in request.form:
         lead.calling = True
     else:
         lead.calling = False
+
+    # --- New logic for homework_additional and notes ---
+    lead.homework_additional = 'homework_additional' in request.form
+    lead.homework_additional_notes = request.form.get("homework_additional_notes", "").strip()
 
     db.session.commit()
 
@@ -505,12 +515,12 @@ def update_lead(lead_id):
     if lead.calling:
         status_parts.append("Calling")
     status_str = " | ".join(status_parts)
-    subject_line = f"Lead Updated - {status_str if status_str else 'No Status'}"
+    subject_line = f"Lead Updated - (Name)"
     # Prepare update email (HTML)
     msg = Message(subject_line,
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    email_html = "<h2>Lead Updated</h2>"
+    email_html = "<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2>"
     email_html += "<ul style='list-style-type:none;padding-left:0;'>"
     # Formatting for court date and time
     formatted_court_date = None
@@ -578,6 +588,12 @@ def update_lead(lead_id):
     if getattr(lead, "homework_substance_abuse_treatment", None): email_html += "<li><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
     if getattr(lead, "homework_substance_abuse_counseling", None): email_html += "<li><strong>Substance Abuse Counseling:</strong> ✅</li>"
     if getattr(lead, "homework_transcripts", None): email_html += "<li><strong>High School or College Transcripts:</strong> ✅</li>"
+    # New: NO HW
+    if getattr(lead, "homework_no_hw", None): email_html += "<li><strong>NO HW:</strong> ✅</li>"
+    # Additional Homework (with notes)
+    if getattr(lead, "homework_additional", None):
+        note = lead.homework_additional_notes or ""
+        email_html += f"<li><strong>Additional Homework:</strong> ✅ {note}</li>"
     email_html += "</ul>"
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
