@@ -111,7 +111,7 @@ class Lead(db.Model):
     charges = db.Column(db.Text)
     staff_member = db.Column(db.String(100))
     absence_waiver = db.Column(db.Boolean, default=False)
-    homework = db.Column(db.Text)
+    homework = db.Column(db.Text, default="")
     # New homework checkboxes/fields (revised list, specified order)
     homework_driving_record = db.Column(db.Boolean, default=False)
     homework_reckless_program = db.Column(db.Boolean, default=False)
