@@ -515,12 +515,12 @@ def update_lead(lead_id):
     if lead.calling:
         status_parts.append("Calling")
     status_str = " | ".join(status_parts)
-    subject_line = f"Lead Updated - (Name)"
+    subject_line = f"Lead Updated - {lead.name}"
     # Prepare update email (HTML)
     msg = Message(subject_line,
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    email_html = "<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2>"
+    email_html = f"<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2>"
     email_html += "<ul style='list-style-type:none;padding-left:0;'>"
     # Formatting for court date and time
     formatted_court_date = None
