@@ -433,25 +433,26 @@ def update_lead_token(token):
 def update_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
 
-    lead.name = request.form.get("name", lead.name)
-    lead.phone = request.form.get("phone", lead.phone)
-    lead.email = request.form.get("email", lead.email)
-    lead.charges = request.form.get("charges", lead.charges)
-    lead.court_date = request.form.get("court_date", lead.court_date)
-    lead.court_time = request.form.get("court_time", lead.court_time)
-    lead.court = request.form.get("court", lead.court)
-    lead.notes = request.form.get("notes", lead.notes)
-    lead.facts = request.form.get("facts", lead.facts)
+    lead.name = request.form.get("name") if request.form.get("name") else lead.name
+    lead.phone = request.form.get("phone") if request.form.get("phone") else lead.phone
+    lead.email = request.form.get("email") if request.form.get("email") else lead.email
+    lead.charges = request.form.get("charges") if request.form.get("charges") else lead.charges
+    lead.court_date = request.form.get("court_date") if request.form.get("court_date") else lead.court_date
+    lead.court_time = request.form.get("court_time") if request.form.get("court_time") else lead.court_time
+    lead.court = request.form.get("court") if request.form.get("court") else lead.court
+    lead.notes = request.form.get("notes") if request.form.get("notes") else lead.notes
+    lead.facts = request.form.get("facts") if request.form.get("facts") else lead.facts
     lead.send_retainer = 'send_retainer' in request.form
     lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
-    lead.quote = request.form.get("quote")
-    lead.lead_source = request.form.get("lead_source", lead.lead_source)
-    lead.custom_source = request.form.get("custom_source", lead.custom_source)
-    lead.staff_member = request.form.get("staff_member", lead.staff_member)
+    lead.quote = request.form.get("quote") if request.form.get("quote") else lead.quote
+    lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
+    lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
+    lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
+    lead.staff_member = request.form.get("staff_member") if request.form.get("staff_member") else lead.staff_member
     lead.absence_waiver = 'absence_waiver' in request.form
-    lead.homework = request.form.get("homework", lead.homework)
+    lead.homework = request.form.get("homework") if request.form.get("homework") else lead.homework
 
     # New homework checkbox fields (revised list, specified order)
     lead.homework_driving_record = 'homework_driving_record' in request.form
@@ -459,7 +460,9 @@ def update_lead(lead_id):
     lead.homework_driver_improvement = 'homework_driver_improvement' in request.form
     lead.homework_speedometer = 'homework_speedometer' in request.form
     lead.homework_community_service = 'homework_community_service' in request.form
-    lead.homework_community_service_hours = request.form.get('homework_community_service_hours', '')
+    # Preserve existing hours if not provided
+    homework_community_service_hours_val = request.form.get('homework_community_service_hours')
+    lead.homework_community_service_hours = homework_community_service_hours_val if homework_community_service_hours_val is not None and homework_community_service_hours_val != "" else lead.homework_community_service_hours
     lead.homework_substance_evaluation = 'homework_substance_evaluation' in request.form
     lead.homework_asap = 'homework_asap' in request.form
     lead.homework_shoplifting = 'homework_shoplifting' in request.form
@@ -553,8 +556,8 @@ def update_lead(lead_id):
     msg.html = email_html
     mail.send(msg)
 
-    # Optional: Send auto-email to client if LVM is checked and client email exists
-    if lead.lvm and lead.email:
+    # Optional: Send auto-email to client if LVM is checked and client email exists and attorney is provided
+    if lead.lvm and lead.email and request.form.get("attorney"):
         client_name = lead.name if lead.name else "there"
         # Extract attorney from form, stripping whitespace
         attorney = request.form.get("attorney", "An Attorney").strip()
