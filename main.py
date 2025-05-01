@@ -446,13 +446,18 @@ def update_lead(lead_id):
     lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
-    lead.quote = request.form.get("quote") if request.form.get("quote") else lead.quote
+    # Only update quote if input is not None and not empty/whitespace
+    quote_input = request.form.get("quote")
+    if quote_input is not None and quote_input.strip() != "":
+        lead.quote = quote_input
     lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
     lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
     lead.staff_member = request.form.get("staff_member") if request.form.get("staff_member") else lead.staff_member
     lead.absence_waiver = 'absence_waiver' in request.form
-    lead.homework = request.form.get("homework") if request.form.get("homework") else lead.homework
+    homework_input = request.form.get("homework")
+    if homework_input is not None and homework_input.strip() != "":
+        lead.homework = homework_input
 
     # New homework checkbox fields (revised list, specified order)
     lead.homework_driving_record = 'homework_driving_record' in request.form
@@ -511,7 +516,6 @@ def update_lead(lead_id):
         ("Court Time", formatted_time),
         ("Brief Description of the Facts", lead.facts),
         ("Notes", lead.notes),
-        ("Homework", lead.homework),
         ("Staff Member", lead.staff_member),
         ("Attorney", request.form.get("attorney")),
         ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
@@ -520,8 +524,9 @@ def update_lead(lead_id):
         ("Retainer Amount", lead.retainer_amount),
         ("LVM", "✅" if lead.lvm else None),
         ("Not a PC", "✅" if lead.not_pc else None),
-        ("Quote", lead.quote),
+        ("Quote", lead.quote if lead.quote else None),
         ("Absence Waiver", "✅" if lead.absence_waiver else None),
+        ("Homework", lead.homework if lead.homework else None),
     ]
     for label, value in field_items:
         if value:
