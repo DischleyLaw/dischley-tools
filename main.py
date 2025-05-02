@@ -510,8 +510,8 @@ def update_lead(lead_id):
         status_parts.append("LVM")
     if lead.not_pc:
         status_parts.append("Not a PC")
-    # Ensure quote is only added if not empty or whitespace (using stricter check)
-    if lead.quote and lead.quote.strip() != "":
+    # Ensure quote is only added if not None and not empty/whitespace
+    if lead.quote is not None and lead.quote.strip():
         status_parts.append(f"Quote: ${lead.quote.strip()}")
     if lead.calling:
         status_parts.append("Calling")
@@ -557,7 +557,7 @@ def update_lead(lead_id):
         ("Retainer Amount", lead.retainer_amount),
         ("LVM", "✅" if lead.lvm else None),
         ("Not a PC", "✅" if lead.not_pc else None),
-        ("Quote", f"${lead.quote.strip()}" if lead.quote and lead.quote.strip() else None),
+        ("Quote", f"${lead.quote.strip()}" if lead.quote is not None and lead.quote.strip() else None),
         ("Absence Waiver", "✅" if lead.absence_waiver else None),
         ("Homework", lead.homework if lead.homework else None),
         ("Calling", "✅" if lead.calling else None),
