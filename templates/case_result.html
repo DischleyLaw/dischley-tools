@@ -331,11 +331,14 @@ contactInput.addEventListener("input", function () {
         data.data.forEach(contact => {
           let name = "";
           if (contact.type === "Person") {
-            name = `${(contact.first_name || "").trim()} ${(contact.last_name || "").trim()}`.trim();
+            const first = contact.first_name || "";
+            const last = contact.last_name || "";
+            name = `${first.trim()} ${last.trim()}`.trim();
           } else if (contact.type === "Company") {
             name = contact.name?.trim() || "";
           }
           if (!name) return;
+
           const option = document.createElement("option");
           option.value = name;
           option.dataset.contactId = contact.id;
