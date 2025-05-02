@@ -327,11 +327,10 @@ searchInput.addEventListener("input", function () {
       dataList.innerHTML = "";
       if (data.data) {
         data.data.forEach(matter => {
-          const value = matter.display_number;
-          const label = `${matter.display_number} - ${matter.description || ""}`;
+          const display = `${matter.display_number} - ${matter.description || ""}`;
           const option = document.createElement("option");
-          option.value = value;
-          matterMap[value] = matter.client?.name || "";
+          option.value = display;
+          matterMap[display] = matter.client?.name || "";
           dataList.appendChild(option);
         });
       }
@@ -341,8 +340,9 @@ searchInput.addEventListener("input", function () {
 
 searchInput.addEventListener("change", function () {
   const selected = this.value;
-  if (matterMap[selected]) {
-    document.getElementById("defendant_name").value = matterMap[selected];
+  const name = matterMap[selected];
+  if (name) {
+    document.getElementById("defendant_name").value = name;
   }
 });
 </script>

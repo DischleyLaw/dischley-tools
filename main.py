@@ -747,7 +747,7 @@ def case_result():
                     response = requests.get(search_url, headers=headers)
                     if response.status_code == 200:
                         for matter in response.json().get("data", []):
-                            if matter.get("display_number") == selected_display_name:
+                            if matter.get("display_number") and matter.get("display_number") in selected_display_name:
                                 defendant_name = matter.get("client", {}).get("name", selected_display_name)
                                 break
                 except Exception as e:
@@ -763,7 +763,7 @@ def case_result():
                 response = requests.get(search_url, headers=headers)
                 if response.status_code == 200:
                     for matter in response.json().get("data", []):
-                        if matter.get("display_number") == selected_display_name:
+                        if matter.get("display_number") and matter.get("display_number") in selected_display_name:
                             clio_matter_id = matter.get("id")
                             if not defendant_name:
                                 defendant_name = matter.get("client", {}).get("name", selected_display_name)
