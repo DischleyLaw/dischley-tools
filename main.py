@@ -1174,19 +1174,26 @@ def clio_contact_search():
 
         contacts = response.json().get("data", [])
         people = []
-        for contact in contacts:
-            if contact.get("type", "").lower() == "person":
-                first = contact.get("first_name", "") or ""
-                last = contact.get("last_name", "") or ""
-                full_name = f"{first} {last}".strip()
-                # If no query, return all people for debugging/fallback
-                if not query or query in first.lower() or query in last.lower() or query in full_name.lower():
-                    people.append({
-                        "id": contact.get("id"),
-                        "type": "Person",
-                        "name": full_name,
-                        "email": contact.get("email", "")
-                    })
+        # Only return results if query is non-empty
+        if query:
+            for contact in contacts:
+                if contact.get("type", "").lower() == "person":
+                    first = contact.get("first_name", "") or ""
+                    last = contact.get("last_name", "") or ""
+                    name_fallback = contact.get("name", "").strip()
+                    full_name = f"{first} {last}".strip() or name_fallback
+
+                    # Skip contacts with empty names
+                    if not full_name:
+                        continue
+
+                    if query in full_name.lower():
+                        people.append({
+                            "id": contact.get("id"),
+                            "type": "Person",
+                            "name": full_name,
+                            "email": contact.get("email", "")
+                        })
         return {"data": people}
     except Exception as e:
         return {"data": [], "error": str(e)}, 500
