@@ -751,7 +751,8 @@ def case_result():
                         contact for contact in response.json().get("data", [])
                         if contact.get("type") == "Person"
                     ]
-                    return {"data": [{"name": person.get("name"), "type": "Person"} for person in people]}
+                    # Return name, type, id fields for each person
+                    return {"data": [{"name": person.get("name"), "type": "Person", "id": person.get("id")} for person in people]}
                 else:
                     return {"error": "Failed to fetch contact search results"}, response.status_code
             except Exception as e:
@@ -789,6 +790,7 @@ def case_result():
                 if response.status_code == 200:
                     contact = response.json().get("data", {})
                     if contact.get("type") == "Person":
+                        # Set defendant_name to first + last name for persons
                         defendant_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
                     else:
                         defendant_name = contact.get("name", "").strip()
