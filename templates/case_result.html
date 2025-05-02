@@ -329,14 +329,11 @@ contactInput.addEventListener("input", function () {
       contactMap = {};
       if (data.data) {
         data.data.forEach(contact => {
-          let name = "";
-          if (contact.type === "Person") {
-            const first = contact.first_name || "";
-            const last = contact.last_name || "";
-            name = `${first.trim()} ${last.trim()}`.trim();
-          } else if (contact.type === "Company") {
-            name = contact.name?.trim() || "";
-          }
+          // Only include contacts of type "Person"
+          if (contact.type !== "Person") return;
+          const first = contact.first_name || "";
+          const last = contact.last_name || "";
+          const name = `${first.trim()} ${last.trim()}`.trim();
           if (!name) return;
 
           const option = document.createElement("option");
