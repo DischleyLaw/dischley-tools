@@ -1174,16 +1174,16 @@ def clio_contact_search():
 
         people = []
         for contact in response.json().get("data", []):
-            # if contact.get("type", "").lower() == "person":
-            first = contact.get("first_name", "").strip()
-            last = contact.get("last_name", "").strip()
-            full_name = f"{first} {last}".strip()
-            if query in first.lower() or query in last.lower() or query in full_name.lower():
-                people.append({
-                    "id": contact.get("id"),
-                    "type": "Person",
-                    "name": full_name
-                })
+            if "person" in contact.get("type", "").lower():
+                first = contact.get("first_name", "").strip()
+                last = contact.get("last_name", "").strip()
+                full_name = f"{first} {last}".strip()
+                if query.lower() in full_name.lower() or query.lower() in first.lower() or query.lower() in last.lower():
+                    people.append({
+                        "id": contact.get("id"),
+                        "type": "Person",
+                        "name": full_name
+                    })
         return {"data": people}
     except Exception as e:
         return {"data": [], "error": str(e)}, 500
