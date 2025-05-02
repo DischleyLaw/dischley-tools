@@ -751,8 +751,15 @@ def case_result():
                         contact for contact in response.json().get("data", [])
                         if contact.get("type") == "Person"
                     ]
-                    # Return name, type, id fields for each person
-                    return {"data": [{"name": person.get("name"), "type": "Person", "id": person.get("id")} for person in people]}
+                    # Return full name (first_name + last_name), type, id for each person
+                    return {"data": [
+                        {
+                            "name": f"{person.get('first_name', '').strip()} {person.get('last_name', '').strip()}".strip(),
+                            "type": "Person",
+                            "id": person.get("id")
+                        }
+                        for person in people
+                    ]}
                 else:
                     return {"error": "Failed to fetch contact search results"}, response.status_code
             except Exception as e:

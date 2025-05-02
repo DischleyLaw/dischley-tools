@@ -333,8 +333,8 @@ contactInput.addEventListener("input", function () {
       contactMap = {};
       if (data.data) {
         data.data.forEach(contact => {
-          // Only include contacts of type "Person" (case-insensitive, handle undefined)
-          if (!contact.type || contact.type.toLowerCase() !== "person") return;
+          // Only include contacts where type is exactly "Person"
+          if (contact.type !== "Person") return;
           const first = contact.first_name || "";
           const last = contact.last_name || "";
           const name = `${first.trim()} ${last.trim()}`.trim();
