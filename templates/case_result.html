@@ -336,11 +336,13 @@ contactInput.addEventListener("input", function () {
     });
 });
 
-contactInput.addEventListener("change", function () {
-  const selected = this.value.trim();
-  if (contactMap[selected]) {
-    document.getElementById("defendant_name").value = selected;
-  }
+["input", "change"].forEach(eventType => {
+  contactInput.addEventListener(eventType, function () {
+    const selected = this.value.trim();
+    if (contactMap[selected]) {
+      document.getElementById("defendant_name").value = selected;
+    }
+  });
 });
 </script>
 {% endblock %}
