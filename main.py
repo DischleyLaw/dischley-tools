@@ -736,7 +736,22 @@ def case_result():
             return {"error": f"Search Error: {str(e)}"}, 500
     submitted = False
     if request.method == "POST":
-        defendant_name = request.form.get('defendant_name')
+        defendant_name = request.form.get('defendant_name', '').strip()
+        if not defendant_name:
+            selected_display_name = request.form.get("search_matter", "").strip()
+            if selected_display_name:
+                try:
+                    access_token = get_valid_token()
+                    headers = {'Authorization': f'Bearer {access_token}'}
+                    search_url = f"https://app.clio.com/api/v4/matters?status=open&query={selected_display_name}"
+                    response = requests.get(search_url, headers=headers)
+                    if response.status_code == 200:
+                        for matter in response.json().get("data", []):
+                            if matter.get("display_number") == selected_display_name:
+                                defendant_name = matter.get("client", {}).get("name", selected_display_name)
+                                break
+                except Exception as e:
+                    print("Failed to auto-fill defendant name from Clio:", e)
         # --- CLIO MATTER ID LOOKUP ---
         clio_matter_id = None
         selected_display_name = request.form.get("search_matter", "").strip()

@@ -316,9 +316,11 @@ document.getElementById('was_continued').addEventListener('change', function() {
 const searchInput = document.getElementById("search_matter");
 const dataList = document.getElementById("matterResults");
 
+const matterMap = {};
+
 searchInput.addEventListener("input", function () {
   const query = this.value;
-  if (query.length < 2) return; // Skip short queries
+  if (query.length < 2) return;
 
   fetch(`/case_result?search_matter=${encodeURIComponent(query)}`)
     .then(res => res.json())
@@ -326,14 +328,22 @@ searchInput.addEventListener("input", function () {
       dataList.innerHTML = "";
       if (data.data) {
         data.data.forEach(matter => {
-          const name = matter.display_number || matter.description || "Unnamed Matter";
+          const display = matter.display_number || matter.description || "Unnamed Matter";
           const option = document.createElement("option");
-          option.value = name;
+          option.value = display;
+          matterMap[display] = matter.client?.name || "";
           dataList.appendChild(option);
         });
       }
     })
     .catch(err => console.error("Error fetching matter data:", err));
+});
+
+searchInput.addEventListener("change", function () {
+  const selected = this.value;
+  if (matterMap[selected]) {
+    document.getElementById("defendant_name").value = matterMap[selected];
+  }
 });
 </script>
 {% endblock %}
