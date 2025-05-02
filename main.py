@@ -1189,5 +1189,17 @@ def clio_contact_search():
         return {"data": [], "error": str(e)}, 500
 
 
+
+# --- Clio Test Contacts Route ---
+@app.route("/clio/test-contacts")
+def test_clio_contacts():
+    try:
+        access_token = get_valid_token()
+        headers = {"Authorization": f"Bearer {access_token}"}
+        response = requests.get("https://app.clio.com/api/v4/contacts", headers=headers)
+        return response.json()  # Show raw Clio contact data
+    except Exception as e:
+        return {"error": str(e)}, 500
+
 if __name__ == "__main__":
     app.run(debug=True)
