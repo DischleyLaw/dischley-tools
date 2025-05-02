@@ -451,10 +451,13 @@ def update_lead(lead_id):
     lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
-    # Only update quote if input is not None and not empty/whitespace
+    # Update quote: if cleared, set to None; else, strip and set; if not present, do nothing
     quote_input = request.form.get("quote")
-    if quote_input is not None and quote_input.strip() != "":
-        lead.quote = quote_input
+    if quote_input is not None:
+        if quote_input.strip() == "":
+            lead.quote = None
+        else:
+            lead.quote = quote_input.strip()
     lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
     lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
@@ -505,14 +508,25 @@ def update_lead(lead_id):
     # Determine status label
     status_parts = []  # Reset to empty list and clear any previous status values
     if lead.send_retainer:
-        status_parts.append("Send Retainer")
+        if lead.retainer_amount:
+            try:
+                amount = float(lead.retainer_amount)
+                status_parts.append(f"Send Retainer: ${amount:.2f}")
+            except ValueError:
+                status_parts.append(f"Send Retainer: ${lead.retainer_amount}")
+        else:
+            status_parts.append("Send Retainer")
     if lead.lvm:
         status_parts.append("LVM")
     if lead.not_pc:
         status_parts.append("Not a PC")
-    # Ensure quote is only added if not None and not empty/whitespace
-    if lead.quote and lead.quote.strip().lower() != "none":
-        status_parts.append(f"Quote: ${lead.quote.strip()}")
+    # Ensure quote is only added if not None, not empty/whitespace, and not "none"
+    if lead.quote and lead.quote.strip() and lead.quote.strip().lower() != "none":
+        try:
+            quote_value = float(lead.quote.strip())
+            status_parts.append(f"Quote: ${quote_value:.2f}")
+        except ValueError:
+            status_parts.append(f"Quote: ${lead.quote.strip()}")
     if lead.calling:
         status_parts.append("Calling")
     status_str = " | ".join(status_parts)
@@ -554,10 +568,10 @@ def update_lead(lead_id):
         ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
         ("Custom Source", lead.custom_source if lead.custom_source else None),
         ("Send Retainer", "✅" if lead.send_retainer else None),
-        ("Retainer Amount", lead.retainer_amount),
+        ("Retainer Amount", f"${float(lead.retainer_amount):.2f}" if lead.retainer_amount and lead.retainer_amount.replace('.', '', 1).isdigit() else lead.retainer_amount),
         ("LVM", "✅" if lead.lvm else None),
         ("Not a PC", "✅" if lead.not_pc else None),
-        ("Quote", f"${lead.quote.strip()}" if lead.quote and lead.quote.strip().lower() != "none" else None),
+        ("Quote", f"${float(lead.quote.strip()):.2f}" if lead.quote and lead.quote.strip().lower() != "none" and lead.quote.strip().replace('.', '', 1).isdigit() else lead.quote.strip() if lead.quote else None),
         ("Absence Waiver", "✅" if lead.absence_waiver else None),
         ("Homework", lead.homework if lead.homework else None),
         ("Calling", "✅" if lead.calling else None),
