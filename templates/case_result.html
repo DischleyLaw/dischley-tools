@@ -333,25 +333,26 @@ contactInput.addEventListener("input", function () {
       contactMap = {};
       if (data.data) {
         data.data.forEach(contact => {
-          // Only include contacts where type is exactly "Person"
-          if (contact.type !== "Person") return;
+          const type = (contact.type || "").toLowerCase();
+          if (type !== "person") return;
+
           const first = contact.first_name || "";
           const last = contact.last_name || "";
-          const fullName = `${first.trim()} ${last.trim()}`.trim();
+          const fullName = contact.name || `${first} ${last}`.trim();
           if (!fullName) return;
 
           const option = document.createElement("option");
           option.value = fullName;
-          option.label = `${first.trim()} ${last.trim()} (${contact.id})`;
+          option.label = `${fullName} (${contact.id})`;
           option.dataset.contactId = contact.id;
-          option.dataset.contactType = contact.type;
-          option.dataset.fullName = contact.name || fullName;
+          option.dataset.fullName = fullName;
           option.dataset.firstName = first;
           option.dataset.lastName = last;
-          // Add mappings for first and last name as well
+
+          contactMap[fullName.toLowerCase()] = contact;
           contactMap[first.toLowerCase()] = contact;
           contactMap[last.toLowerCase()] = contact;
-          contactMap[fullName.toLowerCase()] = contact;
+
           contactList.appendChild(option);
         });
       }
@@ -361,17 +362,19 @@ contactInput.addEventListener("input", function () {
 ["input", "change"].forEach(eventType => {
   contactInput.addEventListener(eventType, function () {
     const inputVal = this.value.trim().toLowerCase();
-    const selected = [...contactList.options].find(opt =>
-      opt.value.toLowerCase() === inputVal ||
-      opt.dataset.firstName.toLowerCase() === inputVal ||
-      opt.dataset.lastName.toLowerCase() === inputVal
-    );
-    if (selected) {
-      const id = selected.dataset.contactId;
-      const fullName = selected.dataset.fullName || `${selected.dataset.firstName} ${selected.dataset.lastName}`.trim();
+    let matchedContact = contactMap[inputVal];
+    if (!matchedContact) {
+      matchedContact = Object.values(contactMap).find(
+        contact =>
+          contact.first_name?.toLowerCase() === inputVal ||
+          contact.last_name?.toLowerCase() === inputVal
+      );
+    }
+    if (matchedContact) {
+      const fullName = matchedContact.name || `${matchedContact.first_name} ${matchedContact.last_name}`.trim();
       document.getElementById("defendant_name").value = fullName;
-      document.getElementById("clio_contact_id").value = id;
-      document.getElementById("clio_contact_id_display").value = id;
+      document.getElementById("clio_contact_id").value = matchedContact.id;
+      document.getElementById("clio_contact_id_display").value = matchedContact.id;
     }
   });
 });

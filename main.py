@@ -747,19 +747,19 @@ def case_result():
                 url = f"https://app.clio.com/api/v4/contacts?query={query}"
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
-                    people = [
-                        contact for contact in response.json().get("data", [])
-                        if contact.get("type") == "Person"
-                    ]
-                    # Return full name (first_name + last_name), type, id for each person
-                    return {"data": [
-                        {
-                            "name": f"{person.get('first_name', '').strip()} {person.get('last_name', '').strip()}".strip(),
-                            "type": "Person",
-                            "id": person.get("id")
-                        }
-                        for person in people
-                    ]}
+                    people = []
+                    for contact in response.json().get("data", []):
+                        if contact.get("type", "").lower() == "person":
+                            first = contact.get("first_name", "").strip()
+                            last = contact.get("last_name", "").strip()
+                            full_name = f"{first} {last}".strip()
+                            if query.lower() in first.lower() or query.lower() in last.lower() or query.lower() in full_name.lower():
+                                people.append({
+                                    "id": contact.get("id"),
+                                    "type": "Person",
+                                    "name": full_name
+                                })
+                    return {"data": people}
                 else:
                     return {"error": "Failed to fetch contact search results"}, response.status_code
             except Exception as e:
