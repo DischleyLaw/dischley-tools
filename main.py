@@ -168,6 +168,8 @@ class CaseResult(db.Model):
     license_suspension_term = db.Column(db.String(100))
     restricted_license_type = db.Column(db.String(100))
     clio_matter_id = db.Column(db.String(100))
+    # New field for Clio contact ID
+    clio_contact_id = db.Column(db.String(100))
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -756,7 +758,22 @@ def case_result():
             except Exception as e:
                 print("Failed to fetch Clio matter ID:", e)
 
-        # --- Removed clio_contact_id processing ---
+        # --- CLIO CONTACT ID LOGIC ---
+        clio_contact_id = request.form.get('clio_contact_id', '').strip() or None
+        if not defendant_name and clio_contact_id:
+            try:
+                access_token = get_valid_token()
+                headers = {"Authorization": f"Bearer {access_token}"}
+                contact_url = f"https://app.clio.com/api/v4/contacts/{clio_contact_id}"
+                response = requests.get(contact_url, headers=headers)
+                if response.status_code == 200:
+                    contact = response.json().get("data", {})
+                    if contact.get("type") == "Person":
+                        defendant_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
+                    else:
+                        defendant_name = contact.get("name", "").strip()
+            except Exception as e:
+                print("Failed to fetch Clio contact:", e)
 
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
@@ -928,6 +945,7 @@ def case_result():
             restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None,
             other_disposition=disposition_narrative,
             clio_matter_id=clio_matter_id,
+            clio_contact_id=clio_contact_id,
         )
         db.session.add(case_result_obj)
         db.session.commit()
