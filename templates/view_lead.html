@@ -134,6 +134,10 @@
       <label for="court_time" class="form-label">Court Time</label>
       <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
     </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
+      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
+    </div>
     <div class="mb-3 form-floating">
       <select name="staff_member" class="form-select" id="staffMemberSelect">
         <option value="">-- Select Staff Member --</option>
@@ -172,10 +176,6 @@
     <div class="mb-3 form-check">
       <input type="checkbox" name="calling" class="form-check-input" id="calling" {% if lead.calling %}checked{% endif %}>
       <label class="form-check-label" for="calling">Calling</label>
-    </div>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
-      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
     </div>
     <div class="mb-3 form-check">
       <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
@@ -223,6 +223,19 @@
     const quoteField = document.getElementById("quoteAmountField");
     toggleQuote.addEventListener("change", function () {
       quoteField.style.display = this.checked ? "block" : "none";
+    });
+
+    const statusBoxes = ["sendRetainer", "lvm", "notPC"];
+    statusBoxes.forEach(id => {
+      document.getElementById(id).addEventListener("change", function () {
+        if (this.checked) {
+          statusBoxes.forEach(otherId => {
+            if (otherId !== id) {
+              document.getElementById(otherId).checked = false;
+            }
+          });
+        }
+      });
     });
   });
 </script>

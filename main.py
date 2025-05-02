@@ -104,7 +104,7 @@ class Lead(db.Model):
     retainer_amount = db.Column(db.String(50))
     lvm = db.Column(db.Boolean, default=False)
     not_pc = db.Column(db.Boolean, default=False)
-    quote = db.Column(db.String(50))
+    quote = db.Column(db.String(50), default="")
     lead_source = db.Column(db.String(100))
     custom_source = db.Column(db.String(100))
     case_type = db.Column(db.String(100))
@@ -451,13 +451,10 @@ def update_lead(lead_id):
     lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
-    # Update quote: if cleared, set to None; else, strip and set; if not present, do nothing
+    # Update quote: if present, set to stripped value
     quote_input = request.form.get("quote")
     if quote_input is not None:
-        if quote_input.strip() == "":
-            lead.quote = None
-        else:
-            lead.quote = quote_input.strip()
+        lead.quote = quote_input.strip()
     lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
     lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
