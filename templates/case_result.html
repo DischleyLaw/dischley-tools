@@ -337,17 +337,21 @@ contactInput.addEventListener("input", function () {
           if (contact.type !== "Person") return;
           const first = contact.first_name || "";
           const last = contact.last_name || "";
-          const name = `${first.trim()} ${last.trim()}`.trim();
-          if (!name) return;
+          const fullName = `${first.trim()} ${last.trim()}`.trim();
+          if (!fullName) return;
 
           const option = document.createElement("option");
-          option.value = name;
+          option.value = fullName;
+          option.label = `${first.trim()} ${last.trim()} (${contact.id})`;
           option.dataset.contactId = contact.id;
           option.dataset.contactType = contact.type;
-          option.dataset.fullName = contact.name || name;
-          option.dataset.firstName = contact.first_name || "";
-          option.dataset.lastName = contact.last_name || "";
-          contactMap[name] = contact;
+          option.dataset.fullName = contact.name || fullName;
+          option.dataset.firstName = first;
+          option.dataset.lastName = last;
+          // Add mappings for first and last name as well
+          contactMap[first.toLowerCase()] = contact;
+          contactMap[last.toLowerCase()] = contact;
+          contactMap[fullName.toLowerCase()] = contact;
           contactList.appendChild(option);
         });
       }
@@ -356,7 +360,12 @@ contactInput.addEventListener("input", function () {
 
 ["input", "change"].forEach(eventType => {
   contactInput.addEventListener(eventType, function () {
-    const selected = [...contactList.options].find(opt => opt.value === this.value.trim());
+    const inputVal = this.value.trim().toLowerCase();
+    const selected = [...contactList.options].find(opt =>
+      opt.value.toLowerCase() === inputVal ||
+      opt.dataset.firstName.toLowerCase() === inputVal ||
+      opt.dataset.lastName.toLowerCase() === inputVal
+    );
     if (selected) {
       const id = selected.dataset.contactId;
       const fullName = selected.dataset.fullName || `${selected.dataset.firstName} ${selected.dataset.lastName}`.trim();
