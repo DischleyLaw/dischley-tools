@@ -1172,17 +1172,20 @@ def clio_contact_search():
         if response.status_code != 200:
             return {"data": []}
 
+        contacts = response.json().get("data", [])
         people = []
-        for contact in response.json().get("data", []):
-            if "person" in contact.get("type", "").lower():
-                first = contact.get("first_name", "").strip()
-                last = contact.get("last_name", "").strip()
+        for contact in contacts:
+            if contact.get("type", "").lower() == "person":
+                first = contact.get("first_name", "") or ""
+                last = contact.get("last_name", "") or ""
                 full_name = f"{first} {last}".strip()
-                if query.lower() in full_name.lower() or query.lower() in first.lower() or query.lower() in last.lower():
+                # If no query, return all people for debugging/fallback
+                if not query or query in first.lower() or query in last.lower() or query in full_name.lower():
                     people.append({
                         "id": contact.get("id"),
                         "type": "Person",
-                        "name": full_name
+                        "name": full_name,
+                        "email": contact.get("email", "")
                     })
         return {"data": people}
     except Exception as e:
