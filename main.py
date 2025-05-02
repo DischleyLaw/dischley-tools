@@ -750,7 +750,9 @@ def case_result():
                             display_number = matter.get("display_number", "")
                             if display_number and selected_display_name.startswith(display_number):
                                 client = matter.get("client", {})
-                                defendant_name = client.get("name", display_number)
+                                name_parts = [client.get("first_name", ""), client.get("last_name", "")]
+                                full_name = " ".join(part for part in name_parts if part).strip()
+                                defendant_name = full_name or client.get("name", display_number)
                                 break
                 except Exception as e:
                     print("Failed to auto-fill defendant name from Clio:", e)

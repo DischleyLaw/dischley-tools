@@ -327,12 +327,10 @@ searchInput.addEventListener("input", function () {
       dataList.innerHTML = "";
       if (data.data) {
         data.data.forEach(matter => {
-          const displayNumber = matter.display_number || "";
-          const display = `${displayNumber} - ${matter.description || ""}`;
+          const display = `${matter.display_number} - ${matter.description || ""}`.trim();
           const option = document.createElement("option");
           option.value = display;
-          option.setAttribute("data-display-number", displayNumber);
-          matterMap[displayNumber] = matter.client?.name || "";
+          matterMap[display] = matter.client?.name || "";
           dataList.appendChild(option);
         });
       }
@@ -341,9 +339,8 @@ searchInput.addEventListener("input", function () {
 });
 
 searchInput.addEventListener("change", function () {
-  const selected = this.value;
-  const displayNumber = selected.split(" - ")[0];
-  const name = matterMap[displayNumber];
+  const selected = this.value.trim();
+  const name = matterMap[selected];
   if (name) {
     document.getElementById("defendant_name").value = name;
   }
