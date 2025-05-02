@@ -167,6 +167,7 @@ class CaseResult(db.Model):
     # New fields for license suspension term and restricted license type
     license_suspension_term = db.Column(db.String(100))
     restricted_license_type = db.Column(db.String(100))
+    clio_matter_id = db.Column(db.String(100))
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -719,9 +720,40 @@ def update_success():
 @app.route("/case_result", methods=["GET", "POST"])
 @login_required
 def case_result():
+    # --- AJAX or form-driven search for matters (GET handler) ---
+    if request.method == "GET" and "search_matter" in request.args:
+        try:
+            access_token = get_valid_token()
+            headers = {'Authorization': f'Bearer {access_token}'}
+            query = request.args.get("search_matter")
+            url = f"https://app.clio.com/api/v4/matters?query={query}&status=open"
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                return response.json()
+            else:
+                return {"error": "Failed to fetch matter search results"}, response.status_code
+        except Exception as e:
+            return {"error": f"Search Error: {str(e)}"}, 500
     submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name')
+        # --- CLIO MATTER ID LOOKUP ---
+        clio_matter_id = None
+        selected_display_name = request.form.get("search_matter", "").strip()
+        if selected_display_name:
+            try:
+                access_token = get_valid_token()
+                headers = {'Authorization': f'Bearer {access_token}'}
+                search_url = f"https://app.clio.com/api/v4/matters?status=open&query={selected_display_name}"
+                response = requests.get(search_url, headers=headers)
+                if response.status_code == 200:
+                    for matter in response.json().get("data", []):
+                        if matter.get("display_number") == selected_display_name:
+                            clio_matter_id = matter.get("id")
+                            break
+            except Exception as e:
+                print("Failed to fetch Clio matter ID:", e)
+
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
         pleas = request.form.getlist('plea[]')
@@ -890,7 +922,8 @@ def case_result():
             send_review_links=send_review_links,
             license_suspension_term=", ".join(filter(None, license_suspension_term)) if license_suspension_term else None,
             restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None,
-            other_disposition=disposition_narrative
+            other_disposition=disposition_narrative,
+            clio_matter_id=clio_matter_id
         )
         db.session.add(case_result_obj)
         db.session.commit()
