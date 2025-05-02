@@ -389,7 +389,7 @@ def intake():
                     f"Homework: {new_lead.homework}"
                 ),
                 "referring_url": "http://127.0.0.1:5000/intake",
-                "from_source": custom_source or lead_source
+                "from_source": (custom_source or lead_source) or "Unknown"
             },
             "inbox_lead_token": os.getenv("CLIO_TOKEN")
         }
@@ -503,19 +503,21 @@ def update_lead(lead_id):
     db.session.commit()
 
     # Determine status label
-    status_parts = []
+    status_parts = []  # Reset to empty list and clear any previous status values
     if lead.send_retainer:
         status_parts.append("Send Retainer")
     if lead.lvm:
         status_parts.append("LVM")
     if lead.not_pc:
         status_parts.append("Not a PC")
-    if lead.quote and lead.quote.strip():
+    # Ensure quote is only added if not empty or whitespace (using stricter check)
+    if lead.quote and lead.quote.strip() != "":
         status_parts.append(f"Quote: ${lead.quote.strip()}")
     if lead.calling:
         status_parts.append("Calling")
     status_str = " | ".join(status_parts)
-    subject_line = f"Lead Updated - {lead.name}"
+    first_name, last_name = (lead.name.split(maxsplit=1) + [""])[:2]
+    subject_line = f"Lead Updated - {first_name} {last_name}".strip()
     # Prepare update email (HTML)
     msg = Message(subject_line,
                   recipients=["attorneys@dischleylaw.com"],
