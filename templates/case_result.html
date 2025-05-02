@@ -336,10 +336,14 @@ contactInput.addEventListener("input", function () {
             name = contact.name?.trim() || "";
           }
           if (!name) return;
-          const key = name.toLowerCase();
           const option = document.createElement("option");
           option.value = name;
-          contactMap[key] = contact;
+          option.dataset.contactId = contact.id;
+          option.dataset.contactType = contact.type;
+          option.dataset.fullName = contact.name || name;
+          option.dataset.firstName = contact.first_name || "";
+          option.dataset.lastName = contact.last_name || "";
+          contactMap[name] = contact;
           contactList.appendChild(option);
         });
       }
@@ -348,12 +352,12 @@ contactInput.addEventListener("input", function () {
 
 ["input", "change"].forEach(eventType => {
   contactInput.addEventListener(eventType, function () {
-    const selected = this.value.trim().toLowerCase();
-    const match = contactMap[selected];
-    if (match) {
-      const fullName = match.name || `${match.first_name || ""} ${match.last_name || ""}`.trim();
+    const selected = [...contactList.options].find(opt => opt.value === this.value.trim());
+    if (selected) {
+      const id = selected.dataset.contactId;
+      const fullName = selected.dataset.fullName || `${selected.dataset.firstName} ${selected.dataset.lastName}`.trim();
       document.getElementById("defendant_name").value = fullName;
-      document.getElementById("clio_contact_id").value = match.id || "";
+      document.getElementById("clio_contact_id").value = id;
     }
   });
 });

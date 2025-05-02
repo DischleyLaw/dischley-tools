@@ -986,6 +986,24 @@ def expungement_form():
     if request.method == "POST":
         data = request.form.to_dict()
 
+        # If NAME not set, try resolving it from Clio
+        clio_contact_id = data.get("clio_contact_id", "").strip()
+        if not data.get("{NAME}") and clio_contact_id:
+            try:
+                access_token = get_valid_token()
+                headers = {"Authorization": f"Bearer {access_token}"}
+                contact_url = f"https://app.clio.com/api/v4/contacts/{clio_contact_id}"
+                response = requests.get(contact_url, headers=headers)
+                if response.status_code == 200:
+                    contact = response.json().get("data", {})
+                    if contact.get("type") == "Person":
+                        name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}"
+                    else:
+                        name = contact.get("name", "").strip()
+                    data["{NAME}"] = name
+            except Exception as e:
+                print("Failed to fetch Clio contact:", e)
+
         county = data.get('county')
         expungement_type = data.get('expungement_type')
 
