@@ -722,20 +722,40 @@ def update_success():
 @app.route("/case_result", methods=["GET", "POST"])
 @login_required
 def case_result():
-    # --- AJAX or form-driven search for matters (GET handler) ---
-    if request.method == "GET" and "search_matter" in request.args:
-        try:
-            access_token = get_valid_token()
-            headers = {'Authorization': f'Bearer {access_token}'}
-            query = request.args.get("search_matter")
-            url = f"https://app.clio.com/api/v4/matters?query={query}&status=open"
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                return {"error": "Failed to fetch matter search results"}, response.status_code
-        except Exception as e:
-            return {"error": f"Search Error: {str(e)}"}, 500
+    # --- AJAX or form-driven search for matters or contacts (GET handler) ---
+    if request.method == "GET" and ("search_matter" in request.args or "search_contact" in request.args):
+        # Handle matter search
+        if "search_matter" in request.args:
+            try:
+                access_token = get_valid_token()
+                headers = {'Authorization': f'Bearer {access_token}'}
+                query = request.args.get("search_matter")
+                url = f"https://app.clio.com/api/v4/matters?query={query}&status=open"
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    return response.json()
+                else:
+                    return {"error": "Failed to fetch matter search results"}, response.status_code
+            except Exception as e:
+                return {"error": f"Search Error: {str(e)}"}, 500
+        # Handle contact search
+        if "search_contact" in request.args:
+            try:
+                access_token = get_valid_token()
+                headers = {'Authorization': f'Bearer {access_token}'}
+                query = request.args.get("search_contact")
+                url = f"https://app.clio.com/api/v4/contacts?query={query}"
+                response = requests.get(url, headers=headers)
+                if response.status_code == 200:
+                    people = [
+                        contact for contact in response.json().get("data", [])
+                        if contact.get("type") == "Person"
+                    ]
+                    return {"data": [{"name": person.get("name"), "type": "Person"} for person in people]}
+                else:
+                    return {"error": "Failed to fetch contact search results"}, response.status_code
+            except Exception as e:
+                return {"error": f"Contact Search Error: {str(e)}"}, 500
     submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name', '').strip()
@@ -1131,15 +1151,3 @@ def get_matters():
 
 if __name__ == "__main__":
     app.run(debug=True)
-
-@app.route("/clio/contact-search")
-def clio_contact_search():
-    try:
-        access_token = get_valid_token()
-        query = request.args.get("query", "")
-        headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://app.clio.com/api/v4/contacts?query={query}"
-        response = requests.get(url, headers=headers)
-        return response.json(), response.status_code
-    except Exception as e:
-        return {"error": f"Clio contact search failed: {str(e)}"}, 500
