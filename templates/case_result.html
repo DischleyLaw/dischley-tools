@@ -314,7 +314,7 @@ document.getElementById('was_continued').addEventListener('change', function() {
 });
 const contactInput = document.getElementById("search_contact");
 const contactList = document.getElementById("contactResults");
-const contactMap = {};
+let contactMap = {};
 
 contactInput.addEventListener("input", function () {
   const query = this.value;
@@ -323,13 +323,16 @@ contactInput.addEventListener("input", function () {
   fetch(`/clio/contact-search?query=${encodeURIComponent(query)}`)
     .then(res => res.json())
     .then(data => {
+      console.log('Fetched contact data:', data);
       contactList.innerHTML = "";
+      contactMap = {}; // Clear old data
       if (data.data) {
         data.data.forEach(contact => {
-          const name = `${contact.first_name || ""} ${contact.last_name || ""}`.trim();
+          const name = `${(contact.first_name || "").trim()} ${(contact.last_name || "").trim()}`.trim();
+          const key = name.toLowerCase(); // Normalize for comparison
           const option = document.createElement("option");
           option.value = name;
-          contactMap[name] = contact;
+          contactMap[key] = contact;
           contactList.appendChild(option);
         });
       }
@@ -338,9 +341,11 @@ contactInput.addEventListener("input", function () {
 
 ["input", "change"].forEach(eventType => {
   contactInput.addEventListener(eventType, function () {
-    const selected = this.value.trim();
-    if (contactMap[selected]) {
-      document.getElementById("defendant_name").value = selected;
+    const selected = this.value.trim().toLowerCase();
+    const match = contactMap[selected];
+    if (match) {
+      const fullName = `${match.first_name || ""} ${match.last_name || ""}`.trim();
+      document.getElementById("defendant_name").value = fullName;
     }
   });
 });

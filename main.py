@@ -748,7 +748,7 @@ def case_result():
                     if response.status_code == 200:
                         for contact in response.json().get("data", []):
                             full_name = f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip()
-                            if full_name == contact_search:
+                            if full_name.lower() == contact_search.lower():
                                 defendant_name = full_name
                                 break
                 except Exception as e:
