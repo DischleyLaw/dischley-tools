@@ -460,13 +460,18 @@ def update_lead(lead_id):
     lead.notes = request.form.get("notes") if request.form.get("notes") else lead.notes
     lead.facts = request.form.get("facts") if request.form.get("facts") else lead.facts
     lead.send_retainer = 'send_retainer' in request.form
-    lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else ""
+    if lead.send_retainer:
+        lead.retainer_amount = request.form.get("retainer_amount", "").strip()
+    else:
+        lead.retainer_amount = ""
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
-    # Update quote: if present, set to stripped value
-    quote_input = request.form.get("quote")
-    if quote_input is not None:
+    # Update quote: only store if 'toggle_quote' is present in form
+    if 'toggle_quote' in request.form:
+        quote_input = request.form.get("quote", "")
         lead.quote = quote_input.strip()
+    else:
+        lead.quote = ""
     lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
     lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type

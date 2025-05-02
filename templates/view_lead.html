@@ -181,7 +181,7 @@
       <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
       <label class="form-check-label" for="sendRetainer">Send Retainer</label>
     </div>
-    <div class="mb-3">
+    <div class="mb-3" id="retainerAmountBox" {% if not lead.send_retainer %}style="display:none;"{% endif %}>
       <label for="retainer_amount" class="form-label">Retainer Amount</label>
       <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount or '' }}">
     </div>
@@ -225,17 +225,55 @@
       quoteField.style.display = this.checked ? "block" : "none";
     });
 
-    const statusBoxes = ["sendRetainer", "lvm", "notPC"];
-    statusBoxes.forEach(id => {
-      document.getElementById(id).addEventListener("change", function () {
-        if (this.checked) {
-          statusBoxes.forEach(otherId => {
+    // Retainer amount toggle logic
+    const sendRetainer = document.getElementById("sendRetainer");
+    const retainerAmountBox = document.getElementById("retainerAmountBox");
+    sendRetainer.addEventListener("change", function () {
+      retainerAmountBox.style.display = this.checked ? "block" : "none";
+    });
+
+    const exclusiveStatusBoxes = [
+      "calling",
+      "absence_waiver",
+      "sendRetainer",
+      "lvm",
+      "notPC",
+      "toggleQuote"
+    ];
+    exclusiveStatusBoxes.forEach(id => {
+      const checkbox = document.getElementById(id);
+      if (checkbox) {
+        checkbox.addEventListener("change", function () {
+          exclusiveStatusBoxes.forEach(otherId => {
             if (otherId !== id) {
-              document.getElementById(otherId).checked = false;
+              const otherCheckbox = document.getElementById(otherId);
+              if (otherCheckbox) {
+                otherCheckbox.checked = false;
+                if (otherId === "toggleQuote") {
+                  document.getElementById("quoteAmountField").style.display = "none";
+                  const quoteInput = document.querySelector("input[name='quote']");
+                  if (quoteInput) quoteInput.value = "";
+                }
+                if (otherId === "sendRetainer") {
+                  const retainerInput = document.querySelector("input[name='retainer_amount']");
+                  if (retainerInput) retainerInput.value = "";
+                }
+              }
             }
           });
-        }
-      });
+          if (!this.checked) {
+            if (id === "toggleQuote") {
+              document.getElementById("quoteAmountField").style.display = "none";
+              const quoteInput = document.querySelector("input[name='quote']");
+              if (quoteInput) quoteInput.value = "";
+            }
+            if (id === "sendRetainer") {
+              const retainerInput = document.querySelector("input[name='retainer_amount']");
+              if (retainerInput) retainerInput.value = "";
+            }
+          }
+        });
+      }
     });
   });
 </script>
