@@ -752,7 +752,7 @@ def case_result():
                                 break
                 except Exception as e:
                     print("Failed to auto-fill defendant name from Clio:", e)
-        # --- CLIO MATTER ID LOOKUP ---
+        # --- CLIO MATTER ID LOOKUP (and defendant name extraction) ---
         clio_matter_id = None
         selected_display_name = request.form.get("search_matter", "").strip()
         if selected_display_name:
@@ -765,6 +765,8 @@ def case_result():
                     for matter in response.json().get("data", []):
                         if matter.get("display_number") == selected_display_name:
                             clio_matter_id = matter.get("id")
+                            if not defendant_name:
+                                defendant_name = matter.get("client", {}).get("name", selected_display_name)
                             break
             except Exception as e:
                 print("Failed to fetch Clio matter ID:", e)
