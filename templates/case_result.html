@@ -49,7 +49,9 @@
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
     <label for="search_contact">Search Contact</label>
-    <datalist id="contactResults"></datalist>
+    <datalist id="contactResults">
+      <!-- Options will be dynamically added here, showing name and type for clarity -->
+    </datalist>
   </div>
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
@@ -334,6 +336,9 @@ contactInput.addEventListener("input", function () {
 
           const option = document.createElement("option");
           option.value = fullName;
+          // Show both name and type for clarity, and include email if available
+          const email = contact.email || "";
+          option.textContent = email ? `${fullName} (${contact.type}) - ${email}` : `${fullName} (${contact.type})`;
           contactList.appendChild(option);
         });
       }

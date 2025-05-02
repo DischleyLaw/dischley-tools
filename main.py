@@ -1131,6 +1131,7 @@ def get_valid_token():
 
     return token_entry.access_token
 
+
 @app.route('/clio/matters')
 def get_matters():
     try:
@@ -1158,6 +1159,34 @@ def get_matters():
         url = data.get('links', {}).get('next')  # Get the next page URL
 
     return {"matters": all_matters}
+
+
+# --- Clio Contact Search Route ---
+@app.route('/clio/contact-search')
+def clio_contact_search():
+    query = request.args.get('query', '').strip().lower()
+    try:
+        access_token = get_valid_token()
+        headers = {'Authorization': f'Bearer {access_token}'}
+        response = requests.get(f'https://app.clio.com/api/v4/contacts?query={query}', headers=headers)
+        if response.status_code != 200:
+            return {"data": []}
+
+        people = []
+        for contact in response.json().get("data", []):
+            if contact.get("type", "").lower() == "person":
+                first = contact.get("first_name", "").strip()
+                last = contact.get("last_name", "").strip()
+                full_name = f"{first} {last}".strip()
+                if query in first.lower() or query in last.lower() or query in full_name.lower():
+                    people.append({
+                        "id": contact.get("id"),
+                        "type": "Person",
+                        "name": full_name
+                    })
+        return {"data": people}
+    except Exception as e:
+        return {"data": [], "error": str(e)}, 500
 
 
 if __name__ == "__main__":
