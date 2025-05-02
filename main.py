@@ -747,8 +747,10 @@ def case_result():
                     response = requests.get(search_url, headers=headers)
                     if response.status_code == 200:
                         for matter in response.json().get("data", []):
-                            if matter.get("display_number") and matter.get("display_number") in selected_display_name:
-                                defendant_name = matter.get("client", {}).get("name", selected_display_name)
+                            display_number = matter.get("display_number", "")
+                            if display_number and selected_display_name.startswith(display_number):
+                                client = matter.get("client", {})
+                                defendant_name = client.get("name", display_number)
                                 break
                 except Exception as e:
                     print("Failed to auto-fill defendant name from Clio:", e)
