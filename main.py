@@ -1035,17 +1035,25 @@ def get_matters():
         return {"error": f"Token Error: {str(e)}"}, 500
 
     headers = {'Authorization': f'Bearer {access_token}'}
-    response = requests.get('https://app.clio.com/api/v4/matters', headers=headers)
+    # Filter only open matters
+    base_url = 'https://app.clio.com/api/v4/matters?status=open'
+    all_matters = []
+    url = base_url
 
-    if response.status_code == 200:
-        matters = response.json()['data']
-        return {"matters": matters}
-    else:
-        return {
-            "error": "Failed to fetch matters",
-            "status_code": response.status_code,
-            "details": response.text
-        }, response.status_code
+    while url:
+        response = requests.get(url, headers=headers)
+        if response.status_code != 200:
+            return {
+                "error": "Failed to fetch matters",
+                "status_code": response.status_code,
+                "details": response.text
+            }, response.status_code
+
+        data = response.json()
+        all_matters.extend(data.get('data', []))
+        url = data.get('links', {}).get('next')  # Get the next page URL
+
+    return {"matters": all_matters}
 
 
 if __name__ == "__main__":
