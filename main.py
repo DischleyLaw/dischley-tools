@@ -168,6 +168,8 @@ class CaseResult(db.Model):
     license_suspension_term = db.Column(db.String(100))
     restricted_license_type = db.Column(db.String(100))
     clio_matter_id = db.Column(db.String(100))
+    # New field: Clio Contact ID
+    clio_contact_id = db.Column(db.String(100))
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -747,7 +749,10 @@ def case_result():
                     response = requests.get(search_url, headers=headers)
                     if response.status_code == 200:
                         for contact in response.json().get("data", []):
-                            full_name = f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip()
+                            if contact.get("type") == "Person":
+                                full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
+                            else:
+                                full_name = contact.get("name", "").strip()
                             if full_name.lower() == contact_search.lower():
                                 defendant_name = full_name
                                 break
@@ -771,6 +776,9 @@ def case_result():
                             break
             except Exception as e:
                 print("Failed to fetch Clio matter ID:", e)
+
+        # --- Retrieve Clio Contact ID from form, strip, or set to None if empty ---
+        clio_contact_id = request.form.get("clio_contact_id", "").strip() or None
 
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
@@ -941,7 +949,8 @@ def case_result():
             license_suspension_term=", ".join(filter(None, license_suspension_term)) if license_suspension_term else None,
             restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None,
             other_disposition=disposition_narrative,
-            clio_matter_id=clio_matter_id
+            clio_matter_id=clio_matter_id,
+            clio_contact_id=clio_contact_id,
         )
         db.session.add(case_result_obj)
         db.session.commit()
