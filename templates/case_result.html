@@ -50,6 +50,10 @@
     <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
     <label for="search_contact">Search Contact</label>
     <datalist id="contactResults"></datalist>
+    <div class="mb-3">
+      <label for="clio_contact_id" class="form-label">Clio Contact ID:</label>
+      <input type="text" class="form-control" id="clio_contact_id_display" readonly>
+    </div>
     <input type="hidden" name="clio_contact_id" id="clio_contact_id">
   </div>
   <div class="mb-3 form-floating">
@@ -358,6 +362,7 @@ contactInput.addEventListener("input", function () {
       const fullName = selected.dataset.fullName || `${selected.dataset.firstName} ${selected.dataset.lastName}`.trim();
       document.getElementById("defendant_name").value = fullName;
       document.getElementById("clio_contact_id").value = id;
+      document.getElementById("clio_contact_id_display").value = id;
     }
   });
 });
