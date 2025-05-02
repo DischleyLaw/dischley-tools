@@ -1112,3 +1112,15 @@ def get_matters():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
+@app.route("/clio/contact-search")
+def clio_contact_search():
+    try:
+        access_token = get_valid_token()
+        query = request.args.get("query", "")
+        headers = {"Authorization": f"Bearer {access_token}"}
+        url = f"https://app.clio.com/api/v4/contacts?query={query}"
+        response = requests.get(url, headers=headers)
+        return response.json(), response.status_code
+    except Exception as e:
+        return {"error": f"Clio contact search failed: {str(e)}"}, 500

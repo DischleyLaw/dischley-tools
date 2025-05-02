@@ -47,9 +47,9 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="search_matter" name="search_matter" list="matterResults" placeholder="Search Matter by Last Name">
-    <label for="search_matter">Search Matter</label>
-    <datalist id="matterResults"></datalist>
+    <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
+    <label for="search_contact">Search Contact</label>
+    <datalist id="contactResults"></datalist>
   </div>
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="Defendant Name" required>
@@ -312,37 +312,34 @@ document.getElementById('was_continued').addEventListener('change', function() {
   const isContinued = this.checked;
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
 });
-// Autocomplete for Matter Search
-const searchInput = document.getElementById("search_matter");
-const dataList = document.getElementById("matterResults");
-const matterMap = {};
+const contactInput = document.getElementById("search_contact");
+const contactList = document.getElementById("contactResults");
+const contactMap = {};
 
-searchInput.addEventListener("input", function () {
+contactInput.addEventListener("input", function () {
   const query = this.value;
   if (query.length < 2) return;
 
-  fetch(`/case_result?search_matter=${encodeURIComponent(query)}`)
+  fetch(`/clio/contact-search?query=${encodeURIComponent(query)}`)
     .then(res => res.json())
     .then(data => {
-      dataList.innerHTML = "";
+      contactList.innerHTML = "";
       if (data.data) {
-        data.data.forEach(matter => {
-          const display = `${matter.display_number} - ${matter.description || ""}`.trim();
+        data.data.forEach(contact => {
+          const name = `${contact.first_name || ""} ${contact.last_name || ""}`.trim();
           const option = document.createElement("option");
-          option.value = display;
-          matterMap[display] = matter.client?.name || "";
-          dataList.appendChild(option);
+          option.value = name;
+          contactMap[name] = contact;
+          contactList.appendChild(option);
         });
       }
-    })
-    .catch(err => console.error("Error fetching matter data:", err));
+    });
 });
 
-searchInput.addEventListener("change", function () {
+contactInput.addEventListener("change", function () {
   const selected = this.value.trim();
-  const name = matterMap[selected];
-  if (name) {
-    document.getElementById("defendant_name").value = name;
+  if (contactMap[selected]) {
+    document.getElementById("defendant_name").value = selected;
   }
 });
 </script>
