@@ -112,6 +112,8 @@ class Lead(db.Model):
     staff_member = db.Column(db.String(100))
     absence_waiver = db.Column(db.Boolean, default=False)
     homework = db.Column(db.Text, default="")
+    # New field: Attorney
+    attorney = db.Column(db.String(100))
     # New homework checkboxes/fields (revised list, specified order)
     homework_driving_record = db.Column(db.Boolean, default=False)
     homework_reckless_program = db.Column(db.Boolean, default=False)
@@ -438,6 +440,16 @@ def update_lead_token(token):
 def update_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
 
+    # --- Reset fields to default values before updating from form ---
+    lead.calling = False
+    lead.absence_waiver = False
+    lead.send_retainer = False
+    lead.retainer_amount = ""
+    lead.lvm = False
+    lead.not_pc = False
+    lead.quote = ""
+    lead.quote = ""  # Reset quote string
+
     lead.name = request.form.get("name") if request.form.get("name") else lead.name
     lead.phone = request.form.get("phone") if request.form.get("phone") else lead.phone
     lead.email = request.form.get("email") if request.form.get("email") else lead.email
@@ -448,7 +460,7 @@ def update_lead(lead_id):
     lead.notes = request.form.get("notes") if request.form.get("notes") else lead.notes
     lead.facts = request.form.get("facts") if request.form.get("facts") else lead.facts
     lead.send_retainer = 'send_retainer' in request.form
-    lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else None
+    lead.retainer_amount = request.form.get("retainer_amount") if lead.send_retainer else ""
     lead.lvm = 'lvm' in request.form
     lead.not_pc = 'not_pc' in request.form
     # Update quote: if present, set to stripped value
@@ -459,10 +471,15 @@ def update_lead(lead_id):
     lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
     lead.staff_member = request.form.get("staff_member") if request.form.get("staff_member") else lead.staff_member
+    # Add attorney update
+    lead.attorney = request.form.get("attorney", lead.attorney)
     lead.absence_waiver = 'absence_waiver' in request.form
     homework_input = request.form.get("homework")
     if homework_input is not None and homework_input.strip() != "":
         lead.homework = homework_input
+    # Ensure homework is preserved even if unchecked in the form
+    if homework_input is None:
+        lead.homework = ""
 
     # New homework checkbox fields (revised list, specified order)
     lead.homework_driving_record = 'homework_driving_record' in request.form
@@ -612,11 +629,12 @@ def update_lead(lead_id):
     msg.html = email_html
     mail.send(msg)
 
-    # Optional: Send auto-email to client if LVM is checked and client email exists and attorney is provided
-    if lead.lvm and lead.email and request.form.get("attorney"):
+    # Optional: Send auto-email to client if LVM is checked and client email exists
+    attorney = request.form.get("attorney", "").strip()
+    if not attorney:
+        attorney = "David Dischley"
+    if lead.lvm and lead.email:
         client_name = lead.name if lead.name else "there"
-        # Extract attorney from form, stripping whitespace
-        attorney = request.form.get("attorney", "An Attorney").strip()
         # Set callback number and reply email based on explicit attorney name check
         if "patrick o'brien" in attorney.lower():
             callback_number = "(571) 352-1633"
