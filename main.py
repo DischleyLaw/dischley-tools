@@ -168,8 +168,6 @@ class CaseResult(db.Model):
     license_suspension_term = db.Column(db.String(100))
     restricted_license_type = db.Column(db.String(100))
     clio_matter_id = db.Column(db.String(100))
-    # New field: Clio Contact ID
-    clio_contact_id = db.Column(db.String(100))
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -739,25 +737,6 @@ def case_result():
     submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name', '').strip()
-        if not defendant_name:
-            contact_search = request.form.get("search_contact", "").strip()
-            if contact_search:
-                try:
-                    access_token = get_valid_token()
-                    headers = {"Authorization": f"Bearer {access_token}"}
-                    search_url = f"https://app.clio.com/api/v4/contacts?query={contact_search}"
-                    response = requests.get(search_url, headers=headers)
-                    if response.status_code == 200:
-                        for contact in response.json().get("data", []):
-                            if contact.get("type") == "Person":
-                                full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
-                            else:
-                                full_name = contact.get("name", "").strip()
-                            if full_name.lower() == contact_search.lower():
-                                defendant_name = full_name
-                                break
-                except Exception as e:
-                    print("Failed to auto-fill defendant name from Clio contact:", e)
         # --- CLIO MATTER ID LOOKUP (and defendant name extraction) ---
         clio_matter_id = None
         selected_display_name = request.form.get("search_matter", "").strip()
@@ -777,8 +756,7 @@ def case_result():
             except Exception as e:
                 print("Failed to fetch Clio matter ID:", e)
 
-        # --- Retrieve Clio Contact ID from form, strip, or set to None if empty ---
-        clio_contact_id = request.form.get("clio_contact_id", "").strip() or None
+        # --- Removed clio_contact_id processing ---
 
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
@@ -950,7 +928,6 @@ def case_result():
             restricted_license_type=", ".join(filter(None, restricted_license_type)) if restricted_license_type else None,
             other_disposition=disposition_narrative,
             clio_matter_id=clio_matter_id,
-            clio_contact_id=clio_contact_id,
         )
         db.session.add(case_result_obj)
         db.session.commit()

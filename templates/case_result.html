@@ -47,13 +47,7 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
-    <label for="search_contact">Search Contact</label>
-    <datalist id="contactResults"></datalist>
-    <input type="hidden" name="clio_contact_id" id="clio_contact_id">
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="Defendant Name" required>
+    <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
     <label for="defendant_name">Defendant Name:</label>
   </div>
 
@@ -312,50 +306,6 @@ document.addEventListener('change', function(e) {
 document.getElementById('was_continued').addEventListener('change', function() {
   const isContinued = this.checked;
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
-});
-const contactInput = document.getElementById("search_contact");
-const contactList = document.getElementById("contactResults");
-let contactMap = {};
-
-contactInput.addEventListener("input", function () {
-  const query = this.value;
-  if (query.length < 2) return;
-
-  fetch(`/clio/contact-search?query=${encodeURIComponent(query)}`)
-    .then(res => res.json())
-    .then(data => {
-      console.log('Fetched contact data:', data);
-      contactList.innerHTML = "";
-      contactMap = {}; // Clear old data
-      if (data.data) {
-        data.data.forEach(contact => {
-          let name = "";
-          if (contact.type === "Person") {
-            name = `${(contact.first_name || "").trim()} ${(contact.last_name || "").trim()}`.trim();
-          } else if (contact.type === "Company") {
-            name = contact.name?.trim() || "";
-          }
-          if (!name) return;
-          const key = name.toLowerCase();
-          const option = document.createElement("option");
-          option.value = name;
-          contactMap[key] = contact;
-          contactList.appendChild(option);
-        });
-      }
-    });
-});
-
-["input", "change"].forEach(eventType => {
-  contactInput.addEventListener(eventType, function () {
-    const selected = this.value.trim().toLowerCase();
-    const match = contactMap[selected];
-    if (match) {
-      const fullName = match.name || `${match.first_name || ""} ${match.last_name || ""}`.trim();
-      document.getElementById("defendant_name").value = fullName;
-      document.getElementById("clio_contact_id").value = match.id || "";
-    }
-  });
 });
 </script>
 {% endblock %}
