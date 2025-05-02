@@ -50,11 +50,6 @@
     <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
     <label for="search_contact">Search Contact</label>
     <datalist id="contactResults"></datalist>
-    <div class="mb-3">
-      <label for="clio_contact_id" class="form-label">Clio Contact ID:</label>
-      <input type="text" class="form-control" id="clio_contact_id_display" readonly>
-    </div>
-    <input type="hidden" name="clio_contact_id" id="clio_contact_id">
   </div>
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
@@ -320,7 +315,7 @@ document.getElementById('was_continued').addEventListener('change', function() {
 // Clio Contact Search Autofill
 const contactInput = document.getElementById("search_contact");
 const contactList = document.getElementById("contactResults");
-let contactMap = {};
+const defendantNameInput = document.getElementById("defendant_name");
 
 contactInput.addEventListener("input", function () {
   const query = this.value.trim();
@@ -330,53 +325,26 @@ contactInput.addEventListener("input", function () {
     .then(res => res.json())
     .then(data => {
       contactList.innerHTML = "";
-      contactMap = {};
       if (data.data) {
         data.data.forEach(contact => {
-          const type = (contact.type || "").toLowerCase();
-          if (type !== "person") return;
+          if (contact.type !== "Person") return;
 
-          const first = contact.first_name || "";
-          const last = contact.last_name || "";
-          const fullName = contact.name || `${first} ${last}`.trim();
+          const fullName = contact.name || `${contact.first_name || ""} ${contact.last_name || ""}`.trim();
           if (!fullName) return;
 
           const option = document.createElement("option");
           option.value = fullName;
-          option.label = `${fullName} (${contact.id})`;
-          option.dataset.contactId = contact.id;
-          option.dataset.fullName = fullName;
-          option.dataset.firstName = first;
-          option.dataset.lastName = last;
-
-          contactMap[fullName.toLowerCase()] = contact;
-          contactMap[first.toLowerCase()] = contact;
-          contactMap[last.toLowerCase()] = contact;
-
           contactList.appendChild(option);
         });
       }
     });
 });
 
-["input", "change"].forEach(eventType => {
-  contactInput.addEventListener(eventType, function () {
-    const inputVal = this.value.trim().toLowerCase();
-    let matchedContact = contactMap[inputVal];
-    if (!matchedContact) {
-      matchedContact = Object.values(contactMap).find(
-        contact =>
-          contact.first_name?.toLowerCase() === inputVal ||
-          contact.last_name?.toLowerCase() === inputVal
-      );
-    }
-    if (matchedContact) {
-      const fullName = matchedContact.name || `${matchedContact.first_name} ${matchedContact.last_name}`.trim();
-      document.getElementById("defendant_name").value = fullName;
-      document.getElementById("clio_contact_id").value = matchedContact.id;
-      document.getElementById("clio_contact_id_display").value = matchedContact.id;
-    }
-  });
+contactInput.addEventListener("change", function () {
+  const selectedName = this.value.trim();
+  if (selectedName) {
+    defendantNameInput.value = selectedName;
+  }
 });
 </script>
 {% endblock %}

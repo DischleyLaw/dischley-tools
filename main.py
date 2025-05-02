@@ -786,23 +786,25 @@ def case_result():
             except Exception as e:
                 print("Failed to fetch Clio matter ID:", e)
 
-        # --- CLIO CONTACT ID LOGIC ---
-        clio_contact_id = request.form.get('clio_contact_id', '').strip() or None
-        if not defendant_name and clio_contact_id:
+        # --- REVISED CLIO CONTACT ID LOGIC ---
+        clio_contact_id = None
+        contact_name_input = request.form.get("search_contact", "").strip()
+        if contact_name_input:
             try:
                 access_token = get_valid_token()
                 headers = {"Authorization": f"Bearer {access_token}"}
-                contact_url = f"https://app.clio.com/api/v4/contacts/{clio_contact_id}"
+                contact_url = f"https://app.clio.com/api/v4/contacts?query={contact_name_input}"
                 response = requests.get(contact_url, headers=headers)
                 if response.status_code == 200:
-                    contact = response.json().get("data", {})
-                    if contact.get("type") == "Person":
-                        # Set defendant_name to first + last name for persons
-                        defendant_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
-                    else:
-                        defendant_name = contact.get("name", "").strip()
+                    for contact in response.json().get("data", []):
+                        if contact.get("type", "").lower() == "person":
+                            full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
+                            if contact_name_input.lower() in full_name.lower():
+                                clio_contact_id = contact.get("id")
+                                defendant_name = full_name
+                                break
             except Exception as e:
-                print("Failed to fetch Clio contact:", e)
+                print("Failed to search Clio contacts:", e)
 
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
