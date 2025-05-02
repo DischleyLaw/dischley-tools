@@ -377,7 +377,7 @@ def intake():
         # Clio
         clio_payload = {
             "inbox_lead": {
-                "from_first": new_lead.name.split()[0],
+                "from_first": first_name or "Unknown",
                 "from_last": new_lead.name.split()[-1],
                 "from_email": new_lead.email,
                 "from_phone": new_lead.phone,
@@ -511,7 +511,7 @@ def update_lead(lead_id):
     if lead.not_pc:
         status_parts.append("Not a PC")
     # Ensure quote is only added if not None and not empty/whitespace
-    if lead.quote is not None and lead.quote.strip():
+    if lead.quote and lead.quote.strip().lower() != "none":
         status_parts.append(f"Quote: ${lead.quote.strip()}")
     if lead.calling:
         status_parts.append("Calling")
@@ -557,7 +557,7 @@ def update_lead(lead_id):
         ("Retainer Amount", lead.retainer_amount),
         ("LVM", "✅" if lead.lvm else None),
         ("Not a PC", "✅" if lead.not_pc else None),
-        ("Quote", f"${lead.quote.strip()}" if lead.quote is not None and lead.quote.strip() else None),
+        ("Quote", f"${lead.quote.strip()}" if lead.quote and lead.quote.strip().lower() != "none" else None),
         ("Absence Waiver", "✅" if lead.absence_waiver else None),
         ("Homework", lead.homework if lead.homework else None),
         ("Calling", "✅" if lead.calling else None),
