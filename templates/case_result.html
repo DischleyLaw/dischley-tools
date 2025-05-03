@@ -62,9 +62,19 @@
     <h2 class="h5 mt-4 mb-3">Charge Details</h2>
     <div class="charge-block border rounded p-3 mb-3">
       <h3 class="h6">Charge 1</h3>
-      <div class="mb-3 form-floating">
-        <textarea class="form-control" name="original_charge[]" placeholder="Original Charge" style="height: 80px;"></textarea>
-        <label for="original_charge">Original Charge:</label>
+      <div class="mb-3">
+        <label class="form-label">Original Charge:</label>
+        <input class="form-control" list="virginiaCharges" name="original_charge[]" placeholder="Start typing to search charges" oninput="toggleOriginalChargeOther(this)">
+        <datalist id="virginiaCharges">
+          <option value="18.2-266 - Driving Under the Influence"></option>
+          <option value="18.2-250 - Possession of a Controlled Substance"></option>
+          <option value="18.2-57.2 - Assault and Battery Against a Family Member"></option>
+          <option value="19.2-306 - Violation of Probation"></option>
+          <option value="Other"></option>
+        </datalist>
+        <div class="mt-2" style="display:none;" class="original-charge-other">
+          <input type="text" class="form-control mt-2" name="original_charge_other[]" placeholder="Enter other charge">
+        </div>
       </div>
       <div class="mb-3 form-floating">
         <textarea class="form-control" name="amended_charge[]" placeholder="Amended Charge" style="height: 80px;"></textarea>
@@ -214,7 +224,7 @@
     <label class="form-check-label" for="send_review_links">Send Review Links</label>
   </div>
 
-  <button type="submit" class="btn btn-primary w-100 mt-3">Submit Case Result</button>
+  <button type="submit" class="btn btn-primary w-100 mt-3" onclick="this.form.submit();">Submit Case Result</button>
 </form>
 </div>
 
@@ -349,12 +359,7 @@ contactInput.addEventListener("input", function () {
   }, 300); // 300ms debounce delay
 });
 
-// Prevent form submission when pressing enter in the input
-if (contactInput.form) {
-  contactInput.form.addEventListener('submit', function(e) {
-    e.preventDefault();
-  });
-}
+
 
 contactInput.addEventListener("change", function () {
   const selectedName = this.value.trim();
@@ -362,5 +367,14 @@ contactInput.addEventListener("change", function () {
     defendantNameInput.value = selectedName;
   }
 });
+function toggleOriginalChargeOther(input) {
+  const container = input.closest('.mb-3');
+  const otherInput = container.querySelector('.original-charge-other');
+  if (input.value.toLowerCase() === 'other') {
+    otherInput.style.display = 'block';
+  } else {
+    otherInput.style.display = 'none';
+  }
+}
 </script>
 {% endblock %}

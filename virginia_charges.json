@@ -1,0 +1,202 @@
+[
+  {
+    "code": "18.2-30",
+    "description": "Murder and Manslaughter (Chapter heading)"
+  },
+  {
+    "code": "18.2-32",
+    "description": "First Degree Murder"
+  },
+  {
+    "code": "18.2-32.1",
+    "description": "Capital Murder"
+  },
+  {
+    "code": "18.2-35",
+    "description": "Voluntary Manslaughter"
+  },
+  {
+    "code": "18.2-36",
+    "description": "Involuntary Manslaughter"
+  },
+  {
+    "code": "18.2-47",
+    "description": "Abduction and Kidnapping"
+  },
+  {
+    "code": "18.2-51",
+    "description": "Malicious Wounding"
+  },
+  {
+    "code": "18.2-51.6",
+    "description": "Strangulation of Another"
+  },
+  {
+    "code": "18.2-53.1",
+    "description": "Use of Firearm in Commission of Felony"
+  },
+  {
+    "code": "18.2-57",
+    "description": "Assault and Battery"
+  },
+  {
+    "code": "18.2-57.2",
+    "description": "Assault and Battery Against a Family or Household Member"
+  },
+  {
+    "code": "18.2-61",
+    "description": "Rape"
+  },
+  {
+    "code": "18.2-63",
+    "description": "Carnal Knowledge of Child between 13 and 15"
+  },
+  {
+    "code": "18.2-67.1",
+    "description": "Forcible Sodomy"
+  },
+  {
+    "code": "18.2-77",
+    "description": "Arson"
+  },
+  {
+    "code": "18.2-89",
+    "description": "Burglary"
+  },
+  {
+    "code": "18.2-91",
+    "description": "Entering Dwelling with Intent to Commit Crime"
+  },
+  {
+    "code": "18.2-95",
+    "description": "Grand Larceny"
+  },
+  {
+    "code": "18.2-96",
+    "description": "Petit Larceny"
+  },
+  {
+    "code": "18.2-102",
+    "description": "Unauthorized Use of Vehicle"
+  },
+  {
+    "code": "18.2-108",
+    "description": "Receiving Stolen Goods"
+  },
+  {
+    "code": "18.2-111",
+    "description": "Embezzlement"
+  },
+  {
+    "code": "18.2-119",
+    "description": "Trespass"
+  },
+  {
+    "code": "18.2-121",
+    "description": "Entering Property of Another for Purpose of Damaging It"
+  },
+  {
+    "code": "18.2-137",
+    "description": "Injuring Property or Monuments"
+  },
+  {
+    "code": "18.2-152.7",
+    "description": "Computer Trespass"
+  },
+  {
+    "code": "18.2-250",
+    "description": "Possession of Controlled Substances"
+  },
+  {
+    "code": "18.2-250.1",
+    "description": "Possession of Marijuana (Repealed - now under 4.1)"
+  },
+  {
+    "code": "18.2-251",
+    "description": "Possession with Intent to Distribute"
+  },
+  {
+    "code": "18.2-255",
+    "description": "Distribution of Drugs to Minors"
+  },
+  {
+    "code": "18.2-255.2",
+    "description": "Drug-Free School Zones"
+  },
+  {
+    "code": "18.2-266",
+    "description": "Driving Under the Influence"
+  },
+  {
+    "code": "18.2-268.3",
+    "description": "Refusal of Blood or Breath Test"
+  },
+  {
+    "code": "18.2-270",
+    "description": "Penalty for DUI"
+  },
+  {
+    "code": "18.2-272",
+    "description": "Driving After License Forfeiture for DUI"
+  },
+  {
+    "code": "18.2-308",
+    "description": "Carrying Concealed Weapons"
+  },
+  {
+    "code": "18.2-308.1",
+    "description": "Possession of Firearm by Felon"
+  },
+  {
+    "code": "18.2-308.2",
+    "description": "Possession or Transport of Firearm by Convicted Felon"
+  },
+  {
+    "code": "18.2-308.2:01",
+    "description": "Possession of Firearm while in Possession of Drugs"
+  },
+  {
+    "code": "18.2-323.1",
+    "description": "Open Container in Vehicle"
+  },
+  {
+    "code": "18.2-346",
+    "description": "Prostitution"
+  },
+  {
+    "code": "18.2-370",
+    "description": "Taking Indecent Liberties with Child"
+  },
+  {
+    "code": "18.2-387",
+    "description": "Indecent Exposure"
+  },
+  {
+    "code": "18.2-388",
+    "description": "Profane Swearing and Intoxication in Public"
+  },
+  {
+    "code": "18.2-415",
+    "description": "Disorderly Conduct"
+  },
+  {
+    "code": "18.2-416",
+    "description": "Abusive Language"
+  },
+  {
+    "code": "18.2-460",
+    "description": "Obstructing Justice"
+  },
+  {
+    "code": "18.2-479.1",
+    "description": "Escape from Custody"
+  },
+  {
+    "code": "19.2-306",
+    "description": "Violation of Probation"
+  },
+  {
+    "code": "Other",
+    "description": ""
+  }
+]
