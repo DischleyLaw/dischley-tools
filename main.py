@@ -1173,16 +1173,15 @@ def expungement_upload():
     os.makedirs("temp", exist_ok=True)
     uploaded_file.save(temp_path)
 
-    from Expungement.expungement_utils import extract_expungement_data, extract_expungement_data_ocr
+    from Expungement.expungement_utils import extract_expungement_data
     import re
     try:
         form_data = extract_expungement_data(temp_path)
         if not form_data or not any(form_data.values()):
             raise ValueError("Empty form_data from PDF parser.")
     except Exception as e:
-        print("Fallback to OCR due to error:", e)
-        form_data = extract_expungement_data_ocr(temp_path)
-        print("Extracted form_data:", form_data)
+        flash("Failed to extract data from PDF. Please ensure the file is a valid expungement report.", "danger")
+        return redirect(url_for("expungement_form"))
 
     # --- Ensure name, name_arrest, and dob fields are filled and cleaned from extracted data ---
     form_data["name"] = form_data.get("name", "").strip()

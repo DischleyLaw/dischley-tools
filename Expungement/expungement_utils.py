@@ -5,9 +5,6 @@ from docx import Document
 import re
 from PyPDF2 import PdfReader
 from datetime import datetime
-from PIL import Image
-import pytesseract
-from pdf2image import convert_from_path
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -51,14 +48,6 @@ def extract_expungement_data(filepath):
     except Exception:
         pass
 
-    # Fallback to OCR if no text was extracted
-    if not text.strip():
-        try:
-            images = convert_from_path(filepath)
-            for image in images:
-                text += pytesseract.image_to_string(image)
-        except Exception as e:
-            print("OCR fallback failed:", e)
 
 
     # Extract values from text using regex
