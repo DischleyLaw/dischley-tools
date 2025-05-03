@@ -215,7 +215,9 @@ class ClioToken(db.Model):
 @login_required
 def dashboard():
     case_results = CaseResult.query.order_by(CaseResult.created_at.desc()).all()
-    return render_template("dashboard.html", case_results=case_results)
+    # Show admin_tools button for all logged-in users (or restrict to admin if needed)
+    show_admin_tools = True
+    return render_template("dashboard.html", case_results=case_results, show_admin_tools=show_admin_tools)
 
 @app.route("/leads")
 @login_required
@@ -1215,3 +1217,10 @@ if __name__ == "__main__":
     from post_deploy import run_post_deploy
     run_post_deploy()
     app.run(debug=True)
+
+
+# --- Admin Tools Page ---
+@app.route("/admin_tools")
+@login_required
+def admin_tools():
+    return render_template("admin_tools.html")

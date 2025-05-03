@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Admin Tools{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2 class="mb-4">Admin Tools</h2>
+    <div class="row">
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Authorize Clio</h5>
+                    <p class="card-text">Connect with Clio to sync your data.</p>
+                    <a href="/clio/authorize" class="btn btn-primary">Authorize</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card mb-4">
+                <div class="card-body text-center">
+                    <h5 class="card-title">Manage Leads</h5>
+                    <p class="card-text">View and update your incoming leads.</p>
+                    <a href="/lead-links" class="btn btn-secondary">Manage Leads</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
