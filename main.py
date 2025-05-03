@@ -1212,4 +1212,6 @@ def test_clio_contacts():
         return {"error": str(e)}, 500
 
 if __name__ == "__main__":
+    from post_deploy import run_post_deploy
+    run_post_deploy()
     app.run(debug=True)
