@@ -48,8 +48,6 @@ def extract_expungement_data(filepath):
     except Exception:
         pass
 
-
-
     # Extract values from text using regex
     fields = {
         "name": re.search(r"(?:Defendant(?: Name)?|Name\s*of\s*Defendant)\s*:\s*(.+)", text),
@@ -71,7 +69,9 @@ def extract_expungement_data(filepath):
             val = match.group(1).strip()
             if key == "name":
                 val = re.split(r"Amended|Case No|DOB|OTN", val)[0].strip().title()
+                result["name"] = val
                 result["name_arrest"] = val
+                continue
             if "date" in key:
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
