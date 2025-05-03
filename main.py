@@ -1,9 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
+
+# --- Login Required Decorator ---
+# This decorator is now a no-op; login is not required for any routes.
+def login_required(f):
+    return f
+
 app = Flask(__name__)
 
 # --- Expungement Generator POST Route ---
 @app.route("/expungement/generate", methods=["POST"])
-@login_required
 def generate_expungement():
     from datetime import datetime
     form_data = request.form.to_dict()
@@ -68,17 +73,6 @@ def generate_expungement():
 
     return send_file(output_path, as_attachment=True)
 from flask_mail import Mail, Message
-from functools import wraps
-
-
-app = Flask(__name__)
-
-# --- Login Required Decorator ---
-def login_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        return f(*args, **kwargs)
-    return decorated_function
 
 import requests
 import os
@@ -120,7 +114,6 @@ migrate = Migrate(app, db)
 
 # --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
-@login_required
 def admin_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
     # Enhance: add URLs for each lead's detail page
@@ -133,7 +126,6 @@ def admin_leads():
 
 # --- Admin Edit Lead ---
 @app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
-@login_required
 def admin_edit_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     if request.method == "POST":
@@ -254,7 +246,6 @@ class Charge(db.Model):
 
 # --- Lead Links Route ---
 @app.route("/lead-links")
-@login_required
 def lead_links():
     links = []
     for lead in Lead.query.order_by(Lead.created_at.desc()).all():
@@ -278,7 +269,6 @@ class ClioToken(db.Model):
         return datetime.utcnow() >= self.expires_at
 
 @app.route("/")
-@login_required
 def dashboard():
     case_results = CaseResult.query.order_by(CaseResult.created_at.desc()).all()
     # Show admin_tools button for all logged-in users (or restrict to admin if needed)
@@ -286,7 +276,6 @@ def dashboard():
     return render_template("dashboard.html", case_results=case_results, show_admin_tools=show_admin_tools)
 
 @app.route("/leads")
-@login_required
 def view_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
     return render_template("leads.html", leads=leads)
@@ -309,7 +298,6 @@ def logout():
     return redirect(url_for("login"))
 
 @app.route("/intake", methods=["GET", "POST"])
-@login_required
 def intake():
     if request.method == "POST":
         data = request.form
@@ -481,7 +469,6 @@ def intake_success():
     return render_template("success.html")
 
 @app.route("/lead/<int:lead_id>")
-@login_required
 def view_lead(lead_id):
     print(f"Loading view_lead for ID: {lead_id}")
     lead = Lead.query.get_or_404(lead_id)
@@ -745,7 +732,6 @@ Manassas, VA 20110
     return redirect(url_for("update_success"))
 
 @app.route("/lead/<int:lead_id>/edit", methods=["GET", "POST"])
-@login_required
 def edit_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     if request.method == "POST":
@@ -760,7 +746,6 @@ def edit_lead(lead_id):
     return render_template("edit_lead.html", lead=lead)
 
 @app.route("/case_result/<int:result_id>/edit", methods=["GET", "POST"])
-@login_required
 def edit_case_result(result_id):
     result = CaseResult.query.get_or_404(result_id)
     if request.method == "POST":
@@ -788,7 +773,6 @@ def update_success():
     return render_template("update_success.html")
 
 @app.route("/case_result", methods=["GET", "POST"])
-@login_required
 def case_result():
     # --- AJAX or form-driven search for matters or contacts (GET handler) ---
     if request.method == "GET" and ("search_matter" in request.args or "search_contact" in request.args):
@@ -1081,7 +1065,6 @@ def reset_db():
 from Expungement.expungement_utils import populate_document, prosecutor_info
 
 @app.route("/expungement", methods=["GET", "POST"])
-@login_required
 def expungement_form():
     # --- Update Stafford County prosecutor details ---
     if "Stafford County" in prosecutor_info:
@@ -1177,7 +1160,6 @@ def expungement_form():
 
 # --- Expungement PDF Upload and Parsing Route ---
 @app.route("/expungement/upload", methods=["POST"])
-@login_required
 def expungement_upload():
     uploaded_file = request.files.get("file")
     if not uploaded_file or uploaded_file.filename == "":
@@ -1405,6 +1387,5 @@ if __name__ == "__main__":
 
 # --- Admin Tools Page ---
 @app.route("/admin_tools")
-@login_required
 def admin_tools():
     return render_template("admin_tools.html")
