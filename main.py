@@ -1176,6 +1176,7 @@ def expungement_upload():
     # Parse the PDF for relevant fields
     from Expungement.expungement_utils import extract_expungement_data
     form_data = extract_expungement_data(temp_path)
+    print("Extracted form_data:", form_data)
     # --- Ensure name, name_arrest, and dob fields are filled from extracted data ---
     form_data["name"] = form_data.get("name", "")
     # Synchronize name_arrest and name fields if missing

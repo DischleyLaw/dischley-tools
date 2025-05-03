@@ -80,7 +80,7 @@ def extract_expungement_data(filepath):
         if match:
             val = match.group(1).strip()
             if key == "name":
-                val = re.split(r"Amended|Case No|DOB|OTN", val)[0].strip()
+                val = re.split(r"Amended|Case No|DOB|OTN", val)[0].strip().title()
             if "date" in key:
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
@@ -93,9 +93,12 @@ def extract_expungement_data(filepath):
                 val = f"{parts[1]} {parts[0]}"
             if key == "officer_name":
                 val = re.split(r"Amended|Hearing|Disposition", val)[0].strip()
-                if "," in val:
-                    last, first = val.split(",", 1)
+                parts = val.split(",", 1)
+                if len(parts) == 2:
+                    last, first = parts
                     val = f"{last.strip().title()}, {first.strip().title()}"
+                else:
+                    val = val.title()
             if key == "otn":
                 val = re.sub(r"Summons.*", "", val).strip()
             result[key] = val
