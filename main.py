@@ -1017,58 +1017,95 @@ from Expungement.expungement_utils import populate_document, prosecutor_info
 @app.route("/expungement", methods=["GET", "POST"])
 @login_required
 def expungement_form():
+    # --- Update Stafford County prosecutor details ---
+    if "Stafford County" in prosecutor_info:
+        prosecutor_info["Stafford County"] = {
+            "name": "Eric Olsen, Esq.",
+            "title": "Stafford County Commonwealth's Attorney",
+            "address1": "1245 Courthouse Road",
+            "address2": "Stafford, VA 22555"
+        }
+
+    from datetime import datetime
+    current_month = datetime.now().strftime("%B")
+    current_year = datetime.now().year
+
     if request.method == "POST":
-        data = request.form.to_dict()
+        form_data = request.form.to_dict()
 
-        # If NAME not set, try resolving it from Clio
-        clio_contact_id = data.get("clio_contact_id", "").strip()
-        if not data.get("{NAME}") and clio_contact_id:
+        # Add attorney dropdown value
+        attorney = form_data.get("attorney", "")
+
+        # Law enforcement agency dropdown and "Other" textbox
+        police_department = form_data.get("police_department", "")
+        police_department_other = form_data.get("police_department_other", "")
+        selected_police_department = police_department
+        if police_department == "Other":
+            selected_police_department = police_department_other
+
+        # Format dates to "January 1, 2025"
+        def format_date(date_str):
             try:
-                access_token = get_valid_token()
-                headers = {"Authorization": f"Bearer {access_token}"}
-                contact_url = f"https://app.clio.com/api/v4/contacts/{clio_contact_id}"
-                response = requests.get(contact_url, headers=headers)
-                if response.status_code == 200:
-                    contact = response.json().get("data", {})
-                    if contact.get("type") == "Person":
-                        name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}"
-                    else:
-                        name = contact.get("name", "").strip()
-                    data["{NAME}"] = name
-            except Exception as e:
-                print("Failed to fetch Clio contact:", e)
+                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
+            except ValueError:
+                return date_str
 
-        county = data.get('county')
-        expungement_type = data.get('expungement_type')
+        arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
+        dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
 
-        if expungement_type == "Expungement of Right":
-            expungement_clause = "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
-        elif expungement_type == "Manifest Injustice":
-            manifest_injustice = data.get('manifest_injustice')
-            expungement_clause = f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice})."
+        expungement_type = form_data.get("expungement_type", "")
+        manifest_injustice_details = form_data.get("manifest_injustice_details", "")
+        # Compose {Type of Expungement} logic as required
+        if expungement_type == "Manifest Injustice":
+            type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
         else:
-            expungement_clause = ""
+            type_of_expungement = "The Petitioner has no prior criminal record..."
 
-        prosecutor = prosecutor_info[county]
-        data.update({
-            "{Prosecutor}": prosecutor['name'],
-            "{Prosecutor Title}": prosecutor['title'],
-            "{Prosecutor Address 1}": prosecutor['address1'],
-            "{Prosecutor Address 2}": prosecutor['address2'],
-            "{COUNTY}": county.upper(),
-            "{County2}": county.title(),
-            "{Type of Expungement}": expungement_clause
-        })
+        # Map form fields to template fields
+        data = {
+            "{NAME}": form_data.get("name", ""),
+            "{DOB}": form_data.get("dob", ""),
+            "{County2}": form_data.get("county", "").title(),
+            "{COUNTY}": form_data.get("county", "").upper(),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
+            "{Type of Expungement}": type_of_expungement,
+            "{Date of Arrest}": arrest_date_formatted,
+            "{Arresting Officer}": form_data.get("officer_name", ""),
+            "{Police Department}": selected_police_department,
+            "{Charge Name}": form_data.get("charge_name", ""),
+            "{Code Section}": form_data.get("code_section", ""),
+            "{VCC Code}": form_data.get("vcc_code", ""),
+            "{OTN}": form_data.get("otn", ""),
+            "{Court Dispo}": form_data.get("court_dispo", ""),
+            "{Case Number}": form_data.get("case_no", ""),
+            "{Final Disposition}": form_data.get("final_dispo", ""),
+            "{Dispo Date}": dispo_date_formatted,
+            "{Prosecutor}": form_data.get("prosecutor", ""),
+            "{Prosecutor Title}": form_data.get("prosecutor_title", ""),
+            "{Prosecutor Address 1}": form_data.get("prosecutor_address1", ""),
+            "{Prosecutor Address 2}": form_data.get("prosecutor_address2", ""),
+            "{Month}": form_data.get("month", current_month),
+            "{Year}": form_data.get("year", current_year),
+            "{Attorney}": attorney,
+            "{Expungement Type}": expungement_type,
+            "{Manifest Injustice Details}": manifest_injustice_details
+        }
 
-        template_path = 'ExpungementTemplate.docx'
-        output_path = f'temp/{data["{NAME}"]}_Expungement.docx'
+        output_dir = "temp"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Expungement.docx")
 
-        os.makedirs('temp', exist_ok=True)
+        template_path = 'static/data/Exp_Petition (Template).docx'
         populate_document(template_path, output_path, data)
 
         return send_file(output_path, as_attachment=True)
 
-    return render_template('expungement_form.html', counties=prosecutor_info.keys())
+    return render_template(
+        'expungement_form.html',
+        counties=prosecutor_info.keys(),
+        current_month=current_month,
+        current_year=current_year
+    )
 
 
 # Run the Flask app
