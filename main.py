@@ -1,3 +1,4 @@
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 app = Flask(__name__)
 
 # --- Expungement Generator POST Route ---
@@ -66,7 +67,6 @@ def generate_expungement():
     populate_document(template_path, output_path, data)
 
     return send_file(output_path, as_attachment=True)
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mail import Mail, Message
 from functools import wraps
 
