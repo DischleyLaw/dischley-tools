@@ -72,6 +72,8 @@ def generate_expungement():
     populate_document(template_path, output_path, data)
 
     return send_file(output_path, as_attachment=True)
+
+from Expungement.expungement_utils import extract_expungement_data
 from flask_mail import Mail, Message
 
 import requests
@@ -1172,59 +1174,8 @@ def expungement_upload():
     uploaded_file.save(temp_path)
 
     # Parse the PDF for relevant fields
-    from PyPDF2 import PdfReader
-    import re
-    reader = PdfReader(temp_path)
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text() or ""
-
-    # Extract officer/complainant name using regex search
-    complainant_match = re.search(r"Complainant\s*:\s*(.+)", text)
-
-    # Extract Court of Final Disposition
-    court_match = re.search(r"General District Court\s+(.+?)\n", text)
-    court_name = f"{court_match.group(1).strip()} General District Court" if court_match else ""
-
-    # Sample field extraction (simplify/adjust per actual PDF structure)
-    name_match = re.search(r"Defendant Name\s*:\s*(.+)", text)
-    case_match = re.search(r"Case No\s*:\s*(\S+)", text)
-    charge_match = re.search(r"Charge\s*:\s*(.+)", text)
-    otn_match = re.search(r"OTN\s*:\s*(\S+)", text)
-
-    form_data = {
-        "name": name_match.group(1).strip() if name_match else "",
-        "case_no": case_match.group(1).strip() if case_match else "",
-        "charge_name": charge_match.group(1).strip() if charge_match else "",
-        "otn": otn_match.group(1).strip() if otn_match else "",
-        "court_dispo": court_name
-    }
-
-    # Additional parsing for Virginia Judiciary Online Case Information PDF
-    alt_name_match = re.search(r"Defendant Name\s*:\s*(.+)", text)
-    address_match = re.search(r"Address\s*:\s*(.+)", text)
-    gender_match = re.search(r"Gender\s*:\s*(\w+)", text)
-    race_match = re.search(r"Race\s*:\s*(\w+)", text)
-    dob_match = re.search(r"DOB\s*:\s*(\d{2}/\d{2}/\d{4})", text)
-    attorney_match = re.search(r"Attorney\s*:\s*(.+)", text)
-    offense_date_match = re.search(r"Offense Date\s*:\s*(\d{2}/\d{2}/\d{4})", text)
-    arrest_date_match = re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text)
-    filed_date_match = re.search(r"Filed Date\s*:\s*(\d{2}/\d{2}/\d{4})", text)
-
-    # Update form_data with additional fields if present, including officer_name from complainant_match
-    form_data.update({
-        "name": alt_name_match.group(1).strip() if alt_name_match else form_data.get("name", ""),
-        "dob": dob_match.group(1).strip() if dob_match else "",
-        "officer_name": complainant_match.group(1).strip() if complainant_match else "",
-        "arrest_date": datetime.strptime(arrest_date_match.group(1), "%m/%d/%Y").strftime("%Y-%m-%d") if arrest_date_match else "",
-        "dispo_date": "",  # Dispo date not explicitly present
-        "court_dispo": court_name,
-        "charge_name": charge_match.group(1).strip() if charge_match else form_data.get("charge_name", ""),
-        "code_section": code_match.group(1).strip() if (code_match := re.search(r"Code Section\s*:\s*(\S+)", text)) else "",
-        "otn": otn_match.group(1).strip() if otn_match else form_data.get("otn", ""),
-        "case_no": case_match.group(1).strip() if case_match else form_data.get("case_no", ""),
-        "final_dispo": re.search(r"Disposition\s*:\s*(.+)", text).group(1).strip() if re.search(r"Disposition\s*:\s*(.+)", text) else ""
-    })
+    from Expungement.expungement_utils import extract_expungement_data
+    form_data = extract_expungement_data(temp_path)
 
     from datetime import datetime
     return render_template(

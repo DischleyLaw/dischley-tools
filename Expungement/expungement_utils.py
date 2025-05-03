@@ -1,4 +1,13 @@
+import pytesseract
+from pdf2image import convert_from_path
+import tempfile
+import os
 from docx import Document
+
+# Additional imports for PDF parsing and regex
+import re
+from PyPDF2 import PdfReader
+from datetime import datetime
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -25,3 +34,58 @@ def populate_document(template_path, output_path, replacements):
                         cell.text = cell.text.replace(key, value)
     doc.save(output_path)
     print(f"Document saved at: {output_path}")
+
+def extract_text_via_ocr(pdf_path):
+    with tempfile.TemporaryDirectory() as path:
+        images = convert_from_path(pdf_path, output_folder=path)
+        text = "\n".join(pytesseract.image_to_string(img) for img in images)
+        return text
+
+
+# Function to extract expungement data from a PDF file
+def extract_expungement_data(filepath):
+    text = ""
+
+    # First try regular PDF text extraction
+    try:
+        reader = PdfReader(filepath)
+        for page in reader.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text
+    except Exception:
+        pass
+
+    # If no text was found, use OCR
+    if not text:
+        text = extract_text_via_ocr(filepath)
+
+    # Extract values from text using regex
+    fields = {
+        "name": re.search(r"Defendant Name\s*:\s*(.+)", text),
+        "dob": re.search(r"DOB\s*:\s*(\d{2}/\d{2}/\d{4})", text),
+        "officer_name": re.search(r"Complainant\s*:\s*(.+)", text),
+        "arrest_date": re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
+        "dispo_date": re.search(r"Disposition Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
+        "charge_name": re.search(r"Charge\s*:\s*(.+)", text),
+        "code_section": re.search(r"Code Section\s*:\s*(\S+)", text),
+        "otn": re.search(r"OTN\s*:\s*(\S+)", text),
+        "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
+        "final_dispo": re.search(r"Disposition\s*:\s*(.+)", text),
+        "court_dispo": re.search(r"General District Court\s+(.+?)\n", text),
+    }
+
+    result = {}
+    for key, match in fields.items():
+        if match:
+            val = match.group(1).strip()
+            if "date" in key:
+                try:
+                    val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
+                except ValueError:
+                    pass
+            if key == "court_dispo":
+                val = f"{val} General District Court"
+            result[key] = val
+
+    return result
