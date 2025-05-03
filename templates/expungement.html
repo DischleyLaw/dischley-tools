@@ -52,7 +52,22 @@
     </div>
     <div class="mb-3">
       <label for="police_department" class="form-label">Law Enforcement Agency</label>
-      <input type="text" class="form-control" id="police_department" name="police_department">
+      <select class="form-select" id="police_department" name="police_department" required>
+        <option value="">Select Agency</option>
+        <option value="Fairfax County Police Department">Fairfax County Police Department</option>
+        <option value="Arlington County Police Department">Arlington County Police Department</option>
+        <option value="Prince William County Police Department">Prince William County Police Department</option>
+        <option value="Loudoun County Sheriff's Office">Loudoun County Sheriff's Office</option>
+        <option value="Alexandria Police Department">Alexandria Police Department</option>
+        <option value="Stafford County Sheriff's Office">Stafford County Sheriff's Office</option>
+        <option value="Fauquier County Sheriff's Office">Fauquier County Sheriff's Office</option>
+        <option value="Virginia State Police">Virginia State Police</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
+    <div class="mb-3" id="other_police_department_container" style="display: none;">
+      <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
+      <input type="text" class="form-control" id="other_police_department" name="other_police_department">
     </div>
     <div class="mb-3">
       <label for="charge_name" class="form-label">Charge Description</label>
@@ -183,6 +198,12 @@
         const container = document.getElementById('manifest_injustice_details_container');
         container.style.display = (type === 'Manifest Injustice') ? 'block' : 'none';
       }
+    </script>
+    <script>
+      document.getElementById('police_department').addEventListener('change', function () {
+        const otherContainer = document.getElementById('other_police_department_container');
+        otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+      });
     </script>
   </form>
 </div>
