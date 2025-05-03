@@ -1,3 +1,5 @@
+app = Flask(__name__)
+
 # --- Expungement Generator POST Route ---
 @app.route("/expungement/generate", methods=["POST"])
 @login_required
