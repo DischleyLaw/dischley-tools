@@ -1,6 +1,3 @@
-import pytesseract
-from pdf2image import convert_from_path
-import tempfile
 import os
 from docx import Document
 
@@ -8,6 +5,9 @@ from docx import Document
 import re
 from PyPDF2 import PdfReader
 from datetime import datetime
+from PIL import Image
+import pytesseract
+from pdf2image import convert_from_path
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -35,11 +35,6 @@ def populate_document(template_path, output_path, replacements):
     doc.save(output_path)
     print(f"Document saved at: {output_path}")
 
-def extract_text_via_ocr(pdf_path):
-    with tempfile.TemporaryDirectory() as path:
-        images = convert_from_path(pdf_path, output_folder=path)
-        text = "\n".join(pytesseract.image_to_string(img) for img in images)
-        return text
 
 
 # Function to extract expungement data from a PDF file
@@ -56,9 +51,15 @@ def extract_expungement_data(filepath):
     except Exception:
         pass
 
-    # If no text was found, use OCR
-    if not text:
-        text = extract_text_via_ocr(filepath)
+    # Fallback to OCR if no text was extracted
+    if not text.strip():
+        try:
+            images = convert_from_path(filepath)
+            for image in images:
+                text += pytesseract.image_to_string(image)
+        except Exception as e:
+            print("OCR fallback failed:", e)
+
 
     # Extract values from text using regex
     fields = {

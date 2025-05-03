@@ -17,14 +17,14 @@
     <div class="mb-3">
       <label for="county" class="form-label">County</label>
       <select class="form-select" id="county" name="county" required onchange="fillProsecutor()">
-        <option value="">Select County</option>
-        <option value="Fairfax County">Fairfax County</option>
-        <option value="Arlington County">Arlington County</option>
-        <option value="Prince William County">Prince William County</option>
-        <option value="Loudoun County">Loudoun County</option>
-        <option value="City of Alexandria">City of Alexandria</option>
-        <option value="Stafford County">Stafford County</option>
-        <option value="Fauquier County">Fauquier County</option>
+        <option value="" {% if county == "" %}selected{% endif %}>Select County</option>
+        <option value="Fairfax County" {% if county == "Fairfax County" %}selected{% endif %}>Fairfax County</option>
+        <option value="Arlington County" {% if county == "Arlington County" %}selected{% endif %}>Arlington County</option>
+        <option value="Prince William County" {% if county == "Prince William County" %}selected{% endif %}>Prince William County</option>
+        <option value="Loudoun County" {% if county == "Loudoun County" %}selected{% endif %}>Loudoun County</option>
+        <option value="City of Alexandria" {% if county == "City of Alexandria" %}selected{% endif %}>City of Alexandria</option>
+        <option value="Stafford County" {% if county == "Stafford County" %}selected{% endif %}>Stafford County</option>
+        <option value="Fauquier County" {% if county == "Fauquier County" %}selected{% endif %}>Fauquier County</option>
       </select>
     </div>
     <div class="mb-3">
@@ -42,14 +42,14 @@
     <div class="mb-3">
       <label for="expungement_type" class="form-label">Type of Expungement</label>
       <select class="form-select" id="expungement_type" name="expungement_type" onchange="toggleManifestInjustice()">
-        <option value="">Select Type</option>
-        <option value="Expungement of Right">Expungement of Right</option>
-        <option value="Manifest Injustice">Manifest Injustice</option>
+        <option value="" {% if expungement_type == "" %}selected{% endif %}>Select Type</option>
+        <option value="Expungement of Right" {% if expungement_type == "Expungement of Right" %}selected{% endif %}>Expungement of Right</option>
+        <option value="Manifest Injustice" {% if expungement_type == "Manifest Injustice" %}selected{% endif %}>Manifest Injustice</option>
       </select>
     </div>
     <div class="mb-3" id="manifest_injustice_details_container" style="display: none;">
       <label for="manifest_injustice_details" class="form-label">Manifest Injustice Details</label>
-      <textarea class="form-control" id="manifest_injustice_details" name="manifest_injustice_details" rows="4"></textarea>
+      <textarea class="form-control" id="manifest_injustice_details" name="manifest_injustice_details" rows="4">{{ manifest_injustice_details|default('') }}</textarea>
     </div>
     <hr />
     <h4>Charge Details</h4>
@@ -78,7 +78,7 @@
     </div>
     <div class="mb-3" id="other_police_department_container" style="display: none;">
       <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
-      <input type="text" class="form-control" id="other_police_department" name="other_police_department">
+      <input type="text" class="form-control" id="other_police_department" name="other_police_department" value="{{ other_police_department|default('') }}">
     </div>
     <div class="mb-3">
       <label for="charge_name" class="form-label">Charge Description</label>
@@ -143,8 +143,8 @@
     <div class="mb-3">
       <label for="attorney" class="form-label">Attorney Name</label>
       <select class="form-select" id="attorney" name="attorney" required>
-        <option value="David J. Dischley (VSB No. 73703)">David J. Dischley (VSB No. 73703)</option>
-        <option value="Patrick T. O'Brien (VSB No. 81211)">Patrick T. O'Brien (VSB No. 81211)</option>
+        <option value="David J. Dischley (VSB No. 73703)" {% if attorney == "David J. Dischley (VSB No. 73703)" %}selected{% endif %}>David J. Dischley (VSB No. 73703)</option>
+        <option value="Patrick T. O'Brien (VSB No. 81211)" {% if attorney == "Patrick T. O'Brien (VSB No. 81211)" %}selected{% endif %}>Patrick T. O'Brien (VSB No. 81211)</option>
       </select>
     </div>
     <button type="submit" class="btn btn-primary">Generate Petition</button>

@@ -1206,22 +1206,8 @@ def expungement_upload():
     if raw_code:
         form_data["code_section"] = raw_code.group(1)
 
-    # --- Update court_dispo to include proper court type if possible ---
-    raw_text = ""
-    try:
-        with open(temp_path, "rb") as f:
-            from PyPDF2 import PdfReader
-            reader = PdfReader(f)
-            raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
-    except Exception:
-        raw_text = ""
-    court_match = re.search(r"(General District|Circuit|Juvenile.*Relations).*Court\s*for\s*([A-Za-z\s]+?)\s+(?:Case|Commonwealth|v\.|\()", raw_text, re.IGNORECASE)
-    if court_match:
-        court_type = court_match.group(1).strip().title()
-        court_locality = court_match.group(2).strip().title()
-        form_data["court_dispo"] = f"{court_type} Court of {court_locality}"
-    else:
-        form_data["court_dispo"] = "Court of Final Disposition"
+    # --- Set court_dispo to default value; do not parse PDF for court type/locality ---
+    form_data["court_dispo"] = "Court of Final Disposition"
 
     # Clean up final_dispo field for cleaner output.
     form_data["final_dispo"] = form_data.get("final_dispo", "")
