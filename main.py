@@ -1177,6 +1177,29 @@ def expungement_upload():
     from Expungement.expungement_utils import extract_expungement_data
     form_data = extract_expungement_data(temp_path)
 
+    import re
+    # Extract a clean arresting officer name
+    raw_officer = form_data.get("officer_name", "")
+    officer_match = re.search(r"([A-Z]+,\s?[A-Z])", raw_officer)
+    if officer_match:
+        form_data["officer_name"] = officer_match.group(1).title()
+
+    # --- Clean up charge_name, otn, and code_section fields ---
+    import re
+
+    raw_charge = form_data.get("charge_name", "")
+    match = re.search(r"^(.*?)OffenseTracking", raw_charge)
+    if match:
+        form_data["charge_name"] = match.group(1).strip()
+
+    raw_otn = re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", raw_charge)
+    if raw_otn:
+        form_data["otn"] = raw_otn.group(1)
+
+    raw_code = re.search(r"CodeSection\s*:\s*(\S+)", raw_charge)
+    if raw_code:
+        form_data["code_section"] = raw_code.group(1)
+
     from datetime import datetime
     return render_template(
         "expungement.html",

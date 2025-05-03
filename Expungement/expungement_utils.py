@@ -64,14 +64,14 @@ def extract_expungement_data(filepath):
     fields = {
         "name": re.search(r"Defendant Name\s*:\s*(.+)", text),
         "dob": re.search(r"DOB\s*:\s*(\d{2}/\d{2}/\d{4})", text),
-        "officer_name": re.search(r"Complainant\s*:\s*(.+)", text),
+        "officer_name": re.search(r"Complainant\s*:\s*([\w\s.,'-]+)", text),
         "arrest_date": re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "dispo_date": re.search(r"Disposition Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
-        "charge_name": re.search(r"Charge\s*:\s*(.+)", text),
-        "code_section": re.search(r"Code Section\s*:\s*(\S+)", text),
-        "otn": re.search(r"OTN\s*:\s*(\S+)", text),
+        "charge_name": re.search(r"Charge\s*:\s*([A-Z\s:]+)", text),
+        "code_section": re.search(r"Code\s*Section\s*:\s*(\d+\.\d+-?\d*)", text),
+        "otn": re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", text),
         "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
-        "final_dispo": re.search(r"Disposition\s*:\s*(.+)", text),
+        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*(.+)", text),
         "court_dispo": re.search(r"General District Court\s+(.+?)\n", text),
     }
 
