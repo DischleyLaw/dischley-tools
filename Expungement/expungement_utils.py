@@ -62,7 +62,7 @@ def extract_expungement_data(filepath):
 
     # Extract values from text using regex
     fields = {
-        "name": re.search(r"Defendant Name\s*:\s*(.+)", text),
+        "name": re.search(r"Defendant(?: Name)?\s*:\s*(.+)", text),
         "dob": re.search(r"DOB\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "officer_name": re.search(r"Complainant\s*:\s*([\w\s.,'-]+)", text),
         "arrest_date": re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
@@ -71,7 +71,7 @@ def extract_expungement_data(filepath):
         "code_section": re.search(r"Code\s*Section\s*:\s*(\d+\.\d+-?\d*)", text),
         "otn": re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", text),
         "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
-        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([^\n]+)", text),
+        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([A-Za-z ]+)", text),
         "court_dispo": re.search(r"(?i)(General District Court|Circuit Court|Juvenile and Domestic Relations District Court)\s+Online Case Information System\s*-\s*(.+?)\n", text),
     }
 
@@ -79,6 +79,8 @@ def extract_expungement_data(filepath):
     for key, match in fields.items():
         if match:
             val = match.group(1).strip()
+            if key == "name":
+                val = re.split(r"Amended|Case No|DOB|OTN", val)[0].strip()
             if "date" in key:
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
@@ -97,5 +99,7 @@ def extract_expungement_data(filepath):
             if key == "otn":
                 val = re.sub(r"Summons.*", "", val).strip()
             result[key] = val
+            if key == "name":
+                result["name_arrest"] = val
 
     return result

@@ -1178,7 +1178,11 @@ def expungement_upload():
     form_data = extract_expungement_data(temp_path)
     # --- Ensure name, name_arrest, and dob fields are filled from extracted data ---
     form_data["name"] = form_data.get("name", "")
-    form_data["name_arrest"] = form_data.get("name", "")
+    # Synchronize name_arrest and name fields if missing
+    if not form_data.get("name_arrest"):
+        form_data["name_arrest"] = form_data["name"]
+    if not form_data.get("name"):
+        form_data["name"] = form_data.get("name_arrest", "")
     form_data["dob"] = form_data.get("dob", "")
 
     import re
@@ -1218,6 +1222,19 @@ def expungement_upload():
         court_type = court_match.group(1).strip().title()
         court_locality = court_match.group(2).strip().title()
         form_data["court_dispo"] = f"{court_type} Court of {court_locality}"
+    else:
+        form_data["court_dispo"] = "Court of Final Disposition"
+
+    # Clean up final_dispo field for cleaner output.
+    form_data["final_dispo"] = form_data.get("final_dispo", "").split("SentenceTime")[0].strip()
+
+    # Ensure name_arrest and dob are populated if missing
+    if not form_data.get("name_arrest"):
+        form_data["name_arrest"] = form_data.get("name", "")
+    if not form_data.get("name"):
+        form_data["name"] = form_data.get("name_arrest", "")
+    if not form_data.get("dob"):
+        form_data["dob"] = ""
 
     from datetime import datetime
     return render_template(

@@ -37,7 +37,7 @@
     </div>
     <div class="mb-3">
       <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
-      <input type="text" class="form-control" id="name_arrest" name="name_arrest">
+      <input type="text" class="form-control" id="name_arrest" name="name_arrest" value="{{ name_arrest|default('') }}">
     </div>
     <div class="mb-3">
       <label for="expungement_type" class="form-label">Type of Expungement</label>
@@ -90,7 +90,7 @@
     </div>
     <div class="mb-3">
       <label for="vcc_code" class="form-label">VCC Code</label>
-      <input type="text" class="form-control" id="vcc_code" name="vcc_code">
+      <input type="text" class="form-control" id="vcc_code" name="vcc_code" value="{{ vcc_code|default('') }}">
     </div>
     <div class="mb-3">
       <label for="otn" class="form-label">OTN</label>
@@ -110,25 +110,25 @@
     </div>
     <div class="mb-3">
       <label for="dispo_date" class="form-label">Disposition Date</label>
-      <input type="date" class="form-control" id="dispo_date" name="dispo_date">
+      <input type="date" class="form-control" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('')|replace('/', '-') }}">
     </div>
     <hr />
     <h4>Prosecutor Info</h4>
     <div class="mb-3">
       <label for="prosecutor" class="form-label">Prosecutor Name</label>
-      <input type="text" class="form-control" id="prosecutor" name="prosecutor">
+      <input type="text" class="form-control" id="prosecutor" name="prosecutor" value="{{ prosecutor|default('') }}">
     </div>
     <div class="mb-3">
       <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
-      <input type="text" class="form-control" id="prosecutor_title" name="prosecutor_title">
+      <input type="text" class="form-control" id="prosecutor_title" name="prosecutor_title" value="{{ prosecutor_title|default('') }}">
     </div>
     <div class="mb-3">
       <label for="prosecutor_address1" class="form-label">Address Line 1</label>
-      <input type="text" class="form-control" id="prosecutor_address1" name="prosecutor_address1">
+      <input type="text" class="form-control" id="prosecutor_address1" name="prosecutor_address1" value="{{ prosecutor_address1|default('') }}">
     </div>
     <div class="mb-3">
       <label for="prosecutor_address2" class="form-label">Address Line 2</label>
-      <input type="text" class="form-control" id="prosecutor_address2" name="prosecutor_address2">
+      <input type="text" class="form-control" id="prosecutor_address2" name="prosecutor_address2" value="{{ prosecutor_address2|default('') }}">
     </div>
     <hr />
     <h4>Filing Information</h4>
