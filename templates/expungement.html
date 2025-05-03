@@ -1,6 +1,9 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
+  <div class="row justify-content-center">
+    <div class="col-md-10">
+      <div class="card shadow p-4">
   <h2 class="mb-4">Expungement Petition Form</h2>
   <form method="POST" action="/expungement/generate">
     <div class="mb-3">
@@ -206,5 +209,8 @@
       });
     </script>
   </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
