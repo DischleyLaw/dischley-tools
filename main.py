@@ -1180,10 +1180,30 @@ def expungement_upload():
     from datetime import datetime
     return render_template(
         "expungement.html",
-        **form_data,
-        counties=prosecutor_info.keys(),
+        name=form_data.get("name", ""),
+        dob=form_data.get("dob", ""),
+        county=form_data.get("county", ""),
+        name_arrest=form_data.get("name_arrest", ""),
+        expungement_type=form_data.get("expungement_type", ""),
+        manifest_injustice_details=form_data.get("manifest_injustice_details", ""),
+        arrest_date=form_data.get("arrest_date", ""),
+        officer_name=form_data.get("officer_name", ""),
+        police_department=form_data.get("police_department", ""),
+        charge_name=form_data.get("charge_name", ""),
+        code_section=form_data.get("code_section", ""),
+        vcc_code=form_data.get("vcc_code", ""),
+        otn=form_data.get("otn", ""),
+        court_dispo=form_data.get("court_dispo", ""),
+        case_no=form_data.get("case_no", ""),
+        final_dispo=form_data.get("final_dispo", ""),
+        dispo_date=form_data.get("dispo_date", ""),
+        prosecutor=form_data.get("prosecutor", ""),
+        prosecutor_title=form_data.get("prosecutor_title", ""),
+        prosecutor_address1=form_data.get("prosecutor_address1", ""),
+        prosecutor_address2=form_data.get("prosecutor_address2", ""),
         current_month=datetime.now().strftime("%B"),
-        current_year=datetime.now().year
+        current_year=datetime.now().year,
+        counties=prosecutor_info.keys()
     )
 
 
