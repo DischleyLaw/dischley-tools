@@ -1105,6 +1105,95 @@ def expungement_form():
         current_year=current_year
     )
 
+# --- Expungement PDF Upload and Parsing Route ---
+@app.route("/expungement/upload", methods=["POST"])
+@login_required
+def expungement_upload():
+    uploaded_file = request.files.get("file")
+    if not uploaded_file or uploaded_file.filename == "":
+        flash("No file uploaded.", "danger")
+        return redirect(url_for("expungement_form"))
+
+    # Save the uploaded file to a temporary location
+    temp_path = os.path.join("temp", uploaded_file.filename)
+    os.makedirs("temp", exist_ok=True)
+    uploaded_file.save(temp_path)
+
+    # Parse the PDF for relevant fields
+    from PyPDF2 import PdfReader
+    reader = PdfReader(temp_path)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""
+
+    # Sample field extraction (simplify/adjust per actual PDF structure)
+    import re
+    name_match = re.search(r"Defendant Name\s*:\s*(.+)", text)
+    case_match = re.search(r"Case No\s*:\s*(\S+)", text)
+    charge_match = re.search(r"Charge\s*:\s*(.+)", text)
+    otn_match = re.search(r"OTN\s*:\s*(\S+)", text)
+
+    form_data = {
+        "name": name_match.group(1).strip() if name_match else "",
+        "case_no": case_match.group(1).strip() if case_match else "",
+        "charge_name": charge_match.group(1).strip() if charge_match else "",
+        "otn": otn_match.group(1).strip() if otn_match else ""
+    }
+
+    from datetime import datetime
+    return render_template(
+        "expungement.html",
+        **form_data,
+        counties=prosecutor_info.keys(),
+        current_month=datetime.now().strftime("%B"),
+        current_year=datetime.now().year
+    )
+
+
+# --- Expungement PDF Upload and Parsing Route ---
+@app.route("/expungement/upload", methods=["POST"])
+@login_required
+def expungement_upload():
+    uploaded_file = request.files.get("file")
+    if not uploaded_file or uploaded_file.filename == "":
+        flash("No file uploaded.", "danger")
+        return redirect(url_for("expungement_form"))
+
+    # Save the uploaded file to a temporary location
+    temp_path = os.path.join("temp", uploaded_file.filename)
+    os.makedirs("temp", exist_ok=True)
+    uploaded_file.save(temp_path)
+
+    # Parse the PDF for relevant fields
+    from PyPDF2 import PdfReader
+    reader = PdfReader(temp_path)
+    text = ""
+    for page in reader.pages:
+        text += page.extract_text() or ""
+
+    # Sample field extraction (simplify/adjust per actual PDF structure)
+    import re
+    name_match = re.search(r"Defendant Name\s*:\s*(.+)", text)
+    case_match = re.search(r"Case No\s*:\s*(\S+)", text)
+    charge_match = re.search(r"Charge\s*:\s*(.+)", text)
+    otn_match = re.search(r"OTN\s*:\s*(\S+)", text)
+
+    form_data = {
+        "name": name_match.group(1).strip() if name_match else "",
+        "case_no": case_match.group(1).strip() if case_match else "",
+        "charge_name": charge_match.group(1).strip() if charge_match else "",
+        "otn": otn_match.group(1).strip() if otn_match else ""
+    }
+
+    from datetime import datetime
+    return render_template(
+        "expungement.html",
+        **form_data,
+        counties=prosecutor_info.keys(),
+        current_month=datetime.now().strftime("%B"),
+        current_year=datetime.now().year
+    )
+
 
 # Run the Flask app
 
