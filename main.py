@@ -808,6 +808,7 @@ def case_result():
             except Exception as e:
                 print("Failed to search Clio contacts:", e)
 
+        # Accept original_charge[] as free-text paragraph input(s) from the frontend.
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
         pleas = request.form.getlist('plea[]')
