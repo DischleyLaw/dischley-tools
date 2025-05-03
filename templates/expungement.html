@@ -1,11 +1,105 @@
 {% extends "base.html" %}
 {% block content %}
 <div class="container mt-4">
-  <div class="card">
-    <div class="card-body">
-      <h2 class="mb-4">Expungement Generator</h2>
-      <p class="lead">Use the navigation bar to access the expungement petition tool.</p>
+  <h2 class="mb-4">Expungement Petition Form</h2>
+  <form method="POST" action="/expungement/generate">
+    <div class="mb-3">
+      <label for="name" class="form-label">Full Legal Name</label>
+      <input type="text" class="form-control" id="name" name="name" required>
     </div>
-  </div>
+    <div class="mb-3">
+      <label for="dob" class="form-label">Date of Birth</label>
+      <input type="date" class="form-control" id="dob" name="dob" required>
+    </div>
+    <div class="mb-3">
+      <label for="county" class="form-label">County</label>
+      <input type="text" class="form-control" id="county" name="county" required>
+    </div>
+    <div class="mb-3">
+      <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
+      <input type="text" class="form-control" id="name_arrest" name="name_arrest">
+    </div>
+    <div class="mb-3">
+      <label for="expungement_type" class="form-label">Type of Expungement</label>
+      <input type="text" class="form-control" id="expungement_type" name="expungement_type">
+    </div>
+    <hr />
+    <h4>Charge Details</h4>
+    <div class="mb-3">
+      <label for="arrest_date" class="form-label">Date of Arrest</label>
+      <input type="date" class="form-control" id="arrest_date" name="arrest_date">
+    </div>
+    <div class="mb-3">
+      <label for="officer_name" class="form-label">Arresting Officer</label>
+      <input type="text" class="form-control" id="officer_name" name="officer_name">
+    </div>
+    <div class="mb-3">
+      <label for="police_department" class="form-label">Law Enforcement Agency</label>
+      <input type="text" class="form-control" id="police_department" name="police_department">
+    </div>
+    <div class="mb-3">
+      <label for="charge_name" class="form-label">Charge Description</label>
+      <input type="text" class="form-control" id="charge_name" name="charge_name">
+    </div>
+    <div class="mb-3">
+      <label for="code_section" class="form-label">Code Section</label>
+      <input type="text" class="form-control" id="code_section" name="code_section">
+    </div>
+    <div class="mb-3">
+      <label for="vcc_code" class="form-label">VCC Code</label>
+      <input type="text" class="form-control" id="vcc_code" name="vcc_code">
+    </div>
+    <div class="mb-3">
+      <label for="otn" class="form-label">OTN</label>
+      <input type="text" class="form-control" id="otn" name="otn">
+    </div>
+    <div class="mb-3">
+      <label for="court_dispo" class="form-label">Court of Final Disposition</label>
+      <input type="text" class="form-control" id="court_dispo" name="court_dispo">
+    </div>
+    <div class="mb-3">
+      <label for="case_no" class="form-label">Case Number</label>
+      <input type="text" class="form-control" id="case_no" name="case_no">
+    </div>
+    <div class="mb-3">
+      <label for="final_dispo" class="form-label">Final Disposition</label>
+      <input type="text" class="form-control" id="final_dispo" name="final_dispo">
+    </div>
+    <div class="mb-3">
+      <label for="dispo_date" class="form-label">Disposition Date</label>
+      <input type="date" class="form-control" id="dispo_date" name="dispo_date">
+    </div>
+    <hr />
+    <h4>Prosecutor Info</h4>
+    <div class="mb-3">
+      <label for="prosecutor" class="form-label">Prosecutor Name</label>
+      <input type="text" class="form-control" id="prosecutor" name="prosecutor">
+    </div>
+    <div class="mb-3">
+      <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
+      <input type="text" class="form-control" id="prosecutor_title" name="prosecutor_title">
+    </div>
+    <div class="mb-3">
+      <label for="prosecutor_address1" class="form-label">Address Line 1</label>
+      <input type="text" class="form-control" id="prosecutor_address1" name="prosecutor_address1">
+    </div>
+    <div class="mb-3">
+      <label for="prosecutor_address2" class="form-label">Address Line 2</label>
+      <input type="text" class="form-control" id="prosecutor_address2" name="prosecutor_address2">
+    </div>
+    <div class="mb-3">
+      <label for="month" class="form-label">Month of Petition</label>
+      <input type="text" class="form-control" id="month" name="month">
+    </div>
+    <div class="mb-3">
+      <label for="year" class="form-label">Year of Petition</label>
+      <input type="text" class="form-control" id="year" name="year">
+    </div>
+    <div class="mb-3">
+      <label for="attorney" class="form-label">Attorney Name</label>
+      <input type="text" class="form-control" id="attorney" name="attorney">
+    </div>
+    <button type="submit" class="btn btn-primary">Generate Petition</button>
+  </form>
 </div>
 {% endblock %}
