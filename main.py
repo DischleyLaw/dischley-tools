@@ -1,3 +1,69 @@
+# --- Expungement Generator POST Route ---
+@app.route("/expungement/generate", methods=["POST"])
+@login_required
+def generate_expungement():
+    from datetime import datetime
+    form_data = request.form.to_dict()
+
+    # Format dates
+    def format_date(date_str):
+        try:
+            return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
+        except ValueError:
+            return date_str
+
+    arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
+    dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
+
+    expungement_type = form_data.get("expungement_type", "")
+    manifest_injustice_details = form_data.get("manifest_injustice_details", "")
+    if expungement_type == "Manifest Injustice":
+        type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
+    else:
+        type_of_expungement = "The Petitioner has no prior criminal record..."
+
+    police_department = form_data.get("police_department", "")
+    police_department_other = form_data.get("other_police_department", "")
+    selected_police_department = police_department if police_department != "Other" else police_department_other
+
+    data = {
+        "{NAME}": form_data.get("name", ""),
+        "{DOB}": form_data.get("dob", ""),
+        "{County2}": form_data.get("county", "").title(),
+        "{COUNTY}": form_data.get("county", "").upper(),
+        "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
+        "{Type of Expungement}": type_of_expungement,
+        "{Date of Arrest}": arrest_date_formatted,
+        "{Arresting Officer}": form_data.get("officer_name", ""),
+        "{Police Department}": selected_police_department,
+        "{Charge Name}": form_data.get("charge_name", ""),
+        "{Code Section}": form_data.get("code_section", ""),
+        "{VCC Code}": form_data.get("vcc_code", ""),
+        "{OTN}": form_data.get("otn", ""),
+        "{Court Dispo}": form_data.get("court_dispo", ""),
+        "{Case Number}": form_data.get("case_no", ""),
+        "{Final Disposition}": form_data.get("final_dispo", ""),
+        "{Dispo Date}": dispo_date_formatted,
+        "{Prosecutor}": form_data.get("prosecutor", ""),
+        "{Prosecutor Title}": form_data.get("prosecutor_title", ""),
+        "{Prosecutor Address 1}": form_data.get("prosecutor_address1", ""),
+        "{Prosecutor Address 2}": form_data.get("prosecutor_address2", ""),
+        "{Month}": form_data.get("month", datetime.now().strftime("%B")),
+        "{Year}": form_data.get("year", datetime.now().year),
+        "{Attorney}": form_data.get("attorney", ""),
+        "{Expungement Type}": expungement_type,
+        "{Manifest Injustice Details}": manifest_injustice_details
+    }
+
+    output_dir = "temp"
+    os.makedirs(output_dir, exist_ok=True)
+    output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Expungement.docx")
+
+    template_path = 'static/data/Exp_Petition (Template).docx'
+    from Expungement.expungement_utils import populate_document
+    populate_document(template_path, output_path, data)
+
+    return send_file(output_path, as_attachment=True)
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 from flask_mail import Mail, Message
 from functools import wraps
@@ -1105,49 +1171,6 @@ def expungement_form():
         current_year=current_year
     )
 
-# --- Expungement PDF Upload and Parsing Route ---
-@app.route("/expungement/upload", methods=["POST"])
-@login_required
-def expungement_upload():
-    uploaded_file = request.files.get("file")
-    if not uploaded_file or uploaded_file.filename == "":
-        flash("No file uploaded.", "danger")
-        return redirect(url_for("expungement_form"))
-
-    # Save the uploaded file to a temporary location
-    temp_path = os.path.join("temp", uploaded_file.filename)
-    os.makedirs("temp", exist_ok=True)
-    uploaded_file.save(temp_path)
-
-    # Parse the PDF for relevant fields
-    from PyPDF2 import PdfReader
-    reader = PdfReader(temp_path)
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text() or ""
-
-    # Sample field extraction (simplify/adjust per actual PDF structure)
-    import re
-    name_match = re.search(r"Defendant Name\s*:\s*(.+)", text)
-    case_match = re.search(r"Case No\s*:\s*(\S+)", text)
-    charge_match = re.search(r"Charge\s*:\s*(.+)", text)
-    otn_match = re.search(r"OTN\s*:\s*(\S+)", text)
-
-    form_data = {
-        "name": name_match.group(1).strip() if name_match else "",
-        "case_no": case_match.group(1).strip() if case_match else "",
-        "charge_name": charge_match.group(1).strip() if charge_match else "",
-        "otn": otn_match.group(1).strip() if otn_match else ""
-    }
-
-    from datetime import datetime
-    return render_template(
-        "expungement.html",
-        **form_data,
-        counties=prosecutor_info.keys(),
-        current_month=datetime.now().strftime("%B"),
-        current_year=datetime.now().year
-    )
 
 
 # --- Expungement PDF Upload and Parsing Route ---
