@@ -71,7 +71,7 @@ def extract_expungement_data(filepath):
         "code_section": re.search(r"Code\s*Section\s*:\s*(\d+\.\d+-?\d*)", text),
         "otn": re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", text),
         "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
-        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([A-Za-z ]+)", text),
+        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([^\n\r]+)", text),
         "court_dispo": re.search(r"(?i)(General District Court|Circuit Court|Juvenile and Domestic Relations District Court)\s+Online Case Information System\s*-\s*(.+?)\n", text),
     }
 
@@ -101,8 +101,11 @@ def extract_expungement_data(filepath):
                     val = val.title()
             if key == "otn":
                 val = re.sub(r"Summons.*", "", val).strip()
+            if key == "final_dispo":
+                val = re.split(r"Sentence|Time|Probation|Fine|Costs", val)[0].strip()
             result[key] = val
             if key == "name":
                 result["name_arrest"] = val
 
+    print("Extracted fields:", result)
     return result

@@ -1177,14 +1177,11 @@ def expungement_upload():
     from Expungement.expungement_utils import extract_expungement_data
     form_data = extract_expungement_data(temp_path)
     print("Extracted form_data:", form_data)
-    # --- Ensure name, name_arrest, and dob fields are filled from extracted data ---
-    form_data["name"] = form_data.get("name", "")
-    # Synchronize name_arrest and name fields if missing
-    if not form_data.get("name_arrest"):
-        form_data["name_arrest"] = form_data["name"]
-    if not form_data.get("name"):
-        form_data["name"] = form_data.get("name_arrest", "")
-    form_data["dob"] = form_data.get("dob", "")
+    # --- Ensure name, name_arrest, and dob fields are filled and cleaned from extracted data ---
+    # Set default values for name, name_arrest, and dob
+    form_data["name"] = form_data.get("name", "").strip()
+    form_data["name_arrest"] = form_data.get("name_arrest", form_data["name"]).strip()
+    form_data["dob"] = form_data.get("dob", "").strip()
 
     import re
     # Extract a clean arresting officer name
@@ -1227,7 +1224,12 @@ def expungement_upload():
         form_data["court_dispo"] = "Court of Final Disposition"
 
     # Clean up final_dispo field for cleaner output.
-    form_data["final_dispo"] = form_data.get("final_dispo", "").split("SentenceTime")[0].strip()
+    form_data["final_dispo"] = form_data.get("final_dispo", "")
+    if "SentenceTime" in form_data["final_dispo"]:
+        form_data["final_dispo"] = form_data["final_dispo"].split("SentenceTime")[0].strip()
+
+    # Print cleaned form_data for verification
+    print("Final cleaned form_data for autofill:", form_data)
 
     # Ensure name_arrest and dob are populated if missing
     if not form_data.get("name_arrest"):
