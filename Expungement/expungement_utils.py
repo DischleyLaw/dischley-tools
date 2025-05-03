@@ -72,7 +72,7 @@ def extract_expungement_data(filepath):
                 result["name"] = val
                 result["name_arrest"] = val
                 continue
-            if "date" in key:
+            if key == "dob":
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
                 except ValueError:
