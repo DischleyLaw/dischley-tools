@@ -1099,7 +1099,7 @@ def expungement_form():
         return send_file(output_path, as_attachment=True)
 
     return render_template(
-        'expungement_form.html',
+        'expungement.html',
         counties=prosecutor_info.keys(),
         current_month=current_month,
         current_year=current_year
