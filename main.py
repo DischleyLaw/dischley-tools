@@ -1173,17 +1173,22 @@ def expungement_upload():
     os.makedirs("temp", exist_ok=True)
     uploaded_file.save(temp_path)
 
-    # Parse the PDF for relevant fields
-    from Expungement.expungement_utils import extract_expungement_data
-    form_data = extract_expungement_data(temp_path)
-    print("Extracted form_data:", form_data)
+    from Expungement.expungement_utils import extract_expungement_data, extract_expungement_data_ocr
+    import re
+    try:
+        form_data = extract_expungement_data(temp_path)
+        if not form_data or not any(form_data.values()):
+            raise ValueError("Empty form_data from PDF parser.")
+    except Exception as e:
+        print("Fallback to OCR due to error:", e)
+        form_data = extract_expungement_data_ocr(temp_path)
+        print("Extracted form_data:", form_data)
+
     # --- Ensure name, name_arrest, and dob fields are filled and cleaned from extracted data ---
-    # Set default values for name, name_arrest, and dob
     form_data["name"] = form_data.get("name", "").strip()
     form_data["name_arrest"] = form_data.get("name_arrest", form_data["name"]).strip()
     form_data["dob"] = form_data.get("dob", "").strip()
 
-    import re
     # Extract a clean arresting officer name
     raw_officer = form_data.get("officer_name", "")
     officer_match = re.search(r"([A-Z]+,\s?[A-Z])", raw_officer)
@@ -1191,8 +1196,6 @@ def expungement_upload():
         form_data["officer_name"] = officer_match.group(1).title()
 
     # --- Clean up charge_name, otn, and code_section fields ---
-    import re
-
     raw_charge = form_data.get("charge_name", "")
     match = re.search(r"^(.*?)OffenseTracking", raw_charge)
     if match:
@@ -1202,9 +1205,10 @@ def expungement_upload():
     if raw_otn:
         form_data["otn"] = raw_otn.group(1)
 
+    # Extract code section and prepend "Va. Code § " if found
     raw_code = re.search(r"CodeSection\s*:\s*(\S+)", raw_charge)
     if raw_code:
-        form_data["code_section"] = raw_code.group(1)
+        form_data["code_section"] = f"Va. Code § {raw_code.group(1)}"
 
     # --- Set court_dispo to default value; do not parse PDF for court type/locality ---
     form_data["court_dispo"] = "Court of Final Disposition"

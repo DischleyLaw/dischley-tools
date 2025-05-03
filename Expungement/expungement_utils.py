@@ -63,13 +63,13 @@ def extract_expungement_data(filepath):
 
     # Extract values from text using regex
     fields = {
-        "name": re.search(r"Defendant(?: Name)?\s*:\s*(.+)", text),
-        "dob": re.search(r"DOB\s*:\s*(\d{2}/\d{2}/\d{4})", text),
+        "name": re.search(r"(?:Defendant(?: Name)?|Name\s*of\s*Defendant)\s*:\s*(.+)", text),
+        "dob": re.search(r"(?:DOB|Date\s*of\s*Birth)\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "officer_name": re.search(r"Complainant\s*:\s*([\w\s.,'-]+)", text),
         "arrest_date": re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "dispo_date": re.search(r"Disposition Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "charge_name": re.search(r"Charge\s*:\s*(.+?)\s*OffenseTracking", text),
-        "code_section": re.search(r"Code\s*Section\s*:\s*(\d+\.\d+-?\d*)", text),
+        "code_section": re.search(r"Code\s*Section\s*:\s*([\d\.]+-\d+)", text),
         "otn": re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", text),
         "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
         "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([^\n\r]+)", text),
@@ -82,6 +82,7 @@ def extract_expungement_data(filepath):
             val = match.group(1).strip()
             if key == "name":
                 val = re.split(r"Amended|Case No|DOB|OTN", val)[0].strip().title()
+                result["name_arrest"] = val
             if "date" in key:
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
@@ -104,9 +105,9 @@ def extract_expungement_data(filepath):
                 val = re.sub(r"Summons.*", "", val).strip()
             if key == "final_dispo":
                 val = re.split(r"Sentence|Time|Probation|Fine|Costs", val)[0].strip()
+            if key == "code_section":
+                val = f"Va. Code § {val}"
             result[key] = val
-            if key == "name":
-                result["name_arrest"] = val
 
     print("Extracted fields:", result)
     return result
