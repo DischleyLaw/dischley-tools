@@ -7,9 +7,9 @@
       <div class="card shadow p-4">
   <h2 class="mb-4">Expungement Petition Form</h2>
   <div class="mb-3">
-    <form method="POST" action="/expungement/upload" enctype="multipart/form-data" onsubmit="return confirm('Upload court PDF to auto-fill form?');">
-      <label for="court_pdf" class="form-label">Upload Court PDF to Auto-Fill Form</label>
-      <input type="file" class="form-control mb-2" id="court_pdf" name="court_pdf" accept=".pdf" required>
+    <form action="/expungement/upload" method="POST" enctype="multipart/form-data" style="margin-bottom: 2rem;">
+      <label for="file"><strong>Upload Court Document (PDF):</strong></label>
+      <input type="file" name="file" id="file" accept=".pdf" required>
       <button type="submit" class="btn btn-secondary">Upload & Autofill</button>
     </form>
   </div>
