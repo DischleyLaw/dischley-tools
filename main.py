@@ -1176,6 +1176,10 @@ def expungement_upload():
     # Parse the PDF for relevant fields
     from Expungement.expungement_utils import extract_expungement_data
     form_data = extract_expungement_data(temp_path)
+    # --- Ensure name, name_arrest, and dob fields are filled from extracted data ---
+    form_data["name"] = form_data.get("name", "")
+    form_data["name_arrest"] = form_data.get("name", "")
+    form_data["dob"] = form_data.get("dob", "")
 
     import re
     # Extract a clean arresting officer name
@@ -1192,13 +1196,28 @@ def expungement_upload():
     if match:
         form_data["charge_name"] = match.group(1).strip()
 
-    raw_otn = re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", raw_charge)
+    raw_otn = re.search(r"OffenseTracking/Processing#\s*:\s*([A-Z0-9]+)", raw_charge)
     if raw_otn:
         form_data["otn"] = raw_otn.group(1)
 
     raw_code = re.search(r"CodeSection\s*:\s*(\S+)", raw_charge)
     if raw_code:
         form_data["code_section"] = raw_code.group(1)
+
+    # --- Update court_dispo to include proper court type if possible ---
+    raw_text = ""
+    try:
+        with open(temp_path, "rb") as f:
+            from PyPDF2 import PdfReader
+            reader = PdfReader(f)
+            raw_text = "\n".join(page.extract_text() or "" for page in reader.pages)
+    except Exception:
+        raw_text = ""
+    court_match = re.search(r"(General District|Circuit|Juvenile.*Relations).*Court\s*for\s*([A-Za-z\s]+?)\s+(?:Case|Commonwealth|v\.|\()", raw_text, re.IGNORECASE)
+    if court_match:
+        court_type = court_match.group(1).strip().title()
+        court_locality = court_match.group(2).strip().title()
+        form_data["court_dispo"] = f"{court_type} Court of {court_locality}"
 
     from datetime import datetime
     return render_template(
@@ -1216,7 +1235,7 @@ def expungement_upload():
         code_section=form_data.get("code_section", ""),
         vcc_code=form_data.get("vcc_code", ""),
         otn=form_data.get("otn", ""),
-        court_dispo=form_data.get("court_dispo", ""),
+        court_dispo=form_data.get("court_dispo", ""),  # ensure this is in the context
         case_no=form_data.get("case_no", ""),
         final_dispo=form_data.get("final_dispo", ""),
         dispo_date=form_data.get("dispo_date", ""),

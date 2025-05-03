@@ -67,12 +67,12 @@ def extract_expungement_data(filepath):
         "officer_name": re.search(r"Complainant\s*:\s*([\w\s.,'-]+)", text),
         "arrest_date": re.search(r"Arrest Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
         "dispo_date": re.search(r"Disposition Date\s*:\s*(\d{2}/\d{2}/\d{4})", text),
-        "charge_name": re.search(r"Charge\s*:\s*([A-Z\s:]+)", text),
+        "charge_name": re.search(r"Charge\s*:\s*(.+?)\s*OffenseTracking", text),
         "code_section": re.search(r"Code\s*Section\s*:\s*(\d+\.\d+-?\d*)", text),
         "otn": re.search(r"OffenseTracking/Processing#\s*:\s*(\S+)", text),
         "case_no": re.search(r"Case No\s*:\s*(\S+)", text),
-        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*(.+)", text),
-        "court_dispo": re.search(r"General District Court\s+(.+?)\n", text),
+        "final_dispo": re.search(r"Final\s*Disposition\s*:\s*([^\n]+)", text),
+        "court_dispo": re.search(r"(?i)(General District Court|Circuit Court|Juvenile and Domestic Relations District Court)\s+Online Case Information System\s*-\s*(.+?)\n", text),
     }
 
     result = {}
@@ -84,8 +84,18 @@ def extract_expungement_data(filepath):
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
                 except ValueError:
                     pass
+            if key == "charge_name":
+                val = re.split(r"OffenseTracking|Code\s*Section|Case\s*Type", val)[0].strip()
             if key == "court_dispo":
-                val = f"{val} General District Court"
+                parts = match.groups()
+                val = f"{parts[1]} {parts[0]}"
+            if key == "officer_name":
+                val = re.split(r"Amended|Hearing|Disposition", val)[0].strip()
+                if "," in val:
+                    last, first = val.split(",", 1)
+                    val = f"{last.strip().title()}, {first.strip().title()}"
+            if key == "otn":
+                val = re.sub(r"Summons.*", "", val).strip()
             result[key] = val
 
     return result
