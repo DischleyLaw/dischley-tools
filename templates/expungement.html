@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% block title %}Expungement Generator{% endblock %}
 {% block content %}
 <div class="container mt-4">
   <div class="row justify-content-center">
@@ -140,77 +141,77 @@
       </select>
     </div>
     <button type="submit" class="btn btn-primary">Generate Petition</button>
-    <script>
-      const prosecutorData = {
-        "Fairfax County": {
-          name: "Steve Descano, Esq.",
-          title: "Fairfax County Commonwealth's Attorney",
-          address1: "4110 Chain Bridge Road",
-          address2: "Fairfax, VA 22030"
-        },
-        "Arlington County": {
-          name: "Parisa Tafti, Esq.",
-          title: "Arlington County Commonwealth's Attorney",
-          address1: "1425 N. Courthouse Rd",
-          address2: "Arlington, VA 22201"
-        },
-        "Prince William County": {
-          name: "Amy Ashworth, Esq.",
-          title: "Prince William County Commonwealth's Attorney",
-          address1: "9311 Lee Ave",
-          address2: "Manassas, VA 20110"
-        },
-        "Loudoun County": {
-          name: "Robert Anderson, Esq.",
-          title: "Loudoun County Commonwealth's Attorney",
-          address1: "20 E Market St",
-          address2: "Leesburg, VA 20176"
-        },
-        "City of Alexandria": {
-          name: "Bryan Porter, Esq.",
-          title: "Alexandria City Commonwealth's Attorney",
-          address1: "520 King Street",
-          address2: "Alexandria, VA 22314"
-        },
-        "Stafford County": {
-          name: "Eric Olsen, Esq.",
-          title: "Stafford County Commonwealth's Attorney",
-          address1: "1245 Courthouse Road",
-          address2: "Stafford, VA 22555"
-        },
-        "Fauquier County": {
-          name: "Scott Hook, Esq.",
-          title: "Fauquier County Commonwealth's Attorney",
-          address1: "29 Ashby Street",
-          address2: "Warrenton, VA 20186"
-        }
-      };
-
-      function fillProsecutor() {
-        const county = document.getElementById('county').value;
-        const data = prosecutorData[county] || {};
-        document.getElementById('prosecutor').value = data.name || '';
-        document.getElementById('prosecutor_title').value = data.title || '';
-        document.getElementById('prosecutor_address1').value = data.address1 || '';
-        document.getElementById('prosecutor_address2').value = data.address2 || '';
-      }
-    </script>
-    <script>
-      function toggleManifestInjustice() {
-        const type = document.getElementById('expungement_type').value;
-        const container = document.getElementById('manifest_injustice_details_container');
-        container.style.display = (type === 'Manifest Injustice') ? 'block' : 'none';
-      }
-    </script>
-    <script>
-      document.getElementById('police_department').addEventListener('change', function () {
-        const otherContainer = document.getElementById('other_police_department_container');
-        otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
-      });
-    </script>
   </form>
       </div>
     </div>
   </div>
 </div>
+<script>
+  const prosecutorData = {
+    "Fairfax County": {
+      name: "Steve Descano, Esq.",
+      title: "Fairfax County Commonwealth's Attorney",
+      address1: "4110 Chain Bridge Road",
+      address2: "Fairfax, VA 22030"
+    },
+    "Arlington County": {
+      name: "Parisa Tafti, Esq.",
+      title: "Arlington County Commonwealth's Attorney",
+      address1: "1425 N. Courthouse Rd",
+      address2: "Arlington, VA 22201"
+    },
+    "Prince William County": {
+      name: "Amy Ashworth, Esq.",
+      title: "Prince William County Commonwealth's Attorney",
+      address1: "9311 Lee Ave",
+      address2: "Manassas, VA 20110"
+    },
+    "Loudoun County": {
+      name: "Robert Anderson, Esq.",
+      title: "Loudoun County Commonwealth's Attorney",
+      address1: "20 E Market St",
+      address2: "Leesburg, VA 20176"
+    },
+    "City of Alexandria": {
+      name: "Bryan Porter, Esq.",
+      title: "Alexandria City Commonwealth's Attorney",
+      address1: "520 King Street",
+      address2: "Alexandria, VA 22314"
+    },
+    "Stafford County": {
+      name: "Eric Olsen, Esq.",
+      title: "Stafford County Commonwealth's Attorney",
+      address1: "1245 Courthouse Road",
+      address2: "Stafford, VA 22555"
+    },
+    "Fauquier County": {
+      name: "Scott Hook, Esq.",
+      title: "Fauquier County Commonwealth's Attorney",
+      address1: "29 Ashby Street",
+      address2: "Warrenton, VA 20186"
+    }
+  };
+
+  function fillProsecutor() {
+    const county = document.getElementById('county').value;
+    const data = prosecutorData[county] || {};
+    document.getElementById('prosecutor').value = data.name || '';
+    document.getElementById('prosecutor_title').value = data.title || '';
+    document.getElementById('prosecutor_address1').value = data.address1 || '';
+    document.getElementById('prosecutor_address2').value = data.address2 || '';
+  }
+</script>
+<script>
+  function toggleManifestInjustice() {
+    const type = document.getElementById('expungement_type').value;
+    const container = document.getElementById('manifest_injustice_details_container');
+    container.style.display = (type === 'Manifest Injustice') ? 'block' : 'none';
+  }
+</script>
+<script>
+  document.getElementById('police_department').addEventListener('change', function () {
+    const otherContainer = document.getElementById('other_police_department_container');
+    otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+  });
+</script>
 {% endblock %}
