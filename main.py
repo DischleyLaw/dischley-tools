@@ -16,6 +16,30 @@ def generate_expungement():
     if request.method == "POST":
         form_data = request.form.to_dict()
 
+        # --- Collect all case fields (support multiple) ---
+        from collections import defaultdict
+        import re
+        case_fields = [
+            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
+            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
+        ]
+        cases = []
+        # First case (unindexed)
+        main_case = {}
+        for field in case_fields:
+            main_case[field] = form_data.get(field, "")
+        cases.append(main_case)
+        # Additional indexed cases
+        indexed_case_data = defaultdict(dict)
+        for key, value in form_data.items():
+            match = re.match(r"case_(\d+)_(\w+)", key)
+            if match:
+                idx, field = match.groups()
+                if field in case_fields:
+                    indexed_case_data[int(idx)][field] = value
+        for idx in sorted(indexed_case_data.keys()):
+            cases.append(indexed_case_data[idx])
+
         # Date formatting helpers
         def format_date_long(date_str):
             for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
@@ -88,24 +112,7 @@ def generate_expungement():
         }
         # Add {additional Cases} field for Word template
         data["{additional Cases}"] = ""
-        cases = []
-        if "cases" in data:
-            cases = data["cases"]
-        if not cases:
-            # Try to build list of cases if possible (single case from form)
-            single_case = {
-                "arrest_date": form_data.get("arrest_date", ""),
-                "officer_name": form_data.get("officer_name", ""),
-                "police_department": selected_police_department,
-                "charge_name": form_data.get("charge_name", ""),
-                "code_section": form_data.get("code_section", ""),
-                "vcc_code": form_data.get("vcc_code", ""),
-                "otn": form_data.get("otn", ""),
-                "court_dispo": form_data.get("court_dispo", ""),
-                "case_no": form_data.get("case_no", ""),
-                "dispo_date": dispo_date_formatted,
-            }
-            cases = [single_case]
+        # Use the cases list built above
         if len(cases) > 1:
             for i, case in enumerate(cases[1:], 1):
                 data["{additional Cases}"] += (
@@ -131,13 +138,9 @@ def generate_expungement():
         from Expungement.expungement_utils import populate_document
         populate_document(template_path, output_path, data)
 
-        # Instead of sending the file directly, save file path to session and render the template
+        # Instead of sending the file directly, save file path to session and redirect to success page
         session["generated_file_path"] = output_path
-        return render_template(
-            "expungement_success.html",
-            name=data["{NAME}"],
-            download_url=url_for("download_generated_file", filename=os.path.basename(output_path))
-        )
+        return redirect(url_for("expungement_success", name=data["{NAME}"]))
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
@@ -1182,9 +1185,8 @@ def expungement_form():
         if expungement_type == "Manifest Injustice":
             type_of_expungement = (
                 f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
-                f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
-                f"to the contrary as to why the petition should not be granted. "
-                f"(To wit: {manifest_injustice_details})"
+                f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. "
+                f"(to wit: {manifest_injustice_details})"
             )
         elif expungement_type == "Expungement of Right":
             type_of_expungement = (

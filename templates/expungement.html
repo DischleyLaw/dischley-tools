@@ -117,20 +117,16 @@
     <template id="additional-case-template">
       <div class="border p-3 mt-3">
         <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
-        <div class="mb-3">
-          <label><strong>Charge Details #<span class="case-index">2</span> Upload PDF</strong></label>
-          <input type="file" name="additional_case_pdf" accept=".pdf" class="form-control">
-        </div>
-        <div class="mb-3"><label>Arrest Date</label><input type="text" name="additional_cases[][arrest_date]" class="form-control"></div>
-        <div class="mb-3"><label>Officer Name</label><input type="text" name="additional_cases[][officer_name]" class="form-control"></div>
-        <div class="mb-3"><label>Police Department</label><input type="text" name="additional_cases[][police_department]" class="form-control"></div>
-        <div class="mb-3"><label>Charge Name</label><input type="text" name="additional_cases[][charge_name]" class="form-control"></div>
-        <div class="mb-3"><label>Code Section</label><input type="text" name="additional_cases[][code_section]" class="form-control"></div>
-        <div class="mb-3"><label>VCC Code</label><input type="text" name="additional_cases[][vcc_code]" class="form-control"></div>
-        <div class="mb-3"><label>OTN</label><input type="text" name="additional_cases[][otn]" class="form-control"></div>
-        <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="additional_cases[][court_dispo]" class="form-control"></div>
-        <div class="mb-3"><label>Case No</label><input type="text" name="additional_cases[][case_no]" class="form-control"></div>
-        <div class="mb-3"><label>Dispo Date</label><input type="text" name="additional_cases[][dispo_date]" class="form-control"></div>
+        <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control"></div>
+        <div class="mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control"></div>
+        <div class="mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control"></div>
+        <div class="mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control"></div>
+        <div class="mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control"></div>
+        <div class="mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control"></div>
+        <div class="mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control"></div>
+        <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control"></div>
+        <div class="mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control"></div>
+        <div class="mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control"></div>
       </div>
     </template>
     <hr />
@@ -265,12 +261,10 @@ document.addEventListener("DOMContentLoaded", function () {
     const clone = template.content.cloneNode(true);
     clone.querySelectorAll("input").forEach(input => {
       const name = input.getAttribute("name");
-      if (name) {
-        input.setAttribute("name", name.replace("[]", `[${additionalCaseCount}]`));
+      if (name && name.startsWith("case_2_")) {
+        input.setAttribute("name", name.replace(/^case_2_/, `case_${additionalCaseCount}_`));
       }
     });
-    const fileInput = clone.querySelector('input[type="file"]');
-    if (fileInput) fileInput.setAttribute("name", `additional_case_pdf_${additionalCaseCount}`);
     clone.querySelectorAll(".case-index").forEach(el => el.textContent = additionalCaseCount);
     container.appendChild(clone);
   };
