@@ -42,7 +42,8 @@ def generate_expungement():
             type_of_expungement = (
                 f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
                 f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
-                f"to the contrary as to why the petition should not be granted. To wit: {manifest_injustice_details}"
+                f"to the contrary as to why the petition should not be granted.\n\n"
+                f"To wit: {manifest_injustice_details}"
             )
         else:
             type_of_expungement = ""
@@ -1555,7 +1556,14 @@ def test_clio_contacts():
 @app.route("/expungement/success")
 def expungement_success():
     name = request.args.get("name", "Client")
-    return render_template("expungement_success.html", name=name)
+    from flask import get_flashed_messages
+    messages = get_flashed_messages(with_categories=True)
+    download_url = None
+    generated_path = session.pop("generated_file_path", None)
+    if generated_path and os.path.exists(generated_path):
+        filename = os.path.basename(generated_path)
+        download_url = url_for("download_generated_file", filename=filename)
+    return render_template("expungement_success.html", name=name, messages=messages, download_url=download_url)
 
 if __name__ == "__main__":
     from post_deploy import run_post_deploy

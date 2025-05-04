@@ -118,7 +118,7 @@
       <div class="border p-3 mt-3">
         <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
         <div class="mb-3">
-          <label>Upload Additional Case PDF</label>
+          <label><strong>Charge Details #<span class="case-index">2</span> Upload PDF</strong></label>
           <input type="file" name="additional_case_pdf" accept=".pdf" class="form-control">
         </div>
         <div class="mb-3"><label>Arrest Date</label><input type="text" name="additional_cases[][arrest_date]" class="form-control"></div>
@@ -253,24 +253,26 @@
 {% endblock %}
 
 <script>
-let additionalCaseCount = 2;
+document.addEventListener("DOMContentLoaded", function () {
+  let additionalCaseCount = 2;
 
-function addAdditionalCaseSection() {
-  additionalCaseCount++;
-  const container = document.getElementById("additionalCasesContainer");
-  const template = document.getElementById("additional-case-template");
-  if (!template) return;
+  window.addAdditionalCaseSection = function () {
+    additionalCaseCount++;
+    const container = document.getElementById("additionalCasesContainer");
+    const template = document.getElementById("additional-case-template");
+    if (!template) return;
 
-  const clone = template.content.cloneNode(true);
-  clone.querySelectorAll("input").forEach(input => {
-    const name = input.getAttribute("name");
-    if (name) {
-      input.setAttribute("name", name.replace("[]", `[${additionalCaseCount}]`));
-    }
-  });
-  const fileInput = clone.querySelector('input[type="file"]');
-  if (fileInput) fileInput.setAttribute("name", `additional_case_pdf_${additionalCaseCount}`);
-  clone.querySelector(".case-index").textContent = additionalCaseCount;
-  container.appendChild(clone);
-}
+    const clone = template.content.cloneNode(true);
+    clone.querySelectorAll("input").forEach(input => {
+      const name = input.getAttribute("name");
+      if (name) {
+        input.setAttribute("name", name.replace("[]", `[${additionalCaseCount}]`));
+      }
+    });
+    const fileInput = clone.querySelector('input[type="file"]');
+    if (fileInput) fileInput.setAttribute("name", `additional_case_pdf_${additionalCaseCount}`);
+    clone.querySelectorAll(".case-index").forEach(el => el.textContent = additionalCaseCount);
+    container.appendChild(clone);
+  };
+});
 </script>
