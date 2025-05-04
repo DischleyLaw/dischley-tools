@@ -4,10 +4,15 @@
 {% block content %}
 <div class="container mt-5">
   <h2>Generate Expungement Petition</h2>
-  <form method="POST" action="/expungement/generate">
+  {% if download_url %}
+    <div class="alert alert-success">
+      Petition generated! <a href="{{ download_url }}" class="alert-link" download>Click here to download it.</a>
+    </div>
+  {% endif %}
+  <form method="POST" action="{{ url_for('expungement_form') }}">
     <div class="mb-3">
       <label for="NAME" class="form-label">Full Name</label>
-      <input type="text" class="form-control" id="NAME" name="{NAME}" required>
+      <input type="text" class="form-control" id="NAME" name="name" required>
     </div>
 
     <div class="mb-3">
