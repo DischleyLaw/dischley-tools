@@ -5,6 +5,9 @@ from docx import Document
 import re
 import pdfplumber
 from datetime import datetime
+# OCR fallback imports
+from pdf2image import convert_from_path
+import pytesseract
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -34,7 +37,7 @@ def populate_document(template_path, output_path, replacements):
 
 
 # Function to extract expungement data from a PDF file
-def extract_expungement_data(filepath):
+def extract_expungement_data(filepath, case_index=None):
     text = ""
 
     # First try regular PDF text extraction
@@ -47,6 +50,13 @@ def extract_expungement_data(filepath):
                     text += page_text
     except Exception as e:
         logging.warning(f"PDF parsing failed: {e}")
+        try:
+            logging.warning("Falling back to OCR.")
+            images = convert_from_path(filepath)
+            for image in images:
+                text += pytesseract.image_to_string(image)
+        except Exception as ocr_error:
+            logging.error(f"OCR fallback also failed: {ocr_error}")
 
     field_patterns = [
         ("name", [
@@ -75,18 +85,22 @@ def extract_expungement_data(filepath):
             r"OffenseTracking/Processing#\s*:\s*(\S+)"
         ]),
         ("case_no", [
-            r"Case No\s*:\s*(\S+)"
+            r"Case\s*(?:No|#|Number)\s*[:\-]?\s*([A-Z0-9\-]+)",
+            r"Case\s*#\s*:\s*(\S+)",
+            r"Case #:\s*(GC\d{8}-\d{2})",
         ]),
         ("final_dispo", [
             r"Disposition:\s*([A-Z\s]+)"
         ]),
         ("court_dispo", [
-            r"Return to Search Results\s*([A-Za-z\s]+(?:County|City)?(?: General District Court| Circuit Court))"
+            r"^([A-Z][a-z]+ (County|City) (Juvenile and Domestic Relations District Court|General District Court|Circuit Court))",
+            r"Return to Search Results\s*([\w\s]+(?:General District Court|Circuit Court|Juvenile and Domestic Relations District Court))",
+            r"(\w+\s+(?:County|City)\s+(?:General District Court|Circuit Court|Juvenile and Domestic Relations District Court))",
+            r"((?:General District Court|Circuit Court|Juvenile and Domestic Relations District Court)\s*[-–]?\s*\w+)",
+            r"(\w+\s+Juvenile and Domestic Relations District Court)",
+            r"(Fairfax County Juvenile and Domestic Relations District Court)"
         ]),
         # Additional patterns for Virginia Judiciary Online Case Information System PDF output
-        ("case_no", [
-            r"Case #:\s*(GC\d{8}-\d{2})"
-        ]),
         ("dob", [
             r"DOB:\s*(\d{2}/\d{2}/\*{4})"
         ]),
@@ -114,9 +128,38 @@ def extract_expungement_data(filepath):
             match = re.search(pattern, text, re.MULTILINE)
             if match:
                 break
+        val = match.group(1).strip() if match else ""
+        # arrest_date fallback logic: move fallback outside of "if match"
+        if key == "arrest_date":
+            if val:
+                if case_index is not None:
+                    val = val.replace("&", "&amp;")
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    val = val.replace("&", "&amp;")
+                    result[key] = val
+            else:
+                # Fallback logic if val is empty: search entire text for arrest date-like patterns
+                arrest_fallback = re.search(r"Arrest(?:ed)? Date\s*[:\-]?\s*(\d{2}/\d{2}/\d{4})", text, re.IGNORECASE)
+                if arrest_fallback:
+                    fallback_val = arrest_fallback.group(1).strip()
+                    if case_index is not None:
+                        fallback_val = fallback_val.replace("&", "&amp;")
+                        result[f"case_{case_index}_{key}"] = fallback_val
+                    else:
+                        fallback_val = fallback_val.replace("&", "&amp;")
+                        result[key] = fallback_val
+                else:
+                    if case_index is not None:
+                        result[f"case_{case_index}_{key}"] = ""
+                    else:
+                        result[key] = ""
+            continue
         if match:
-            val = match.group(1).strip()
+            # val already set above
             if key == "name":
+                if case_index is not None:
+                    continue
                 # Handle names in format: Last, First Middle
                 if "," in val:
                     last, rest = val.split(",", 1)
@@ -127,22 +170,41 @@ def extract_expungement_data(filepath):
                 # Convert each word to title case
                 if formatted_name:
                     formatted_name = " ".join(word.capitalize() for word in formatted_name.split())
-                result["name"] = formatted_name
-                result["name_arrest"] = formatted_name
+                val = formatted_name
+                val = val.replace("&", "&amp;")
+                result[key] = val
+                result["name_arrest"] = val
             elif key == "dob":
+                if case_index is not None:
+                    continue
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
                 except ValueError:
                     pass
+                val = val.replace("&", "&amp;")
                 result[key] = val
             elif key == "charge_name":
                 val = re.split(r"Offense Tracking|OffenseTracking|Process|Code\s*Section|Case\s*Type", val)[0].strip()
                 # Capitalize each word like a name
                 val = " ".join(word.capitalize() for word in val.split())
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
             elif key == "court_dispo":
                 val = val.strip()
-                result[key] = val
+                val = val.replace('\n', ' ').strip()
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
+                # Fallback for court_dispo if not matched and case_index is not None
+                if not val and case_index is not None:
+                    fallback_court = re.search(r"([A-Z][a-z]+ (County|City) Juvenile and Domestic Relations District Court)", text)
+                    if fallback_court:
+                        result[f"case_{case_index}_{key}"] = fallback_court.group(1).strip()
             elif key == "officer_name":
                 val = re.split(r"Amended|Hearing|Disposition", val)[0].strip()
                 parts = val.split(",", 1)
@@ -151,34 +213,104 @@ def extract_expungement_data(filepath):
                     val = f"{last.strip().title()}, {first.strip().title()}"
                 else:
                     val = val.title()
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
             elif key == "otn":
                 val = re.sub(r"Summons.*", "", val).strip()
                 val = re.split(r"Case", val)[0].strip()
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
             elif key == "final_dispo":
                 val = re.split(r"Sentence|Time|Probation|Fine|Costs", val)[0].strip()
                 # Capitalize each word like a name
                 val = " ".join(word.capitalize() for word in val.split())
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
             elif key == "code_section":
                 val = re.split(r"Charge", val)[0].strip()
                 if not val.startswith("Va. Code"):
                     val = f"Va. Code § {val}"
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
             elif key == "dispo_date":
-                result[key] = val
+                if case_index is not None:
+                    val = val.replace("&", "&amp;")
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    val = val.replace("&", "&amp;")
+                    result[key] = val
                 # Fallback logic if val is empty: collect all hearing dates in Hearing Information section
                 if not val:
                     hearing_section = re.search(r"Hearing Information(.*?)Disposition Information", text, re.DOTALL | re.IGNORECASE)
                     if hearing_section:
                         dates = re.findall(r"\b(\d{2}/\d{2}/\d{4})\b", hearing_section.group(1))
                         if dates:
-                            result[key] = ", ".join(dates)
+                            val_dates = ", ".join(dates)
+                            if case_index is not None:
+                                result[f"case_{case_index}_{key}"] = val_dates
+                            else:
+                                result[key] = val_dates
             else:
-                result[key] = val
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
         else:
-            result[key] = ""
+            if key == "officer_name":
+                # Fallback: try alternate officer/complainant extraction if main pattern fails
+                if not val:
+                    fallback = re.search(r"Complainant\s*[:\-]?\s*([A-Z][a-z]+,\s*[A-Z]\s*[A-Z]?)", text)
+                    if fallback:
+                        val = fallback.group(1).strip()
+                parts = val.split(",", 1)
+                if len(parts) == 2:
+                    last, first = parts
+                    val = f"{last.strip().title()}, {first.strip().title()}"
+                else:
+                    val = val.title()
+                val = val.replace("&", "&amp;")
+                if case_index is not None:
+                    result[f"case_{case_index}_{key}"] = val
+                else:
+                    result[key] = val
+            elif key != "arrest_date":  # already handled above
+                if case_index is not None:
+                    if key in ["name", "name_arrest", "dob"]:
+                        # Skip assigning these keys for additional cases
+                        pass
+                    else:
+                        result[f"case_{case_index}_{key}"] = ""
+                else:
+                    result[key] = ""
+
+
+    # Final fallback for court_dispo: extract the court name preceding "(details)" from the top of the first page of the PDF.
+    if case_index is not None and f"case_{case_index}_court_dispo" not in result:
+        try:
+            with pdfplumber.open(filepath) as pdf:
+                first_page_text = pdf.pages[0].extract_text()
+                if first_page_text:
+                    for line in first_page_text.split("\n"):
+                        if "(details" in line.lower():
+                            court_name = line.split("(details")[0].strip()
+                            if "court" in court_name.lower():
+                                result[f"case_{case_index}_court_dispo"] = court_name
+                            break
+        except Exception as e:
+            logging.warning(f"Fallback court_dispo scan failed: {e}")
 
     return result
 
