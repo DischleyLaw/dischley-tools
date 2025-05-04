@@ -18,23 +18,23 @@ def generate_expungement():
 
         # Date formatting helpers
         def format_date_long(date_str):
-            try:
-                # Parse to ensure consistent parsing, output as "Month Day, Year"
-                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
-            except ValueError:
-                # Try alternate parsing for "M/D/YYYY" (if needed in future)
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
                 try:
-                    return datetime.strptime(date_str, "%-m/%-d/%Y").strftime("%B %d, %Y")
-                except Exception:
-                    return date_str
+                    return datetime.strptime(date_str, fmt).strftime("%B %d, %Y")
+                except ValueError:
+                    continue
+            return date_str
 
-        arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
-        dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
+        arrest_date_formatted = format_date_long(form_data.get("arrest_date", "").replace("/", "-"))
+        dispo_date_formatted = format_date_long(form_data.get("dispo_date", "").replace("/", "-"))
 
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
         if expungement_type == "Expungement of Right":
-            type_of_expungement = "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+            type_of_expungement = (
+                "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
+                "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+            )
         elif expungement_type == "Manifest Injustice":
             type_of_expungement = f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice_details})."
         else:
@@ -46,10 +46,11 @@ def generate_expungement():
 
         data = {
             "{NAME}": form_data.get("name", "").upper(),
-            "{DOB}": format_date_long(form_data.get("dob", "")),
+            "{DOB}": format_date_long(form_data.get("dob", "").replace("/", "-")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
             "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
+            "{Name at Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
             "{Arresting Officer}": form_data.get("officer_name", ""),
@@ -127,7 +128,7 @@ def generate_expungement():
 
         # Instead of sending the file directly, save file path to session and render the template
         session["generated_file_path"] = output_path
-        return render_template("expungement.html")
+        return redirect(url_for("expungement_success", name=data["{NAME}"]))
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
@@ -1165,18 +1166,28 @@ def expungement_form():
 
         # Date formatting helpers
         def format_date_long(date_str):
-            try:
-                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
-            except ValueError:
-                return date_str
+            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
+                try:
+                    return datetime.strptime(date_str, fmt).strftime("%B %d, %Y")
+                except ValueError:
+                    continue
+            return date_str
 
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
         # Compose {Type of Expungement} logic as required
         if expungement_type == "Manifest Injustice":
             type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
+        elif expungement_type == "Expungement of Right":
+            type_of_expungement = (
+                "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
+                "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+            )
         else:
-            type_of_expungement = "The Petitioner has no prior criminal record..."
+            type_of_expungement = (
+                "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
+                "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+            )
 
         # --- Collect all case fields (support multiple) ---
         # Detect all keys that match the pattern case_{i}_fieldname
@@ -1222,6 +1233,7 @@ def expungement_form():
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
             "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
+            "{Name at Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
             "{Arresting Officer}": first_case.get("officer_name", ""),
@@ -1544,6 +1556,13 @@ if __name__ == "__main__":
     from post_deploy import run_post_deploy
     run_post_deploy()
     app.run(debug=True)
+
+
+# --- Expungement Success Route ---
+@app.route("/expungement/success")
+def expungement_success():
+    name = request.args.get("name", "Client")
+    return render_template("Expungement_Success.html", name=name)
 
 
 # --- Admin Tools Page ---

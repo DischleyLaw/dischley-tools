@@ -1,0 +1,13 @@
+
+
+{% extends "base.html" %}
+{% block title %}Expungement Generated{% endblock %}
+{% block content %}
+<div class="container mt-5">
+  <div class="alert alert-success text-center shadow">
+    <h3 class="mb-3">Expungement Petition Successfully Generated</h3>
+    <p>The petition for <strong>{{ name }}</strong> has been created and downloaded.</p>
+    <a href="/expungement" class="btn btn-primary mt-3">Generate Another</a>
+  </div>
+</div>
+{% endblock %}
