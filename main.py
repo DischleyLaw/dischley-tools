@@ -1176,7 +1176,12 @@ def expungement_form():
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
         # Compose {Type of Expungement} logic as required
         if expungement_type == "Manifest Injustice":
-            type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
+            type_of_expungement = (
+                f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
+                f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
+                f"to the contrary as to why the petition should not be granted.\n\n"
+                f"To wit: {manifest_injustice_details}"
+            )
         elif expungement_type == "Expungement of Right":
             type_of_expungement = (
                 "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
