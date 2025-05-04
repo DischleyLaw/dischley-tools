@@ -12,11 +12,6 @@
       <input type="file" name="file" id="file" accept=".pdf" required>
       <button type="submit" class="btn btn-secondary">Upload & Autofill</button>
     </form>
-    <form action="/expungement/upload_additional" method="POST" enctype="multipart/form-data" style="margin-bottom: 2rem;">
-      <label for="additional_file"><strong>Upload Additional Case PDF:</strong></label>
-      <input type="file" name="additional_file" id="additional_file" accept=".pdf">
-      <button type="submit" class="btn btn-info">Upload Additional Case(s)</button>
-    </form>
   </div>
   <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true">
     <div class="mb-3">
@@ -57,7 +52,7 @@
       <textarea class="form-control" id="manifest_injustice_details" name="manifest_injustice_details" rows="4">{{ manifest_injustice_details|default('') }}</textarea>
     </div>
     <hr />
-    <h4>Charge Details</h4>
+    <h4>Charge Details #1</h4>
     <div class="mb-3">
       <label for="arrest_date" class="form-label">Date of Arrest</label>
       <input type="text" class="form-control" id="arrest_date" name="arrest_date" value="{{ arrest_date|default('') }}">
@@ -117,6 +112,8 @@
       <label for="dispo_date" class="form-label">Disposition Date</label>
       <input type="text" class="form-control" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('') }}">
     </div>
+    <div id="additionalCasesContainer" class="mt-4"></div>
+    <button type="button" class="btn btn-outline-primary mt-3" onclick="addAdditionalCaseSection()">Add Additional Case</button>
     <hr />
     <h4>Prosecutor Info</h4>
     <div class="mb-3">
@@ -235,3 +232,34 @@
   }
 </script>
 {% endblock %}
+
+<script>
+let additionalCaseCount = 1;
+
+function addAdditionalCaseSection() {
+  additionalCaseCount++;
+  const container = document.getElementById("additionalCasesContainer");
+
+  const caseDiv = document.createElement("div");
+  caseDiv.classList.add("border", "p-3", "mt-3");
+  caseDiv.innerHTML = `
+    <h4 class="mt-4">Charge Details #${additionalCaseCount}</h4>
+    <div class="mb-3">
+      <label>Upload Additional Case PDF</label>
+      <input type="file" name="additional_cases[${additionalCaseCount}][pdf]" accept=".pdf" class="form-control">
+    </div>
+    <div class="mb-3"><label>Arrest Date</label><input type="text" name="additional_cases[${additionalCaseCount}][arrest_date]" class="form-control"></div>
+    <div class="mb-3"><label>Officer Name</label><input type="text" name="additional_cases[${additionalCaseCount}][officer_name]" class="form-control"></div>
+    <div class="mb-3"><label>Police Department</label><input type="text" name="additional_cases[${additionalCaseCount}][police_department]" class="form-control"></div>
+    <div class="mb-3"><label>Charge Name</label><input type="text" name="additional_cases[${additionalCaseCount}][charge_name]" class="form-control"></div>
+    <div class="mb-3"><label>Code Section</label><input type="text" name="additional_cases[${additionalCaseCount}][code_section]" class="form-control"></div>
+    <div class="mb-3"><label>VCC Code</label><input type="text" name="additional_cases[${additionalCaseCount}][vcc_code]" class="form-control"></div>
+    <div class="mb-3"><label>OTN</label><input type="text" name="additional_cases[${additionalCaseCount}][otn]" class="form-control"></div>
+    <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="additional_cases[${additionalCaseCount}][court_dispo]" class="form-control"></div>
+    <div class="mb-3"><label>Case No</label><input type="text" name="additional_cases[${additionalCaseCount}][case_no]" class="form-control"></div>
+    <div class="mb-3"><label>Dispo Date</label><input type="text" name="additional_cases[${additionalCaseCount}][dispo_date]" class="form-control"></div>
+  `;
+
+  container.appendChild(caseDiv);
+}
+</script>

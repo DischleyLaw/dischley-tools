@@ -36,8 +36,11 @@ def generate_expungement():
                 "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
             )
         elif expungement_type == "Manifest Injustice":
-            type_of_expungement = f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice_details})."
-        else:
+type_of_expungement = (
+    "The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, "
+    "circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition "
+    f"should not be granted. (to wit: {manifest_injustice_details})"
+)        else:
             type_of_expungement = ""
 
         police_department = form_data.get("police_department", "")
@@ -128,7 +131,7 @@ def generate_expungement():
 
         # Instead of sending the file directly, save file path to session and render the template
         session["generated_file_path"] = output_path
-        return redirect(url_for("expungement_success", name=data["{NAME}"]))
+        return render_template("Expungement_Success.html", name=data["{NAME}"])
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
