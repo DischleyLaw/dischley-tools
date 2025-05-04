@@ -117,12 +117,9 @@
     <template id="additional-case-template">
       <div class="border p-3 mt-3">
         <div class="mb-3">
-          <form method="POST" enctype="multipart/form-data" onsubmit="setCaseIndex(this)">
-            <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
-            <input type="file" name="file" id="file_case_2" accept=".pdf" required>
-            <input type="hidden" name="case_index" value="2">
-            <button type="submit" class="btn btn-secondary btn-sm">Upload & Autofill</button>
-          </form>
+          <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
+          <input type="file" name="file_case_2" class="form-control-file case-upload-input" data-case-index="2" accept=".pdf">
+          <button type="button" class="btn btn-secondary btn-sm upload-case-btn">Upload & Autofill</button>
         </div>
         <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
         <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control" value=""></div>
@@ -260,18 +257,50 @@
       const clone = template.content.cloneNode(true);
       clone.querySelectorAll("input").forEach(input => {
         const name = input.getAttribute("name");
+        // Update all input names that follow case_2_ pattern
         if (name && name.startsWith("case_2_")) {
           input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
         }
+        // Update the data-case-index attribute for the file input
+        if (input.classList.contains("case-upload-input")) {
+          input.setAttribute("data-case-index", window.additionalCaseCount);
+        }
       });
-      // Update hidden case_index field value only if it's already named correctly
-      const hiddenIndexField = clone.querySelector('input[type="hidden"]');
-      if (hiddenIndexField && hiddenIndexField.name === "case_index") {
-        hiddenIndexField.value = window.additionalCaseCount;
-      }
       clone.querySelectorAll(".case-index").forEach(el => el.textContent = window.additionalCaseCount);
       container.appendChild(clone);
     };
+  });
+</script>
+<script>
+  // JavaScript handler for AJAX PDF upload in additional case sections
+  document.addEventListener('click', function (event) {
+    if (event.target.classList.contains('upload-case-btn')) {
+      const parent = event.target.closest('.border');
+      const fileInput = parent.querySelector('.case-upload-input');
+      const caseIndex = fileInput.dataset.caseIndex;
+      const file = fileInput.files[0];
+      if (!file) return alert('Please select a PDF to upload.');
+
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('case_index', caseIndex);
+
+      fetch('/expungement/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        Object.entries(data).forEach(([key, value]) => {
+          const input = parent.querySelector(`[name="case_${caseIndex}_${key}"]`);
+          if (input) input.value = value;
+        });
+      })
+      .catch(err => {
+        console.error('Upload failed', err);
+        alert('Failed to extract data from PDF.');
+      });
+    }
   });
 </script>
 {% endblock %}

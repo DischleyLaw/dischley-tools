@@ -20,7 +20,8 @@ def generate_expungement():
         # --- PDF Upload Handling for Expungement ---
         from Expungement.expungement_utils import extract_expungement_data
         uploaded_file = request.files.get("file")
-        if uploaded_file and uploaded_file.filename.endswith(".pdf"):
+        # --- Handle standard PDF upload (not additional AJAX case upload) ---
+        if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" not in request.form:
             temp_path = os.path.join("temp", uploaded_file.filename)
             os.makedirs("temp", exist_ok=True)
             uploaded_file.save(temp_path)
@@ -29,6 +30,17 @@ def generate_expungement():
             except Exception as e:
                 flash("Failed to extract data from PDF.", "danger")
                 return redirect(url_for("expungement_form"))
+        # --- Handle AJAX-style additional case upload ---
+        if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" in request.form:
+            from Expungement.expungement_utils import extract_expungement_data
+            temp_path = os.path.join("temp", uploaded_file.filename)
+            os.makedirs("temp", exist_ok=True)
+            uploaded_file.save(temp_path)
+            try:
+                case_data = extract_expungement_data(temp_path)
+                return jsonify(case_data)
+            except Exception as e:
+                return jsonify({"error": "Failed to extract data from PDF"}), 500
 
         # --- Collect all case fields (support multiple) ---
         from collections import defaultdict

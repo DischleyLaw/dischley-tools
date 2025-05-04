@@ -9,20 +9,24 @@
       Petition generated! <a href="{{ download_url }}" class="alert-link" download>Click here to download it.</a>
     </div>
   {% endif %}
-  <form method="POST" action="{{ url_for('expungement_form') }}">
+  <form method="POST" action="{{ url_for('expungement_form') }}" enctype="multipart/form-data">
+    <div class="mb-3">
+      <label for="file" class="form-label">Upload Court Document (PDF)</label>
+      <input type="file" class="form-control" id="file" name="file" accept=".pdf">
+    </div>
     <div class="mb-3">
       <label for="NAME" class="form-label">Full Name</label>
-      <input type="text" class="form-control" id="NAME" name="name" required>
+      <input type="text" class="form-control" id="NAME" name="name" value="{{ name|default('') }}" required>
     </div>
 
     <div class="mb-3">
       <label for="county" class="form-label">County</label>
-      <input type="text" class="form-control" id="county" name="county" required>
+      <input type="text" class="form-control" id="county" name="county" value="{{ county|default('') }}" required>
     </div>
 
     <div class="mb-3">
       <label for="final_disposition" class="form-label">Final Disposition</label>
-      <input type="text" class="form-control" id="final_disposition" name="final_disposition" required>
+      <input type="text" class="form-control" id="final_disposition" name="final_disposition" value="{{ final_disposition|default('') }}" required>
     </div>
 
     <div class="mb-3">
@@ -36,12 +40,12 @@
 
     <div class="mb-3">
       <label for="manifest_injustice" class="form-label">Manifest Injustice (if applicable)</label>
-      <textarea class="form-control" id="manifest_injustice" name="manifest_injustice" rows="3"></textarea>
+      <textarea class="form-control" id="manifest_injustice" name="manifest_injustice" rows="3">{{ manifest_injustice|default('') }}</textarea>
     </div>
 
     <div class="mb-3">
       <label for="clio_contact_id" class="form-label">Clio Contact ID (optional)</label>
-      <input type="text" class="form-control" id="clio_contact_id" name="clio_contact_id">
+      <input type="text" class="form-control" id="clio_contact_id" name="clio_contact_id" value="{{ clio_contact_id|default('') }}">
     </div>
 
     <button type="submit" class="btn btn-primary">Generate Petition</button>
