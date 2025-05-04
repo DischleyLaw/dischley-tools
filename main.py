@@ -20,7 +20,10 @@ def generate_expungement():
         def format_date_long(date_str):
             for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
                 try:
-                    return datetime.strptime(date_str, fmt).strftime("%B %d, %Y")
+                    dt = datetime.strptime(date_str, fmt)
+                    if dt.year < 1900:
+                        continue
+                    return dt.strftime("%B %d, %Y")
                 except ValueError:
                     continue
             return date_str
@@ -36,11 +39,12 @@ def generate_expungement():
                 "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
             )
         elif expungement_type == "Manifest Injustice":
-type_of_expungement = (
-    "The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, "
-    "circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition "
-    f"should not be granted. (to wit: {manifest_injustice_details})"
-)        else:
+            type_of_expungement = (
+                "The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, "
+                "circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition "
+                f"should not be granted. (to wit: {manifest_injustice_details})"
+            )
+        else:
             type_of_expungement = ""
 
         police_department = form_data.get("police_department", "")
@@ -131,7 +135,7 @@ type_of_expungement = (
 
         # Instead of sending the file directly, save file path to session and render the template
         session["generated_file_path"] = output_path
-        return render_template("Expungement_Success.html", name=data["{NAME}"])
+        return redirect(url_for("expungement_success", name=data["{NAME}"]))
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
@@ -1186,6 +1190,8 @@ def expungement_form():
                 "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
                 "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
             )
+        elif expungement_type == "Automatic Expungement":
+            type_of_expungement = "Automatic Expungement"
         else:
             type_of_expungement = (
                 "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
