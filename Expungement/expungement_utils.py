@@ -258,4 +258,4 @@ def extract_expungement_data(filepath, case_index=None):
         return filtered_result
 
     current_app.logger.debug(f"Extraction result: {result}")
-    return {"status": "ok", "data": result}
+    return result
