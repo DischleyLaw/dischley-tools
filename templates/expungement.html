@@ -125,16 +125,16 @@
           </form>
         </div>
         <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
-        <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control"></div>
-        <div class="mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control"></div>
-        <div class="mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control"></div>
-        <div class="mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control"></div>
-        <div class="mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control"></div>
-        <div class="mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control"></div>
-        <div class="mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control"></div>
-        <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control"></div>
-        <div class="mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control"></div>
-        <div class="mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control"></div>
+        <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control" value="{{ case_2_arrest_date|default('') }}"></div>
+        <div class="mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control" value="{{ case_2_officer_name|default('') }}"></div>
+        <div class="mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control" value="{{ case_2_police_department|default('') }}"></div>
+        <div class="mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control" value="{{ case_2_charge_name|default('') }}"></div>
+        <div class="mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control" value="{{ case_2_code_section|default('') }}"></div>
+        <div class="mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control" value="{{ case_2_vcc_code|default('') }}"></div>
+        <div class="mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control" value="{{ case_2_otn|default('') }}"></div>
+        <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control" value="{{ case_2_court_dispo|default('') }}"></div>
+        <div class="mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control" value="{{ case_2_case_no|default('') }}"></div>
+        <div class="mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control" value="{{ case_2_dispo_date|default('') }}"></div>
       </div>
     </template>
     <hr />

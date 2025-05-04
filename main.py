@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+import subprocess
 import os
 from datetime import datetime, timedelta
 
@@ -1354,6 +1355,7 @@ def expungement_upload():
     os.makedirs("temp", exist_ok=True)
     uploaded_file.save(temp_path)
 
+    # Directly call extract_expungement_data from expungement_utils.py
     from Expungement.expungement_utils import extract_expungement_data
     import re
     try:
@@ -1366,7 +1368,7 @@ def expungement_upload():
 
     # --- Ensure name, name_arrest, and dob fields are filled and cleaned from extracted data ---
     form_data["name"] = form_data.get("name", "").strip()
-    form_data["name_arrest"] = form_data.get("name_arrest", form_data["name"]).strip()
+    form_data["name_arrest"] = form_data.get("name_arrest", form_data.get("name", "")).strip()
     form_data["dob"] = form_data.get("dob", "").strip()
 
     # Extract a clean arresting officer name
@@ -1431,6 +1433,21 @@ def expungement_upload():
     autofill_prefix = "" if case_index in ("", "0", "main") else f"case_{case_index}_"
     autofill_case = cases[0] if cases else {}
 
+    # Build autofill context with correct prefix logic for charge-related fields
+    fields_to_autofill = [
+        "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
+        "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
+    ]
+    autofill_context = {}
+    for field in fields_to_autofill:
+        key = f"{autofill_prefix}{field}"
+        # For court_dispo, if missing, use fallback
+        if field == "court_dispo":
+            autofill_context[key] = autofill_case.get(field, "") or "Court not extracted"
+        else:
+            autofill_context[key] = autofill_case.get(field, "")
+
+    # Render expungement.html with fields from form_data and autofill_context
     return render_template(
         "expungement.html",
         name=form_data.get("name", ""),
@@ -1439,16 +1456,6 @@ def expungement_upload():
         name_arrest=form_data.get("name_arrest", ""),
         expungement_type=form_data.get("expungement_type", ""),
         manifest_injustice_details=form_data.get("manifest_injustice_details", ""),
-        **{f"{autofill_prefix}arrest_date": autofill_case.get("arrest_date", "")},
-        **{f"{autofill_prefix}officer_name": autofill_case.get("officer_name", "")},
-        **{f"{autofill_prefix}police_department": autofill_case.get("police_department", "")},
-        **{f"{autofill_prefix}charge_name": autofill_case.get("charge_name", "")},
-        **{f"{autofill_prefix}code_section": autofill_case.get("code_section", "")},
-        **{f"{autofill_prefix}vcc_code": autofill_case.get("vcc_code", "")},
-        **{f"{autofill_prefix}otn": autofill_case.get("otn", "")},
-        **{f"{autofill_prefix}court_dispo": autofill_case.get("court_dispo", "") or "Court not extracted"},
-        **{f"{autofill_prefix}case_no": autofill_case.get("case_no", "")},
-        **{f"{autofill_prefix}dispo_date": autofill_case.get("dispo_date", "")},
         final_dispo=form_data.get("final_dispo", ""),
         prosecutor=form_data.get("prosecutor", ""),
         prosecutor_title=form_data.get("prosecutor_title", ""),
@@ -1457,7 +1464,8 @@ def expungement_upload():
         current_month=datetime.now().strftime("%B"),
         current_year=datetime.now().year,
         counties=prosecutor_info.keys(),
-        cases=cases
+        cases=cases,
+        **autofill_context
     )
 
 
