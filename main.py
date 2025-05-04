@@ -33,12 +33,23 @@ def generate_expungement():
         # --- Handle AJAX-style additional case upload ---
         if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" in request.form:
             from Expungement.expungement_utils import extract_expungement_data
+            import re
             temp_path = os.path.join("temp", uploaded_file.filename)
             os.makedirs("temp", exist_ok=True)
             uploaded_file.save(temp_path)
             try:
                 case_data = extract_expungement_data(temp_path)
-                return jsonify(case_data)
+                # Clean up officer name
+                officer_match = re.search(r"([A-Z]+,\s?[A-Z])", case_data.get("officer_name", ""))
+                if officer_match:
+                    case_data["officer_name"] = officer_match.group(1).title()
+                # Apply proper field prefixes
+                index = request.form.get("case_index", "1")
+                prefixed_data = {}
+                for field in ["arrest_date", "officer_name", "police_department", "charge_name", "code_section", "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"]:
+                    key = f"case_{index}_{field}"
+                    prefixed_data[key] = case_data.get(field, "")
+                return jsonify(prefixed_data)
             except Exception as e:
                 return jsonify({"error": "Failed to extract data from PDF"}), 500
 

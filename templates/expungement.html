@@ -284,6 +284,7 @@
       const formData = new FormData();
       formData.append('file', file);
       formData.append('case_index', caseIndex);
+      formData.append('additional_case_upload', 'true');
 
       fetch('/expungement/upload', {
         method: 'POST',
@@ -292,7 +293,7 @@
       .then(res => res.json())
       .then(data => {
         Object.entries(data).forEach(([key, value]) => {
-          const input = parent.querySelector(`[name="case_${caseIndex}_${key}"]`);
+          const input = parent.querySelector(`[name="${key}"]`);
           if (input) input.value = value;
         });
       })

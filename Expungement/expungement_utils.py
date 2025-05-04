@@ -132,22 +132,20 @@ def extract_expungement_data(filepath, case_index=None):
         # arrest_date fallback logic: move fallback outside of "if match"
         if key == "arrest_date":
             if val:
+                val = val.replace("&", "&amp;")
                 if case_index is not None:
-                    val = val.replace("&", "&amp;")
                     result[f"case_{case_index}_{key}"] = val
                 else:
-                    val = val.replace("&", "&amp;")
                     result[key] = val
             else:
                 # Fallback logic if val is empty: search entire text for arrest date-like patterns
                 arrest_fallback = re.search(r"Arrest(?:ed)? Date\s*[:\-]?\s*(\d{2}/\d{2}/\d{4})", text, re.IGNORECASE)
                 if arrest_fallback:
                     fallback_val = arrest_fallback.group(1).strip()
+                    fallback_val = fallback_val.replace("&", "&amp;")
                     if case_index is not None:
-                        fallback_val = fallback_val.replace("&", "&amp;")
                         result[f"case_{case_index}_{key}"] = fallback_val
                     else:
-                        fallback_val = fallback_val.replace("&", "&amp;")
                         result[key] = fallback_val
                 else:
                     if case_index is not None:
@@ -159,6 +157,7 @@ def extract_expungement_data(filepath, case_index=None):
             # val already set above
             if key == "name":
                 if case_index is not None:
+                    # skip assigning name for additional cases
                     continue
                 # Handle names in format: Last, First Middle
                 if "," in val:
@@ -176,6 +175,7 @@ def extract_expungement_data(filepath, case_index=None):
                 result["name_arrest"] = val
             elif key == "dob":
                 if case_index is not None:
+                    # skip assigning dob for additional cases
                     continue
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
@@ -312,6 +312,12 @@ def extract_expungement_data(filepath, case_index=None):
         except Exception as e:
             logging.warning(f"Fallback court_dispo scan failed: {e}")
 
+    # If case_index is set, remove any keys without the case_{case_index}_ prefix and skip name, dob, and name_arrest keys
+    if case_index is not None:
+        filtered_result = {}
+        for k, v in result.items():
+            if k.startswith(f"case_{case_index}_"):
+                filtered_result[k] = v
+        return filtered_result
+
     return result
-
-
