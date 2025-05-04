@@ -1183,7 +1183,7 @@ def expungement_form():
             type_of_expungement = (
                 f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
                 f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
-                f"to the contrary as to why the petition should not be granted."
+                f"to the contrary as to why the petition should not be granted. "
                 f"(To wit: {manifest_injustice_details})"
             )
         elif expungement_type == "Expungement of Right":
