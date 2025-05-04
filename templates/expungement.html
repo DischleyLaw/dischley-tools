@@ -243,10 +243,10 @@
 
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    let additionalCaseCount = 1;
+    window.additionalCaseCount = 1;
 
-    function addAdditionalCaseSection() {
-      additionalCaseCount++;
+    window.addAdditionalCaseSection = function () {
+      window.additionalCaseCount++;
       const container = document.getElementById("additionalCasesContainer");
       const template = document.getElementById("additional-case-template");
       if (!template) return;
@@ -255,13 +255,11 @@
       clone.querySelectorAll("input").forEach(input => {
         const name = input.getAttribute("name");
         if (name && name.startsWith("case_2_")) {
-          input.setAttribute("name", name.replace(/^case_2_/, `case_${additionalCaseCount}_`));
+          input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
         }
       });
-      clone.querySelectorAll(".case-index").forEach(el => el.textContent = additionalCaseCount);
+      clone.querySelectorAll(".case-index").forEach(el => el.textContent = window.additionalCaseCount);
       container.appendChild(clone);
-    }
-
-    window.addAdditionalCaseSection = addAdditionalCaseSection;
+    };
   });
 </script>
