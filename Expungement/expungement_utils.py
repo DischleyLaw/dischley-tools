@@ -6,6 +6,9 @@ import re
 import pdfplumber
 from datetime import datetime
 import logging
+from flask import current_app
+
+logger = logging.getLogger(__name__)
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -46,18 +49,20 @@ def safe_search(pattern, text, flags=0):
     try:
         return re.search(pattern, text, flags)
     except re.error as e:
-        logging.warning(f"Regex error for pattern '{pattern}': {e}")
+        current_app.logger.warning(f"Regex error for pattern '{pattern}': {e}")
         return None
 
 # Function to extract expungement data from a PDF file
 def extract_expungement_data(filepath, case_index=None):
     text = ""
+    current_app.logger.debug(f"Extracting data from PDF: {filepath}")
 
     with pdfplumber.open(filepath) as pdf:
         for page in pdf.pages:
             page_text = page.extract_text()
             if page_text:
                 text += page_text
+                current_app.logger.debug(f"Extracted text from page: {page.page_number}")
 
     field_patterns = [
         ("name", [
@@ -231,7 +236,7 @@ def extract_expungement_data(filepath, case_index=None):
                                     result[court_key] = court_name.replace("&", "&amp;")
                                 break
             except Exception as e:
-                logging.warning(f"Fallback court_dispo scan failed: {e}")
+                current_app.logger.exception(f"Fallback court_dispo scan failed: {e}")
 
     # Fallback logic for dispo_date if empty: collect all hearing dates in Hearing Information section
     dispo_key = f"case_{case_index}_dispo_date" if case_index is not None else "dispo_date"
@@ -249,6 +254,8 @@ def extract_expungement_data(filepath, case_index=None):
         for k, v in result.items():
             if k.startswith(f"case_{case_index}_"):
                 filtered_result[k] = v
+        current_app.logger.debug(f"Extraction result: {filtered_result}")
         return filtered_result
 
+    current_app.logger.debug(f"Extraction result: {result}")
     return {"status": "ok", "data": result}

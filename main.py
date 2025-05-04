@@ -3,6 +3,9 @@ import subprocess
 import os
 from datetime import datetime, timedelta
 
+import logging
+logging.basicConfig(level=logging.DEBUG)
+
 # --- Login Required Decorator ---
 # This decorator is now a no-op; login is not required for any routes.
 def login_required(f):
@@ -1386,6 +1389,7 @@ def expungement_upload():
     # Check for AJAX upload for additional case (JS autofill)
     is_ajax = request.form.get("additional_case_upload") == "true"
     uploaded_file = request.files.get("file")
+    logging.debug(f"Received file: {uploaded_file.filename if uploaded_file else 'None'}")
     if not uploaded_file or uploaded_file.filename == "":
         if is_ajax:
             return jsonify({"error": "No file uploaded."}), 400
@@ -1395,15 +1399,18 @@ def expungement_upload():
     temp_path = os.path.join("temp", uploaded_file.filename)
     os.makedirs("temp", exist_ok=True)
     uploaded_file.save(temp_path)
+    logging.debug(f"Saved file to: {temp_path}")
 
     from Expungement.expungement_utils import extract_expungement_data
     import re
     try:
+        logging.debug("Starting PDF extraction...")
         extracted_data = extract_expungement_data(temp_path)
+        logging.debug(f"Extracted data: {extracted_data}")
         if not extracted_data or not any(extracted_data.values()):
             raise ValueError("Empty form_data from PDF parser.")
     except Exception as e:
-        print("PDF extraction failed:", str(e))
+        logging.exception("PDF extraction failed.")
         if is_ajax:
             return jsonify({"error": "Failed to extract data from PDF. Please ensure the file is a valid expungement report."}), 500
         else:
