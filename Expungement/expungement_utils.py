@@ -261,11 +261,11 @@ def extract_expungement_data(filepath, case_index=None):
     return result
 
 
-# Ensure correct Content-Type headers for all responses using this utility
-@current_app.after_request
-def ensure_json_content_type(response):
-    # If the response mimetype is JSON or the route returned a dict (Flask will jsonify it)
-    # ensure Content-Type is application/json
-    if response.is_json or response.mimetype == "application/json":
-        response.headers["Content-Type"] = "application/json"
-    return response
+
+# Function to register after_request handler for JSON Content-Type
+def register_after_request(app):
+    @app.after_request
+    def ensure_json_content_type(response):
+        if response.is_json or response.mimetype == "application/json":
+            response.headers["Content-Type"] = "application/json"
+        return response

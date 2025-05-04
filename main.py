@@ -3,6 +3,15 @@ import subprocess
 import os
 from datetime import datetime, timedelta
 
+# --- No-Cache Headers Registration ---
+def register_after_request(app):
+    @app.after_request
+    def add_no_cache_headers(response):
+        response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+        response.headers["Pragma"] = "no-cache"
+        response.headers["Expires"] = "0"
+        return response
+
 
 import logging
 from flask.logging import default_handler
@@ -216,6 +225,9 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Set session expiration to 24 hours of inactivity
 from datetime import timedelta
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+
+# Register after-request no-cache headers
+register_after_request(app)
 
 # Token serializer for secure lead viewing
 serializer = URLSafeTimedSerializer(app.secret_key)
