@@ -129,22 +129,22 @@
                   <div class="row">
                     <div class="col-12 col-md-6 mb-3">
                       <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
-                      <input type="file" name="file_case_2" class="form-control case-upload-input w-100" data-case-index="2" accept=".pdf">
+                      <input type="file" name="file_case_2" id="file_case_2" class="form-control case-upload-input w-100" data-case-index="2" accept=".pdf">
                       <button type="button" class="btn btn-secondary btn-sm upload-case-btn mt-2 w-100">Upload & Autofill</button>
                     </div>
                   </div>
                   <h4 class="mt-4 mb-3">Charge Details #<span class="case-index">2</span></h4>
                   <div class="row">
-                    <div class="col-12 col-md-6 mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_arrest_date">Arrest Date</label><input type="text" name="case_2_arrest_date" id="case_2_arrest_date" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_officer_name">Officer Name</label><input type="text" name="case_2_officer_name" id="case_2_officer_name" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_police_department">Police Department</label><input type="text" name="case_2_police_department" id="case_2_police_department" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_charge_name">Charge Name</label><input type="text" name="case_2_charge_name" id="case_2_charge_name" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_code_section">Code Section</label><input type="text" name="case_2_code_section" id="case_2_code_section" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_vcc_code">VCC Code</label><input type="text" name="case_2_vcc_code" id="case_2_vcc_code" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_otn">OTN</label><input type="text" name="case_2_otn" id="case_2_otn" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_court_dispo">Court of Final Dispo</label><input type="text" name="case_2_court_dispo" id="case_2_court_dispo" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_case_no">Case No</label><input type="text" name="case_2_case_no" id="case_2_case_no" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label for="case_2_dispo_date">Dispo Date</label><input type="text" name="case_2_dispo_date" id="case_2_dispo_date" class="form-control w-100" value=""></div>
                   </div>
                 </div>
               </div>
@@ -308,8 +308,22 @@
   document.addEventListener('click', function (event) {
     // Additional case AJAX autofill
     if (event.target.classList.contains('upload-case-btn')) {
-      const parent = event.target.closest('.border');
+      event.preventDefault();
+      // The parent container should be the .card-body
+      let parent = event.target.closest('.card-body');
+      if (!parent) {
+        // fallback: try .card or .col-12
+        parent = event.target.closest('.card') || event.target.closest('.col-12');
+        if (!parent) {
+          alert('Could not find parent container for autofill.');
+          return;
+        }
+      }
       const fileInput = parent.querySelector('.case-upload-input');
+      if (!fileInput) {
+        alert('Could not find file input for this case.');
+        return;
+      }
       const caseIndex = fileInput.dataset.caseIndex;
       const file = fileInput.files[0];
       if (!file) return alert('Please select a PDF to upload.');
@@ -329,17 +343,31 @@
           return res.json();
         } else {
           const text = await res.text();
-          console.warn("Raw response text:", text);
-          throw new Error(`Unexpected response:\n${text}`);
+          console.error("Upload-case-btn: Received non-JSON response:", text);
+          throw new Error(`Unexpected response (not JSON):\n${text}`);
         }
       })
       .then(data => {
         const prefix = `case_${caseIndex}_`;
+        if (!data || !data.data) {
+          console.warn('No autofill data returned for case', caseIndex, data);
+          return;
+        }
         Object.entries(data.data).forEach(([key, value]) => {
           if (typeof value === 'string' && key.startsWith(prefix)) {
             const decoded = decodeHTML(value);
             const field = parent.querySelector(`[name="${key}"]`);
-            if (field) field.value = decoded;
+            if (field) {
+              field.value = decoded;
+            } else {
+              // Try to match by id as fallback
+              const idField = parent.querySelector(`#${key}`);
+              if (idField) {
+                idField.value = decoded;
+              } else {
+                console.warn(`Autofill (case): No field found for key "${key}" in case ${caseIndex}`);
+              }
+            }
           }
         });
       })
@@ -374,20 +402,31 @@
           return res.json();
         } else {
           const text = await res.text();
-          console.warn("Unexpected non-JSON response:", text);
-          throw new Error("Upload failed: Server returned HTML instead of JSON. Check backend processing or route handler.");
+          console.error("Main upload: Unexpected non-JSON response:", text);
+          throw new Error("Upload failed: Server returned non-JSON. Check backend processing or route handler.");
         }
       })
       .then(data => {
+        if (!data || !data.data) {
+          console.warn('No autofill data returned in main upload', data);
+          return;
+        }
         Object.entries(data.data).forEach(([key, value]) => {
           if (typeof value === 'string') {
             const decoded = decodeHTML(value);
-            const field = document.querySelector(`[name="${key}"]`);
+            // Try by name first
+            let field = document.querySelector(`[name="${key}"]`);
             if (field) {
               field.value = decoded;
             } else {
-              // Key not matched to element, log and continue
-              console.warn(`Autofill: No form field found for key "${key}"`);
+              // Try by id as fallback
+              field = document.getElementById(key);
+              if (field) {
+                field.value = decoded;
+              } else {
+                // Key not matched to element, log and continue
+                console.warn(`Autofill: No form field found for key "${key}"`);
+              }
             }
           }
         });

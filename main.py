@@ -1446,7 +1446,7 @@ def expungement_upload():
         'final_dispo': extracted_data.get('final_dispo', ''),
         'court_dispo': extracted_data.get('court_dispo', '')
     }
-    return jsonify({"status": "ok", "data": form_data}), 200
+    return jsonify(form_data), 200
 
 
 # Run the Flask app
