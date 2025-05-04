@@ -16,33 +16,35 @@ def generate_expungement():
         from datetime import datetime
         form_data = request.form.to_dict()
 
-        # Format dates
-        def format_date(date_str):
+        # Date formatting helpers
+        def format_date_long(date_str):
             try:
                 return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 return date_str
 
-        arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
-        dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
+        arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
+        dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
 
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
-        if expungement_type == "Manifest Injustice":
-            type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
+        if expungement_type == "Expungement of Right":
+            type_of_expungement = "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
+        elif expungement_type == "Manifest Injustice":
+            type_of_expungement = f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice_details})."
         else:
-            type_of_expungement = "The Petitioner has no prior criminal record..."
+            type_of_expungement = ""
 
         police_department = form_data.get("police_department", "")
         police_department_other = form_data.get("other_police_department", "")
         selected_police_department = police_department if police_department != "Other" else police_department_other
 
         data = {
-            "{NAME}": form_data.get("name", ""),
-            "{DOB}": form_data.get("dob", ""),
+            "{NAME}": form_data.get("name", "").upper(),
+            "{DOB}": format_date_long(form_data.get("dob", "")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
-            "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
             "{Arresting Officer}": form_data.get("officer_name", ""),
@@ -63,7 +65,12 @@ def generate_expungement():
             "{Year}": form_data.get("year", datetime.now().year),
             "{Attorney}": form_data.get("attorney", ""),
             "{Expungement Type}": expungement_type,
-            "{Manifest Injustice Details}": manifest_injustice_details
+            "{Manifest Injustice Details}": manifest_injustice_details,
+            # --- Additional keys added below ---
+            "{Arrest Date}": arrest_date_formatted,
+            "{Officer Name}": form_data.get("officer_name", ""),
+            "{Court of Final Dispo}": form_data.get("court_dispo", ""),
+            "{Case No}": form_data.get("case_no", ""),
         }
 
         output_dir = "temp"
@@ -1112,15 +1119,15 @@ def expungement_form():
         if police_department == "Other":
             selected_police_department = police_department_other
 
-        # Format dates to "January 1, 2025"
-        def format_date(date_str):
+        # Date formatting helpers
+        def format_date_long(date_str):
             try:
                 return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 return date_str
 
-        arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
-        dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
+        arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
+        dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
 
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
@@ -1132,11 +1139,11 @@ def expungement_form():
 
         # Map form fields to template fields
         data = {
-            "{NAME}": form_data.get("name", ""),
-            "{DOB}": form_data.get("dob", ""),
+            "{NAME}": form_data.get("name", "").upper(),
+            "{DOB}": format_date_long(form_data.get("dob", "")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
-            "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
             "{Arresting Officer}": form_data.get("officer_name", ""),
@@ -1157,7 +1164,12 @@ def expungement_form():
             "{Year}": form_data.get("year", current_year),
             "{Attorney}": attorney,
             "{Expungement Type}": expungement_type,
-            "{Manifest Injustice Details}": manifest_injustice_details
+            "{Manifest Injustice Details}": manifest_injustice_details,
+            # --- Additional keys added below ---
+            "{Arrest Date}": arrest_date_formatted,
+            "{Officer Name}": form_data.get("officer_name", ""),
+            "{Court of Final Dispo}": form_data.get("court_dispo", ""),
+            "{Case No}": form_data.get("case_no", ""),
         }
 
         output_dir = "temp"
@@ -1173,8 +1185,6 @@ def expungement_form():
         flash("Petition successfully generated and downloaded.", "success")
         # Note: the file will be downloaded, then user will be redirected to expungement_form and see the message
         return response
-        # flash("Petition successfully generated and downloaded.", "success")
-        # return redirect(url_for("expungement_form"))
 
     return render_template(
         'expungement.html',
