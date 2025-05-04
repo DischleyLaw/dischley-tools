@@ -24,6 +24,10 @@ app.logger.setLevel(logging.DEBUG)
 def generate_expungement():
     if request.method == "POST":
         form_data = request.form.to_dict()
+        # --- Merge autofill data from session if present ---
+        autofill_data = session.pop("expungement_autofill_data", None)
+        if autofill_data:
+            form_data.update(autofill_data)
 
         # --- PDF Upload Handling for Expungement ---
         uploaded_file = request.files.get("file")
@@ -1401,16 +1405,11 @@ def expungement_upload():
         flash("No file uploaded.", "danger")
         return redirect(url_for("expungement_form"))
 
-    temp_path = os.path.join("temp", uploaded_file.filename)
-    os.makedirs("temp", exist_ok=True)
-    uploaded_file.save(temp_path)
-    app.logger.debug(f"Saved file to: {temp_path}")
-
     from Expungement.expungement_utils import extract_expungement_data
     import re
     try:
         app.logger.debug("Starting PDF extraction...")
-        extracted_data = extract_expungement_data(temp_path)
+        extracted_data = extract_expungement_data(uploaded_file)
         app.logger.debug(f"Extracted data: {extracted_data}")
         if not extracted_data or not any(extracted_data.values()):
             raise ValueError("Empty form_data from PDF parser.")
@@ -1444,6 +1443,8 @@ def expungement_upload():
 
     # --- Standard upload: parse and render autofilled form ---
     # Use the extracted data directly for form_data
+    # Store extracted_data in session for autofill on generate
+    session["expungement_autofill_data"] = extracted_data
     form_data = {
         'name': extracted_data.get('name', ''),
         'name_arrest': extracted_data.get('name_arrest', ''),
@@ -1458,6 +1459,8 @@ def expungement_upload():
         'final_dispo': extracted_data.get('final_dispo', ''),
         'court_dispo': extracted_data.get('court_dispo', '')
     }
+    # Add debug log before returning JSON to confirm this code path is reached
+    app.logger.debug("Returning extracted form_data for frontend autofill.")
     return jsonify(form_data), 200
 
 
