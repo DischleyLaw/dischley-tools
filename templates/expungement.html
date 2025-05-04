@@ -33,7 +33,7 @@
     </div>
     <div class="mb-3">
       <label for="dob" class="form-label">Date of Birth</label>
-      <input type="date" class="form-control" id="dob" name="dob" required value="{{ dob|default('')|replace('/', '-') }}">
+      <input type="text" class="form-control" id="dob" name="dob" required value="{{ dob|default('') }}">
     </div>
     <div class="mb-3">
       <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
@@ -55,7 +55,7 @@
     <h4>Charge Details</h4>
     <div class="mb-3">
       <label for="arrest_date" class="form-label">Date of Arrest</label>
-      <input type="date" class="form-control" id="arrest_date" name="arrest_date" value="{{ arrest_date|default('')|replace('/', '-') }}">
+      <input type="text" class="form-control" id="arrest_date" name="arrest_date" value="{{ arrest_date|default('') }}">
     </div>
     <div class="mb-3">
       <label for="officer_name" class="form-label">Arresting Officer</label>
@@ -110,7 +110,7 @@
     </div>
     <div class="mb-3">
       <label for="dispo_date" class="form-label">Disposition Date</label>
-      <input type="date" class="form-control" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('')|replace('/', '-') }}">
+      <input type="text" class="form-control" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('') }}">
     </div>
     <hr />
     <h4>Prosecutor Info</h4>

@@ -1209,8 +1209,6 @@ def expungement_upload():
     if raw_code:
         form_data["code_section"] = f"Va. Code § {raw_code.group(1)}"
 
-    # --- Set court_dispo to default value; do not parse PDF for court type/locality ---
-    form_data["court_dispo"] = "Court of Final Disposition"
 
     # Clean up final_dispo field for cleaner output.
     form_data["final_dispo"] = form_data.get("final_dispo", "")
@@ -1244,7 +1242,7 @@ def expungement_upload():
         code_section=form_data.get("code_section", ""),
         vcc_code=form_data.get("vcc_code", ""),
         otn=form_data.get("otn", ""),
-        court_dispo=form_data.get("court_dispo", ""),  # ensure this is in the context
+        court_dispo=form_data.get("court_dispo") or "Court not extracted",
         case_no=form_data.get("case_no", ""),
         final_dispo=form_data.get("final_dispo", ""),
         dispo_date=form_data.get("dispo_date", ""),

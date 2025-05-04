@@ -66,7 +66,7 @@ def extract_expungement_data(filepath):
             r"Disposition Date\s*:\s*(\d{2}/\d{2}/\d{4})"
         ]),
         ("charge_name", [
-            r"Charge\s*:\s*(.+?)\s*OffenseTracking"
+            r"Charge\s*:\s*([^\n\r]+)"
         ]),
         ("code_section", [
             r"Code\s*Section\s*:\s*([\d\.]+-\d+)"
@@ -89,9 +89,6 @@ def extract_expungement_data(filepath):
         ]),
         ("dob", [
             r"DOB:\s*(\d{2}/\d{2}/\*{4})"
-        ]),
-        ("charge_name", [
-            r"Charge:\s*(.*?)\s*Offense Tracking"
         ]),
         ("code_section", [
             r"Code Section:\s*(.+)"
@@ -139,7 +136,7 @@ def extract_expungement_data(filepath):
                     pass
                 result[key] = val
             elif key == "charge_name":
-                val = re.split(r"OffenseTracking|Code\s*Section|Case\s*Type", val)[0].strip()
+                val = re.split(r"Offense Tracking|OffenseTracking|Process|Code\s*Section|Case\s*Type", val)[0].strip()
                 # Capitalize each word like a name
                 val = " ".join(word.capitalize() for word in val.split())
                 result[key] = val
@@ -166,6 +163,8 @@ def extract_expungement_data(filepath):
                 result[key] = val
             elif key == "code_section":
                 val = re.split(r"Charge", val)[0].strip()
+                if not val.startswith("Va. Code"):
+                    val = f"Va. Code § {val}"
                 result[key] = val
             elif key == "dispo_date":
                 result[key] = val
@@ -182,4 +181,5 @@ def extract_expungement_data(filepath):
             result[key] = ""
 
     return result
+
 
