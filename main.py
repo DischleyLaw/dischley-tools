@@ -74,7 +74,9 @@ def generate_expungement():
         from Expungement.expungement_utils import populate_document
         populate_document(template_path, output_path, data)
 
-        return send_file(output_path, as_attachment=True)
+        # Instead of sending the file directly, save file path to session and redirect
+        session["generated_file_path"] = output_path
+        return redirect(url_for("expungement_form"))
     # For GET request, render the expungement form template
     return render_template('expungement_form.html')
 
@@ -1086,6 +1088,17 @@ def expungement_form():
     current_month = datetime.now().strftime("%B")
     current_year = datetime.now().year
 
+    # Check for generated file in session to provide download link
+    download_url = None
+    generated_path = session.pop("generated_file_path", None)
+    if generated_path and os.path.exists(generated_path):
+        filename = os.path.basename(generated_path)
+        download_url = url_for("download_generated_file", filename=filename)
+
+    # Get flashed messages for display
+    from flask import get_flashed_messages
+    messages = get_flashed_messages(with_categories=True)
+
     if request.method == "POST":
         form_data = request.form.to_dict()
 
@@ -1154,14 +1167,29 @@ def expungement_form():
         template_path = 'static/data/Exp_Petition (Template).docx'
         populate_document(template_path, output_path, data)
 
-        return send_file(output_path, as_attachment=True)
+        # Send the file for download
+        response = send_file(output_path, as_attachment=True)
+        # After sending the file, set flash message and redirect for success display
+        flash("Petition successfully generated and downloaded.", "success")
+        # Note: the file will be downloaded, then user will be redirected to expungement_form and see the message
+        return response
+        # flash("Petition successfully generated and downloaded.", "success")
+        # return redirect(url_for("expungement_form"))
 
     return render_template(
         'expungement.html',
         counties=prosecutor_info.keys(),
         current_month=current_month,
-        current_year=current_year
+        current_year=current_year,
+        messages=messages,
+        download_url=download_url
     )
+
+
+# --- Download generated expungement file route ---
+@app.route("/download/<filename>")
+def download_generated_file(filename):
+    return send_file(os.path.join("temp", filename), as_attachment=True)
 
 
 
