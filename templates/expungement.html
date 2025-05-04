@@ -264,11 +264,10 @@
           input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
         }
       });
-      // Update hidden case_index field value and name
-      const hiddenIndexField = clone.querySelector('input[name="case_index"]');
-      if (hiddenIndexField) {
+      // Update hidden case_index field value only if it's already named correctly
+      const hiddenIndexField = clone.querySelector('input[type="hidden"]');
+      if (hiddenIndexField && hiddenIndexField.name === "case_index") {
         hiddenIndexField.value = window.additionalCaseCount;
-        hiddenIndexField.setAttribute("name", "case_index");
       }
       clone.querySelectorAll(".case-index").forEach(el => el.textContent = window.additionalCaseCount);
       container.appendChild(clone);
