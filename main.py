@@ -74,9 +74,9 @@ def generate_expungement():
         from Expungement.expungement_utils import populate_document
         populate_document(template_path, output_path, data)
 
-        # Instead of sending the file directly, save file path to session and redirect
+        # Instead of sending the file directly, save file path to session and render the template
         session["generated_file_path"] = output_path
-        return redirect(url_for("expungement_form"))
+        return render_template("expungement.html")
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
