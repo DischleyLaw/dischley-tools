@@ -7,10 +7,9 @@
       <div class="card shadow p-4">
   <h2 class="mb-4">Expungement Petition Form</h2>
   <div class="mb-3">
-    <form action="/expungement/upload" method="POST" enctype="multipart/form-data" style="margin-bottom: 2rem;">
+    <form id="main-upload-form" enctype="multipart/form-data" style="margin-bottom: 2rem;">
       <label for="file"><strong>Upload Court Document (PDF):</strong></label>
       <input type="file" name="file" id="file" accept=".pdf" required>
-      <button type="submit" class="btn btn-secondary">Upload & Autofill</button>
     </form>
   </div>
   <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true">
@@ -272,8 +271,15 @@
   });
 </script>
 <script>
-  // JavaScript handler for AJAX PDF upload in additional case sections
+  // Centralized HTML entity decoding for all upload autofill
+  function decodeHTML(value) {
+    const parser = new DOMParser();
+    return parser.parseFromString(value, "text/html").body.textContent || value;
+  }
+
+  // Handler for AJAX PDF upload in additional case sections
   document.addEventListener('click', function (event) {
+    // Additional case AJAX autofill
     if (event.target.classList.contains('upload-case-btn')) {
       const parent = event.target.closest('.border');
       const fileInput = parent.querySelector('.case-upload-input');
@@ -290,18 +296,92 @@
         method: 'POST',
         body: formData
       })
-      .then(res => res.json())
+      .then(async res => {
+        const contentType = res.headers.get("content-type");
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          return res.json();
+        } else {
+          const text = await res.text();
+          console.warn("Raw response text:", text);
+          throw new Error(`Unexpected response:\n${text}`);
+        }
+      })
       .then(data => {
-        Object.entries(data).forEach(([key, value]) => {
-          const input = parent.querySelector(`[name="${key}"]`);
-          if (input) input.value = value;
+        Object.entries(data.data).forEach(([key, value]) => {
+          if (typeof value === 'string') {
+            const decoded = decodeHTML(value);
+            const field = parent.querySelector(`[name="case_${caseIndex}_${key}"]`);
+            if (field) field.value = decoded;
+          }
         });
       })
       .catch(err => {
         console.error('Upload failed', err);
-        alert('Failed to extract data from PDF.');
+        alert(`Upload failed: ${err.message}`);
       });
     }
+  });
+</script>
+<script>
+  // Main upload form AJAX autofill logic
+  document.addEventListener('DOMContentLoaded', () => {
+    const mainForm = document.getElementById('main-upload-form');
+    if (!mainForm) return;
+    mainForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      const fileInput = document.getElementById('file');
+      const file = fileInput.files[0];
+      if (!file) return alert('Please select a PDF to upload.');
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      fetch('/expungement/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(async res => {
+        const contentType = res.headers.get("content-type");
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          return res.json();
+        } else {
+          const text = await res.text();
+          console.warn("Raw response text:", text);
+          throw new Error(`Unexpected response:\n${text}`);
+        }
+      })
+      .then(data => {
+        const mapping = {
+          name: 'name',
+          name_arrest: 'name_arrest',
+          dob: 'dob',
+          arrest_date: 'arrest_date',
+          officer_name: 'officer_name',
+          police_department: 'police_department',
+          charge_name: 'charge_name',
+          code_section: 'code_section',
+          vcc_code: 'vcc_code',
+          otn: 'otn',
+          court_dispo: 'court_dispo',
+          case_no: 'case_no',
+          final_dispo: 'final_dispo',
+          dispo_date: 'dispo_date'
+        };
+
+        Object.entries(mapping).forEach(([key, fieldName]) => {
+          const value = data.data[key];
+          if (typeof value === 'string') {
+            const decoded = decodeHTML(value);
+            const field = document.querySelector(`[name="${fieldName}"]`);
+            if (field) field.value = decoded;
+          }
+        });
+      })
+      .catch(err => {
+        console.error('Upload failed', err);
+        alert(`Upload failed: ${err.message}`);
+      });
+    });
   });
 </script>
 {% endblock %}

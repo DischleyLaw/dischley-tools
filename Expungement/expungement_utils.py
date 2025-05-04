@@ -5,9 +5,6 @@ from docx import Document
 import re
 import pdfplumber
 from datetime import datetime
-# OCR fallback imports
-from pdf2image import convert_from_path
-import pytesseract
 
 # Predefined prosecutor information based on county
 prosecutor_info = {
@@ -42,21 +39,11 @@ def extract_expungement_data(filepath, case_index=None):
 
     # First try regular PDF text extraction
     import logging
-    try:
-        with pdfplumber.open(filepath) as pdf:
-            for page in pdf.pages:
-                page_text = page.extract_text()
-                if page_text:
-                    text += page_text
-    except Exception as e:
-        logging.warning(f"PDF parsing failed: {e}")
-        try:
-            logging.warning("Falling back to OCR.")
-            images = convert_from_path(filepath)
-            for image in images:
-                text += pytesseract.image_to_string(image)
-        except Exception as ocr_error:
-            logging.error(f"OCR fallback also failed: {ocr_error}")
+    with pdfplumber.open(filepath) as pdf:
+        for page in pdf.pages:
+            page_text = page.extract_text()
+            if page_text:
+                text += page_text
 
     field_patterns = [
         ("name", [
@@ -320,4 +307,4 @@ def extract_expungement_data(filepath, case_index=None):
                 filtered_result[k] = v
         return filtered_result
 
-    return result
+    return {"status": "ok", "data": result}

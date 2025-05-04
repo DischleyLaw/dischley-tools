@@ -26,6 +26,35 @@
       font-weight: bold;
     }
   </style>
+  <script>
+    function populateMainCaseFields(data) {
+      const map = {
+        name: "name",
+        name_arrest: "name_arrest",
+        dob: "dob",
+        officer_name: "officer_name",
+        arrest_date: "arrest_date",
+        dispo_date: "dispo_date",
+        charge_name: "charge_name",
+        code_section: "code_section",
+        otn: "otn",
+        case_no: "case_no",
+        final_dispo: "final_dispo",
+        court_dispo: "court_dispo"
+      };
+
+      Object.entries(map).forEach(([key, id]) => {
+        if (data[key] && typeof data[key] === "string") {
+          const field = document.getElementById(id);
+          if (field) {
+            const parser = new DOMParser();
+            const decoded = parser.parseFromString(data[key], "text/html").body.textContent || data[key];
+            field.value = decoded;
+          }
+        }
+      });
+    }
+  </script>
 </head>
 <body>
   <nav class="navbar navbar-light mb-4" style="background-color: #A2AAAD;">
