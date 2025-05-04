@@ -27,6 +27,7 @@ def generate_expungement():
         # --- Merge autofill data from session if present ---
         autofill_data = session.pop("expungement_autofill_data", None)
         if autofill_data:
+            app.logger.debug(f"Autofill data from session: {autofill_data}")
             form_data.update(autofill_data)
 
         # --- PDF Upload Handling for Expungement ---
@@ -191,6 +192,7 @@ def generate_expungement():
 
         # Instead of sending the file directly, save file path to session and redirect to success page
         session["generated_file_path"] = output_path
+        app.logger.debug(f"Final form data used for document generation: {form_data}")
         return redirect(url_for("expungement_success", name=data["{NAME}"]))
     # For GET request, render the expungement form template
     return render_template('expungement.html')

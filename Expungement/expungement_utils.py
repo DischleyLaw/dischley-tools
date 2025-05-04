@@ -6,7 +6,7 @@ import re
 import pdfplumber
 from datetime import datetime
 import logging
-from flask import current_app
+from flask import current_app, jsonify
 
 logger = logging.getLogger(__name__)
 
@@ -259,3 +259,13 @@ def extract_expungement_data(filepath, case_index=None):
 
     current_app.logger.debug(f"Extraction result: {result}")
     return result
+
+
+# Ensure correct Content-Type headers for all responses using this utility
+@current_app.after_request
+def ensure_json_content_type(response):
+    # If the response mimetype is JSON or the route returned a dict (Flask will jsonify it)
+    # ensure Content-Type is application/json
+    if response.is_json or response.mimetype == "application/json":
+        response.headers["Content-Type"] = "application/json"
+    return response
