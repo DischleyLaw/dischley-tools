@@ -1,5 +1,6 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
 import os
+from datetime import datetime, timedelta
 
 # --- Login Required Decorator ---
 # This decorator is now a no-op; login is not required for any routes.
@@ -13,7 +14,6 @@ app = Flask(__name__)
 @app.route("/expungement/generate", methods=["GET", "POST"])
 def generate_expungement():
     if request.method == "POST":
-        from datetime import datetime
         form_data = request.form.to_dict()
 
         # Date formatting helpers
@@ -84,9 +84,6 @@ def generate_expungement():
             "{Officer Name}": form_data.get("officer_name", ""),
             "{Court of Final Dispo}": form_data.get("court_dispo", ""),
             "{Case No}": form_data.get("case_no", ""),
-            # Ensure these fields are present
-            "{Charge Name}": form_data.get("charge_name", ""),
-            "{Code Section}": form_data.get("code_section", ""),
         }
         # Add {additional Cases} field for Word template
         data["{additional Cases}"] = ""
@@ -141,16 +138,12 @@ def generate_expungement():
 
 from Expungement.expungement_utils import extract_expungement_data
 from flask_mail import Mail, Message
-
 import requests
-import os
 from dotenv import load_dotenv
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from datetime import datetime, timedelta
 from email.utils import formataddr
 from requests_oauthlib import OAuth2Session
-
 from itsdangerous import URLSafeTimedSerializer
 
 load_dotenv()
@@ -574,7 +567,6 @@ def update_lead(lead_id):
     lead.lvm = False
     lead.not_pc = False
     lead.quote = ""
-    lead.quote = ""  # Reset quote string
 
     lead.name = request.form.get("name") if request.form.get("name") else lead.name
     lead.phone = request.form.get("phone") if request.form.get("phone") else lead.phone
@@ -1143,7 +1135,6 @@ def expungement_form():
             "address2": "Stafford, VA 22555"
         }
 
-    from datetime import datetime
     current_month = datetime.now().strftime("%B")
     current_year = datetime.now().year
 
@@ -1571,7 +1562,7 @@ if __name__ == "__main__":
 @app.route("/expungement/success")
 def expungement_success():
     name = request.args.get("name", "Client")
-    return render_template("Expungement_Success.html", name=name)
+    return render_template("expungement_success.html", name=name)
 
 
 # --- Admin Tools Page ---
