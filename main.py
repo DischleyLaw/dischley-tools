@@ -18,9 +18,7 @@ def generate_expungement():
         form_data = request.form.to_dict()
 
         # --- PDF Upload Handling for Expungement ---
-        from Expungement.expungement_utils import extract_expungement_data
         uploaded_file = request.files.get("file")
-        # --- Handle standard PDF upload (not additional AJAX case upload) ---
         if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" not in request.form:
             temp_path = os.path.join("temp", uploaded_file.filename)
             os.makedirs("temp", exist_ok=True)
@@ -32,7 +30,6 @@ def generate_expungement():
                 return redirect(url_for("expungement_form"))
         # --- Handle AJAX-style additional case upload ---
         if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" in request.form:
-            from Expungement.expungement_utils import extract_expungement_data
             import re
             temp_path = os.path.join("temp", uploaded_file.filename)
             os.makedirs("temp", exist_ok=True)
@@ -40,11 +37,11 @@ def generate_expungement():
             try:
                 case_data = extract_expungement_data(temp_path)
                 # Clean up officer name
-                officer_match = re.search(r"([A-Z]+,\s?[A-Z])", case_data.get("officer_name", ""))
+                officer_match = re.search(r"([A-Z]+,\s?[A-Z])", case_data.get("officer_name", "").upper())
                 if officer_match:
                     case_data["officer_name"] = officer_match.group(1).title()
                 # Apply proper field prefixes
-                index = request.form.get("case_index", "").strip()
+                index = request.form.get("case_index", "").strip() or "1"
                 prefixed_data = {}
                 for field in ["arrest_date", "officer_name", "police_department", "charge_name", "code_section", "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"]:
                     key = f"case_{index}_{field}"
@@ -84,7 +81,8 @@ def generate_expungement():
 
         # Date formatting helpers
         def format_date_long(date_str):
-            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
+            date_str = date_str.replace("/", "-")
+            for fmt in ("%Y-%m-%d", "%m-%d-%Y"):
                 try:
                     dt = datetime.strptime(date_str, fmt)
                     if dt.year < 1900:
@@ -94,8 +92,8 @@ def generate_expungement():
                     continue
             return date_str
 
-        arrest_date_formatted = format_date_long(form_data.get("arrest_date", "").replace("/", "-"))
-        dispo_date_formatted = format_date_long(form_data.get("dispo_date", "").replace("/", "-"))
+        arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
+        dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
 
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
@@ -114,22 +112,13 @@ def generate_expungement():
         else:
             type_of_expungement = ""
 
-        # Handle optional "Manifest Injustice" content formatting
-        if expungement_type == "Manifest Injustice" and manifest_injustice_details:
-            type_of_expungement = (
-                "The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
-                "and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. "
-                "The Commonwealth cannot show good cause to the contrary as to why the petition should not be granted.\n\n"
-                f"To wit: {manifest_injustice_details}"
-            )
-
         police_department = form_data.get("police_department", "")
         police_department_other = form_data.get("other_police_department", "")
         selected_police_department = police_department if police_department != "Other" else police_department_other
 
         data = {
             "{NAME}": form_data.get("name", "").upper(),
-            "{DOB}": format_date_long(form_data.get("dob", "").replace("/", "-")),
+            "{DOB}": format_date_long(form_data.get("dob", "")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
             "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
@@ -168,16 +157,16 @@ def generate_expungement():
             for i, case in enumerate(cases[1:], 1):
                 data["{additional Cases}"] += (
                     f"Additional Case {i}:\n"
-                    f"Date of Arrest: {format_date_long(case.get('arrest_date', ''))}\n"
-                    f"Arresting Officer: {case.get('officer_name', '')}\n"
-                    f"Police Department: {case.get('police_department', '')}\n"
-                    f"Charge Name: {case.get('charge_name', '')}\n"
-                    f"Code Section: {case.get('code_section', '')}\n"
-                    f"VCC Code: {case.get('vcc_code', '')}\n"
-                    f"OTN: {case.get('otn', '')}\n"
-                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
-                    f"Case Number: {case.get('case_no', '')}\n"
-                    f"Disposition Date: {format_date_long(case.get('dispo_date', ''))}\n"
+                    f"Date of Arrest: {format_date_long(case.get('arrest_date', ''))}\n\n"
+                    f"Arresting Officer: {case.get('officer_name', '')}\n\n"
+                    f"Police Department: {case.get('police_department', '')}\n\n"
+                    f"Charge Name: {case.get('charge_name', '')}\n\n"
+                    f"Code Section: {case.get('code_section', '')}\n\n"
+                    f"VCC Code: {case.get('vcc_code', '')}\n\n"
+                    f"OTN: {case.get('otn', '')}\n\n"
+                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n\n"
+                    f"Case Number: {case.get('case_no', '')}\n\n"
+                    f"Disposition Date: {format_date_long(case.get('dispo_date', ''))}\n\n"
                     "\n"
                 )
 
@@ -186,7 +175,6 @@ def generate_expungement():
         output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Draft_Petition.docx")
 
         template_path = 'static/docs/Exp_Petition_Template.docx'
-        from Expungement.expungement_utils import populate_document
         populate_document(template_path, output_path, data)
 
         # Instead of sending the file directly, save file path to session and redirect to success page
@@ -195,7 +183,7 @@ def generate_expungement():
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
-from Expungement.expungement_utils import extract_expungement_data
+from Expungement.expungement_utils import extract_expungement_data, populate_document, prosecutor_info
 from flask_mail import Mail, Message
 import requests
 from dotenv import load_dotenv
@@ -1200,7 +1188,7 @@ def expungement_form():
     # Check for generated file in session to provide download link
     download_url = None
     generated_path = session.pop("generated_file_path", None)
-    if generated_path and os.path.exists(generated_path):
+    if generated_path and os.path.isfile(generated_path):
         filename = os.path.basename(generated_path)
         download_url = url_for("download_generated_file", filename=filename)
 
@@ -1425,10 +1413,10 @@ def expungement_upload():
     # --- AJAX upload: Return JSON for additional case autofill ---
     if is_ajax:
         # Clean up officer name
-        officer_match = re.search(r"([A-Z]+,\s?[A-Z])", extracted_data.get("officer_name", ""))
+        officer_match = re.search(r"([A-Z]+,\s?[A-Z])", extracted_data.get("officer_name", "").upper())
         if officer_match:
             extracted_data["officer_name"] = officer_match.group(1).title()
-        index = request.form.get("case_index", "").strip()
+        index = request.form.get("case_index", "").strip() or "1"
         prefixed_data = {}
         for field in [
             "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
@@ -1458,10 +1446,7 @@ def expungement_upload():
         'final_dispo': extracted_data.get('final_dispo', ''),
         'court_dispo': extracted_data.get('court_dispo', '')
     }
-    return render_template(
-        "expungement.html",
-        **form_data
-    )
+    return jsonify({"status": "ok", "data": form_data}), 200
 
 
 # Run the Flask app
@@ -1613,7 +1598,7 @@ def expungement_success():
     messages = get_flashed_messages(with_categories=True)
     download_url = None
     generated_path = session.get("generated_file_path")
-    if generated_path and os.path.exists(generated_path):
+    if generated_path and os.path.isfile(generated_path):
         filename = os.path.basename(generated_path)
         # Append query string to trigger automatic download after page loads
         download_url = url_for("download_generated_file", filename=filename) + "?autodownload=true"
