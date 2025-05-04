@@ -40,9 +40,9 @@ def generate_expungement():
             )
         elif expungement_type == "Manifest Injustice":
             type_of_expungement = (
-                "The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, and may continue to cause, "
-                "circumstances which constitute a manifest injustice to the Petitioner, and the Commonwealth cannot show good cause to the contrary as to why the petition "
-                f"should not be granted. (to wit: {manifest_injustice_details})"
+                f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
+                f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
+                f"to the contrary as to why the petition should not be granted. To wit: {manifest_injustice_details}"
             )
         else:
             type_of_expungement = ""
@@ -1551,18 +1551,16 @@ def test_clio_contacts():
         return response.json()  # Show raw Clio contact data
     except Exception as e:
         return {"error": str(e)}, 500
-
-if __name__ == "__main__":
-    from post_deploy import run_post_deploy
-    run_post_deploy()
-    app.run(debug=True)
-
-
 # --- Expungement Success Route ---
 @app.route("/expungement/success")
 def expungement_success():
     name = request.args.get("name", "Client")
     return render_template("expungement_success.html", name=name)
+
+if __name__ == "__main__":
+    from post_deploy import run_post_deploy
+    run_post_deploy()
+    app.run(debug=True)
 
 
 # --- Admin Tools Page ---
