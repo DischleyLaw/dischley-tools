@@ -78,7 +78,7 @@ def generate_expungement():
         session["generated_file_path"] = output_path
         return redirect(url_for("expungement_form"))
     # For GET request, render the expungement form template
-    return render_template('expungement_form.html')
+    return render_template('expungement.html')
 
 from Expungement.expungement_utils import extract_expungement_data
 from flask_mail import Mail, Message
