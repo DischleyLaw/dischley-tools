@@ -1428,7 +1428,7 @@ def expungement_upload():
         cases = [this_case]
 
     # Build dynamic field mapping for the specific indexed case
-    autofill_prefix = "" if case_index == "0" else f"case_{case_index}_"
+    autofill_prefix = "" if case_index in ("", "0", "main") else f"case_{case_index}_"
     autofill_case = cases[0] if cases else {}
 
     return render_template(
