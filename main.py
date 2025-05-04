@@ -70,7 +70,7 @@ def generate_expungement():
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Draft_Petition.docx")
 
-        template_path = 'static/data/Exp_Petition (Template).docx'
+        template_path = 'static/docs/Exp_Petition_Template.docx'
         from Expungement.expungement_utils import populate_document
         populate_document(template_path, output_path, data)
 
@@ -1164,7 +1164,7 @@ def expungement_form():
         os.makedirs(output_dir, exist_ok=True)
         output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Expungement.docx")
 
-        template_path = 'static/data/Exp_Petition (Template).docx'
+        template_path = 'static/docs/Exp_Petition_Template.docx'
         populate_document(template_path, output_path, data)
 
         # Send the file for download
