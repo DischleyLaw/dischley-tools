@@ -1410,9 +1410,10 @@ def expungement_upload():
     from datetime import datetime
     # Prepare 'cases' list for autofill if present
     cases = []
-    # Try to extract multiple cases if parser returns them, else just use single case
-    if "cases" in form_data and isinstance(form_data["cases"], list) and form_data["cases"]:
-        cases = form_data["cases"]
+    # If there is more than one case, autofill only the first additional case (case 1) in the "additional charges" section.
+    if "cases" in form_data and isinstance(form_data["cases"], list) and len(form_data["cases"]) > 1:
+        # Skip the main case and return only the first additional case
+        cases = [form_data["cases"][1]]
     else:
         # Build a single case dict from top-level fields, using case_X_field naming for autofill
         case_fields = [

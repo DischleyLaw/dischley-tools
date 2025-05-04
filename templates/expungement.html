@@ -116,6 +116,13 @@
     <div id="additionalCasesContainer" class="mt-4"></div>
     <template id="additional-case-template">
       <div class="border p-3 mt-3">
+        <div class="mb-3">
+          <form action="/expungement/upload" method="POST" enctype="multipart/form-data">
+            <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
+            <input type="file" name="file" id="file_case_2" accept=".pdf" required>
+            <button type="submit" class="btn btn-secondary btn-sm">Upload & Autofill</button>
+          </form>
+        </div>
         <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
         <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control"></div>
         <div class="mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control"></div>
