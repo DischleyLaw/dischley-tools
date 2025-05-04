@@ -17,6 +17,19 @@ def generate_expungement():
     if request.method == "POST":
         form_data = request.form.to_dict()
 
+        # --- PDF Upload Handling for Expungement ---
+        from Expungement.expungement_utils import extract_expungement_data
+        uploaded_file = request.files.get("file")
+        if uploaded_file and uploaded_file.filename.endswith(".pdf"):
+            temp_path = os.path.join("temp", uploaded_file.filename)
+            os.makedirs("temp", exist_ok=True)
+            uploaded_file.save(temp_path)
+            try:
+                form_data.update(extract_expungement_data(temp_path))
+            except Exception as e:
+                flash("Failed to extract data from PDF.", "danger")
+                return redirect(url_for("expungement_form"))
+
         # --- Collect all case fields (support multiple) ---
         from collections import defaultdict
         import re
