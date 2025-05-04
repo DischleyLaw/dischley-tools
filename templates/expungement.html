@@ -239,13 +239,6 @@
     otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
   });
 </script>
-<script>
-  if (window.location.search.includes("downloaded=true")) {
-    const params = new URLSearchParams(window.location.search);
-    const name = document.getElementById("name")?.value || "Client";
-    window.location.href = `/expungement/success?name=${encodeURIComponent(name)}`;
-  }
-</script>
 {% endblock %}
 
 <script>

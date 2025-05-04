@@ -1301,12 +1301,9 @@ def expungement_form():
         template_path = 'static/docs/Exp_Petition_Template.docx'
         populate_document(template_path, output_path, data)
 
-        # Send the file for download
-        response = send_file(output_path, as_attachment=True)
-        # After sending the file, set flash message and redirect for success display
-        flash("Petition successfully generated and downloaded.", "success")
-        # Note: the file will be downloaded, then user will be redirected to expungement_form and see the message
-        return response
+        # Instead of sending the file directly, save file path to session and redirect to success page
+        session["generated_file_path"] = output_path
+        return redirect(url_for("expungement_success", name=data["{NAME}"]))
 
     return render_template(
         'expungement.html',
@@ -1321,7 +1318,17 @@ def expungement_form():
 # --- Download generated expungement file route ---
 @app.route("/download/<filename>")
 def download_generated_file(filename):
-    return send_file(os.path.join("temp", filename), as_attachment=True)
+    filepath = os.path.join("temp", filename)
+    if os.path.exists(filepath):
+        response = send_file(filepath, as_attachment=True)
+        try:
+            os.remove(filepath)
+        except Exception as e:
+            print(f"Failed to delete file: {filepath} — {e}")
+        return response
+    else:
+        flash("File not found.", "danger")
+        return redirect(url_for("expungement_form"))
 
 
 
@@ -1579,18 +1586,18 @@ def test_clio_contacts():
         return response.json()  # Show raw Clio contact data
     except Exception as e:
         return {"error": str(e)}, 500
-# --- Expungement Success Route ---
 @app.route("/expungement/success")
 def expungement_success():
     name = request.args.get("name", "Client")
     from flask import get_flashed_messages
     messages = get_flashed_messages(with_categories=True)
     download_url = None
-    generated_path = session.pop("generated_file_path", None)
+    generated_path = session.get("generated_file_path")
     if generated_path and os.path.exists(generated_path):
         filename = os.path.basename(generated_path)
-        download_url = url_for("download_generated_file", filename=filename)
-    return render_template("expungement_success.html", name=name, messages=messages, download_url=download_url)
+        # Append query string to trigger automatic download after page loads
+        download_url = url_for("download_generated_file", filename=filename) + "?autodownload=true"
+    return render_template("Expungement_Success.html", name=name, messages=messages, download_url=download_url)
 
 if __name__ == "__main__":
     from post_deploy import run_post_deploy
