@@ -117,9 +117,10 @@
     <template id="additional-case-template">
       <div class="border p-3 mt-3">
         <div class="mb-3">
-          <form action="/expungement/upload" method="POST" enctype="multipart/form-data">
+          <form method="POST" enctype="multipart/form-data" onsubmit="setCaseIndex(this)">
             <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
             <input type="file" name="file" id="file_case_2" accept=".pdf" required>
+            <input type="hidden" name="case_index" value="2">
             <button type="submit" class="btn btn-secondary btn-sm">Upload & Autofill</button>
           </form>
         </div>
@@ -263,6 +264,12 @@
           input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
         }
       });
+      // Update hidden case_index field value and name
+      const hiddenIndexField = clone.querySelector('input[name="case_index"]');
+      if (hiddenIndexField) {
+        hiddenIndexField.value = window.additionalCaseCount;
+        hiddenIndexField.setAttribute("name", "case_index");
+      }
       clone.querySelectorAll(".case-index").forEach(el => el.textContent = window.additionalCaseCount);
       container.appendChild(clone);
     };

@@ -1390,7 +1390,6 @@ def expungement_upload():
     if raw_code:
         form_data["code_section"] = f"Va. Code § {raw_code.group(1)}"
 
-
     # Clean up final_dispo field for cleaner output.
     form_data["final_dispo"] = form_data.get("final_dispo", "")
     if "SentenceTime" in form_data["final_dispo"]:
@@ -1406,6 +1405,9 @@ def expungement_upload():
         form_data["name"] = form_data.get("name_arrest", "")
     if not form_data.get("dob"):
         form_data["dob"] = ""
+
+    # --- Extract case_index from the request form, default to "1" ---
+    case_index = request.form.get("case_index", "1").strip()
 
     from datetime import datetime
     # Prepare 'cases' list for autofill if present
@@ -1424,6 +1426,11 @@ def expungement_upload():
         for field in case_fields:
             this_case[field] = form_data.get(field, "")
         cases = [this_case]
+
+    # Build dynamic field mapping for the specific indexed case
+    autofill_prefix = "" if case_index == "0" else f"case_{case_index}_"
+    autofill_case = cases[0] if cases else {}
+
     return render_template(
         "expungement.html",
         name=form_data.get("name", ""),
@@ -1432,17 +1439,17 @@ def expungement_upload():
         name_arrest=form_data.get("name_arrest", ""),
         expungement_type=form_data.get("expungement_type", ""),
         manifest_injustice_details=form_data.get("manifest_injustice_details", ""),
-        arrest_date=form_data.get("arrest_date", ""),
-        officer_name=form_data.get("officer_name", ""),
-        police_department=form_data.get("police_department", ""),
-        charge_name=form_data.get("charge_name", ""),
-        code_section=form_data.get("code_section", ""),
-        vcc_code=form_data.get("vcc_code", ""),
-        otn=form_data.get("otn", ""),
-        court_dispo=form_data.get("court_dispo") or "Court not extracted",
-        case_no=form_data.get("case_no", ""),
+        **{f"{autofill_prefix}arrest_date": autofill_case.get("arrest_date", "")},
+        **{f"{autofill_prefix}officer_name": autofill_case.get("officer_name", "")},
+        **{f"{autofill_prefix}police_department": autofill_case.get("police_department", "")},
+        **{f"{autofill_prefix}charge_name": autofill_case.get("charge_name", "")},
+        **{f"{autofill_prefix}code_section": autofill_case.get("code_section", "")},
+        **{f"{autofill_prefix}vcc_code": autofill_case.get("vcc_code", "")},
+        **{f"{autofill_prefix}otn": autofill_case.get("otn", "")},
+        **{f"{autofill_prefix}court_dispo": autofill_case.get("court_dispo", "") or "Court not extracted"},
+        **{f"{autofill_prefix}case_no": autofill_case.get("case_no", "")},
+        **{f"{autofill_prefix}dispo_date": autofill_case.get("dispo_date", "")},
         final_dispo=form_data.get("final_dispo", ""),
-        dispo_date=form_data.get("dispo_date", ""),
         prosecutor=form_data.get("prosecutor", ""),
         prosecutor_title=form_data.get("prosecutor_title", ""),
         prosecutor_address1=form_data.get("prosecutor_address1", ""),
