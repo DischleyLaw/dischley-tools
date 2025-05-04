@@ -1370,14 +1370,17 @@ def expungement_form():
         session["generated_file_path"] = output_path
         return redirect(url_for("expungement_success", name=data["{NAME}"]))
 
-    return render_template(
-        'expungement.html',
-        counties=prosecutor_info.keys(),
-        current_month=current_month,
-        current_year=current_year,
-        messages=messages,
-        download_url=download_url
-    )
+    if request.method == "GET":
+        autofill_data = session.get("expungement_autofill_data", {})
+        return render_template(
+            'expungement.html',
+            counties=prosecutor_info.keys(),
+            current_month=current_month,
+            current_year=current_year,
+            messages=messages,
+            download_url=download_url,
+            autofill_data=autofill_data
+        )
 
 
 # --- API endpoint used by JS "Add Additional Case" button ---
@@ -1406,76 +1409,38 @@ def download_generated_file(filename):
 
 
 
-# --- Expungement PDF Upload and Parsing Route ---
-@app.route("/expungement/upload", methods=["POST"])
-def expungement_upload():
-    # Check for AJAX upload for additional case (JS autofill)
-    is_ajax = request.form.get("additional_case_upload") == "true"
-    uploaded_file = request.files.get("file")
-    app.logger.debug(f"Received file: {uploaded_file.filename if uploaded_file else 'None'}")
-    if not uploaded_file or uploaded_file.filename == "":
-        if is_ajax:
-            return jsonify({"error": "No file uploaded."}), 400
-        flash("No file uploaded.", "danger")
-        return redirect(url_for("expungement_form"))
 
-    from Expungement.expungement_utils import extract_expungement_data
-    import re
-    try:
-        app.logger.debug("Starting PDF extraction...")
-        extracted_data = extract_expungement_data(uploaded_file)
-        app.logger.debug(f"Extracted data: {extracted_data}")
-        if not extracted_data or not any(extracted_data.values()):
-            raise ValueError("Empty form_data from PDF parser.")
-    except Exception as e:
-        app.logger.exception("PDF extraction failed.")
-        if is_ajax:
-            return jsonify({"error": "Failed to extract data from PDF. Please ensure the file is a valid expungement report."}), 500
-        else:
-            flash("Failed to extract data from PDF. Please ensure the file is a valid expungement report.", "danger")
-            return redirect(url_for("expungement_form"))
+# --- General PDF Upload and Case Parsing Route ---
+from flask import request, render_template
+from pdfminer.high_level import extract_text
+import re
 
-    # --- AJAX upload: Return JSON for additional case autofill ---
-    if is_ajax:
-        # Clean up officer name
-        officer_match = re.search(r"([A-Z]+,\s?[A-Z])", extracted_data.get("officer_name", "").upper())
-        if officer_match:
-            extracted_data["officer_name"] = officer_match.group(1).title()
-        index = request.form.get("case_index", "").strip() or "1"
-        prefixed_data = {}
-        for field in [
-            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
-            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
-        ]:
-            key = f"case_{index}_{field}"
-            prefixed_data[key] = extracted_data.get(field, "")
-        # Only return if index is valid (not 0 or main)
-        if index and index not in ("0", "main"):
-            return jsonify(prefixed_data), 200
-        else:
-            return jsonify({"error": "Missing or invalid case_index"}), 400
+def parse_case_info(text):
+    cases = []
+    pattern = re.compile(
+        r"Case No\.\s*(?P<case_no>\S+).*?"
+        r"Name:\s*(?P<name>[\w\s,]+).*?"
+        r"Charge Name:\s*(?P<charge_name>.+?)\s+"
+        r"Offense Date:\s*(?P<offense_date>\d{2}/\d{2}/\d{4}).*?"
+        r"Final Disposition:\s*(?P<disposition>.+?)\s+"
+        r"Disposition Date:\s*(?P<disposition_date>\d{2}/\d{2}/\d{4})",
+        re.DOTALL
+    )
+    for match in pattern.finditer(text):
+        cases.append(match.groupdict())
+    return cases
 
-    # --- Standard upload: parse and render autofilled form ---
-    # Use the extracted data directly for form_data
-    # Store extracted_data in session for autofill on generate
-    session["expungement_autofill_data"] = extracted_data
-    form_data = {
-        'name': extracted_data.get('name', ''),
-        'name_arrest': extracted_data.get('name_arrest', ''),
-        'dob': extracted_data.get('dob', ''),
-        'officer_name': extracted_data.get('officer_name', ''),
-        'arrest_date': extracted_data.get('arrest_date', ''),
-        'dispo_date': extracted_data.get('dispo_date', ''),
-        'charge_name': extracted_data.get('charge_name', ''),
-        'code_section': extracted_data.get('code_section', ''),
-        'otn': extracted_data.get('otn', ''),
-        'case_no': extracted_data.get('case_no', ''),
-        'final_dispo': extracted_data.get('final_dispo', ''),
-        'court_dispo': extracted_data.get('court_dispo', '')
-    }
-    # Add debug log before returning JSON to confirm this code path is reached
-    app.logger.debug("Returning extracted form_data for frontend autofill.")
-    return jsonify(form_data), 200
+@app.route('/upload', methods=['POST'])
+def upload():
+    file = request.files['file']
+    if not file:
+        return "No file uploaded", 400
+    text = extract_text(file)
+    cases = parse_case_info(text)
+    if cases:
+        # Use the first case for now to autofill the main form
+        session["expungement_autofill_data"] = cases[0]
+    return redirect(url_for("expungement_form"))
 
 
 # Run the Flask app
