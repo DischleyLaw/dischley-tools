@@ -1438,7 +1438,7 @@ def expungement_upload():
             prefixed_data[key] = extracted_data.get(field, "")
         # Only return if index is valid (not 0 or main)
         if index and index not in ("0", "main"):
-            return jsonify({"status": "ok", "data": prefixed_data}), 200
+            return jsonify(prefixed_data), 200
         else:
             return jsonify({"error": "Missing or invalid case_index"}), 400
 

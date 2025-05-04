@@ -374,8 +374,8 @@
           return res.json();
         } else {
           const text = await res.text();
-          console.warn("Raw response text:", text);
-          throw new Error(`Unexpected response:\n${text}`);
+          console.warn("Unexpected non-JSON response:", text);
+          throw new Error("Upload failed: Server returned HTML instead of JSON. Check backend processing or route handler.");
         }
       })
       .then(data => {
@@ -383,7 +383,12 @@
           if (typeof value === 'string') {
             const decoded = decodeHTML(value);
             const field = document.querySelector(`[name="${key}"]`);
-            if (field) field.value = decoded;
+            if (field) {
+              field.value = decoded;
+            } else {
+              // Key not matched to element, log and continue
+              console.warn(`Autofill: No form field found for key "${key}"`);
+            }
           }
         });
       })
