@@ -1411,8 +1411,8 @@ def expungement_upload():
     from Expungement.expungement_utils import extract_expungement_data
     import re
     try:
-        form_data = extract_expungement_data(temp_path)
-        if not form_data or not any(form_data.values()):
+        extracted_data = extract_expungement_data(temp_path)
+        if not extracted_data or not any(extracted_data.values()):
             raise ValueError("Empty form_data from PDF parser.")
     except Exception as e:
         print("PDF extraction failed:", str(e))
@@ -1425,9 +1425,9 @@ def expungement_upload():
     # --- AJAX upload: Return JSON for additional case autofill ---
     if is_ajax:
         # Clean up officer name
-        officer_match = re.search(r"([A-Z]+,\s?[A-Z])", form_data.get("officer_name", ""))
+        officer_match = re.search(r"([A-Z]+,\s?[A-Z])", extracted_data.get("officer_name", ""))
         if officer_match:
-            form_data["officer_name"] = officer_match.group(1).title()
+            extracted_data["officer_name"] = officer_match.group(1).title()
         index = request.form.get("case_index", "").strip()
         prefixed_data = {}
         for field in [
@@ -1435,7 +1435,7 @@ def expungement_upload():
             "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
         ]:
             key = f"case_{index}_{field}"
-            prefixed_data[key] = form_data.get(field, "")
+            prefixed_data[key] = extracted_data.get(field, "")
         # Only return if index is valid (not 0 or main)
         if index and index not in ("0", "main"):
             return jsonify({"status": "ok", "data": prefixed_data}), 200
@@ -1443,104 +1443,26 @@ def expungement_upload():
             return jsonify({"error": "Missing or invalid case_index"}), 400
 
     # --- Standard upload: parse and render autofilled form ---
-    # --- Ensure name, name_arrest, and dob fields are filled and cleaned from extracted data ---
-    form_data["name"] = form_data.get("name", "").strip()
-    form_data["name_arrest"] = form_data.get("name_arrest", form_data.get("name", "")).strip()
-    form_data["dob"] = form_data.get("dob", "").strip()
-    # Extract a clean arresting officer name
-    raw_officer = form_data.get("officer_name", "")
-    officer_match = re.search(r"([A-Z]+,\s?[A-Z])", raw_officer)
-    if officer_match:
-        form_data["officer_name"] = officer_match.group(1).title()
-    # --- Clean up charge_name, otn, and code_section fields ---
-    raw_charge = form_data.get("charge_name", "")
-    match = re.search(r"^(.*?)OffenseTracking", raw_charge)
-    if match:
-        form_data["charge_name"] = match.group(1).strip()
-    raw_otn = re.search(r"OffenseTracking/Processing#\s*:\s*([A-Z0-9]+)", raw_charge)
-    if raw_otn:
-        form_data["otn"] = raw_otn.group(1)
-    # Extract code section and prepend "Va. Code § " if found
-    raw_code = re.search(r"CodeSection\s*:\s*(\S+)", raw_charge)
-    if raw_code:
-        form_data["code_section"] = f"Va. Code § {raw_code.group(1)}"
-    # Clean up final_dispo field for cleaner output.
-    form_data["final_dispo"] = form_data.get("final_dispo", "")
-    if "SentenceTime" in form_data["final_dispo"]:
-        form_data["final_dispo"] = form_data["final_dispo"].split("SentenceTime")[0].strip()
-    # Print cleaned form_data for verification
-    print("Final cleaned form_data for autofill:", form_data)
-    # Ensure name_arrest and dob are populated if missing
-    if not form_data.get("name_arrest"):
-        form_data["name_arrest"] = form_data.get("name", "")
-    if not form_data.get("name"):
-        form_data["name"] = form_data.get("name_arrest", "")
-    if not form_data.get("dob"):
-        form_data["dob"] = ""
-    # --- Extract case_index from the request form, default to "1" ---
-    case_index = request.form.get("case_index", "1").strip()
-    from datetime import datetime
-    # Prepare 'cases' list for autofill if present
-    cases = []
-    # If there is more than one case, autofill only the first additional case (case 1) in the "additional charges" section.
-    if "cases" in form_data and isinstance(form_data["cases"], list) and len(form_data["cases"]) > 1:
-        # Skip the main case and return only the first additional case
-        cases = [form_data["cases"][1]]
-    else:
-        # Build a single case dict from top-level fields, using case_X_field naming for autofill
-        case_fields = [
-            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
-            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
-        ]
-        this_case = {}
-        for field in case_fields:
-            this_case[field] = form_data.get(field, "")
-        cases = [this_case]
-    # Build dynamic field mapping for the specific indexed case
-    autofill_prefix = "" if case_index in ("", "0", "main") else f"case_{case_index}_"
-    autofill_case = cases[0] if cases else {}
-    # Build autofill context with correct prefix logic for charge-related fields
-    fields_to_autofill = [
-        "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
-        "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
-    ]
-    autofill_context = {}
-    for field in fields_to_autofill:
-        key = f"{autofill_prefix}{field}"
-        # For court_dispo, if missing, use fallback
-        if field == "court_dispo":
-            autofill_context[key] = autofill_case.get(field, "") or "Court not extracted"
-        else:
-            autofill_context[key] = autofill_case.get(field, "")
-    # Render expungement.html with fields from form_data and autofill_context
-    if is_ajax:
-        index = request.form.get("case_index", "1").strip()
-        fields_to_autofill = [
-            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
-            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
-        ]
-        prefixed_data = {f"case_{index}_{field}": form_data.get(field, "") for field in fields_to_autofill}
-        return jsonify({"status": "ok", "data": prefixed_data}), 200
-    else:
-        return render_template(
-            "expungement.html",
-            name=form_data.get("name", ""),
-            dob=form_data.get("dob", ""),
-            county=form_data.get("county", ""),
-            name_arrest=form_data.get("name_arrest", ""),
-            expungement_type=form_data.get("expungement_type", ""),
-            manifest_injustice_details=form_data.get("manifest_injustice_details", ""),
-            final_dispo=form_data.get("final_dispo", ""),
-            prosecutor=form_data.get("prosecutor", ""),
-            prosecutor_title=form_data.get("prosecutor_title", ""),
-            prosecutor_address1=form_data.get("prosecutor_address1", ""),
-            prosecutor_address2=form_data.get("prosecutor_address2", ""),
-            current_month=datetime.now().strftime("%B"),
-            current_year=datetime.now().year,
-            counties=prosecutor_info.keys(),
-            cases=cases,
-            **autofill_context
-        )
+    # Use the extracted data directly for form_data
+    form_data = {
+        'name': extracted_data.get('name', ''),
+        'name_arrest': extracted_data.get('name_arrest', ''),
+        'dob': extracted_data.get('dob', ''),
+        'officer_name': extracted_data.get('officer_name', ''),
+        'arrest_date': extracted_data.get('arrest_date', ''),
+        'dispo_date': extracted_data.get('dispo_date', ''),
+        'charge_name': extracted_data.get('charge_name', ''),
+        'code_section': extracted_data.get('code_section', ''),
+        'otn': extracted_data.get('otn', ''),
+        'case_no': extracted_data.get('case_no', ''),
+        'final_dispo': extracted_data.get('final_dispo', ''),
+        'court_dispo': extracted_data.get('court_dispo', '')
+    }
+    # No resetting of fields to empty string; pass as-is to template
+    return render_template(
+        "expungement.html",
+        **form_data
+    )
 
 
 # Run the Flask app

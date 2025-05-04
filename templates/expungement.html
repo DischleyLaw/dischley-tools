@@ -307,10 +307,11 @@
         }
       })
       .then(data => {
+        const prefix = `case_${caseIndex}_`;
         Object.entries(data.data).forEach(([key, value]) => {
-          if (typeof value === 'string') {
+          if (typeof value === 'string' && key.startsWith(prefix)) {
             const decoded = decodeHTML(value);
-            const field = parent.querySelector(`[name="case_${caseIndex}_${key}"]`);
+            const field = parent.querySelector(`[name="${key}"]`);
             if (field) field.value = decoded;
           }
         });
@@ -351,28 +352,10 @@
         }
       })
       .then(data => {
-        const mapping = {
-          name: 'name',
-          name_arrest: 'name_arrest',
-          dob: 'dob',
-          arrest_date: 'arrest_date',
-          officer_name: 'officer_name',
-          police_department: 'police_department',
-          charge_name: 'charge_name',
-          code_section: 'code_section',
-          vcc_code: 'vcc_code',
-          otn: 'otn',
-          court_dispo: 'court_dispo',
-          case_no: 'case_no',
-          final_dispo: 'final_dispo',
-          dispo_date: 'dispo_date'
-        };
-
-        Object.entries(mapping).forEach(([key, fieldName]) => {
-          const value = data.data[key];
+        Object.entries(data.data).forEach(([key, value]) => {
           if (typeof value === 'string') {
             const decoded = decodeHTML(value);
-            const field = document.querySelector(`[name="${fieldName}"]`);
+            const field = document.querySelector(`[name="${key}"]`);
             if (field) field.value = decoded;
           }
         });
