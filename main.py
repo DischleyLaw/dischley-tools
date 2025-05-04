@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
 import os
 from datetime import datetime, timedelta
 
@@ -1313,6 +1313,15 @@ def expungement_form():
         messages=messages,
         download_url=download_url
     )
+
+
+# --- API endpoint used by JS "Add Additional Case" button ---
+# This endpoint supports the dynamic "Add Additional Case" functionality in the expungement form.
+@app.route("/expungement/next_case_index", methods=["GET"])
+def get_next_case_index():
+    count = session.get("case_index", 1)
+    session["case_index"] = count + 1
+    return jsonify(index=count)
 
 
 # --- Download generated expungement file route ---

@@ -2,11 +2,11 @@
 {% block title %}Expungement Generated{% endblock %}
 {% block content %}
 <div class="container mt-5">
-  <div class="alert alert-success text-center shadow">
+  <div class="alert text-center shadow" style="background-color: #f1f4f9; color: #002147;">
     <h3 class="mb-3">Expungement Petition Successfully Generated</h3>
     <p>The petition for <strong>{{ name }}</strong> has been successfully generated. You may download it below.</p>
-    <a href="{{ download_url }}" class="btn btn-success mt-3">Download Petition</a>
-    <a href="/expungement" class="btn btn-primary mt-3">Generate Another</a>
+    <a href="{{ download_url }}" class="btn btn-primary mt-3">Download Petition</a>
+    <a href="/expungement" class="btn btn-outline-secondary mt-3">Generate Another</a>
   </div>
 </div>
 {% endblock %}
