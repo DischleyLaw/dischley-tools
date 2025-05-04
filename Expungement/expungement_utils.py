@@ -3,7 +3,7 @@ from docx import Document
 
 # Additional imports for PDF parsing and regex
 import re
-from PyPDF2 import PdfReader
+import pdfplumber
 from datetime import datetime
 
 # Predefined prosecutor information based on county
@@ -40,11 +40,11 @@ def extract_expungement_data(filepath):
     # First try regular PDF text extraction
     import logging
     try:
-        reader = PdfReader(filepath)
-        for page in reader.pages:
-            page_text = page.extract_text()
-            if page_text:
-                text += page_text
+        with pdfplumber.open(filepath) as pdf:
+            for page in pdf.pages:
+                page_text = page.extract_text()
+                if page_text:
+                    text += page_text
     except Exception as e:
         logging.warning(f"PDF parsing failed: {e}")
 
@@ -182,5 +182,4 @@ def extract_expungement_data(filepath):
             result[key] = ""
 
     return result
-
 
