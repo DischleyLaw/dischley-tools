@@ -13,7 +13,7 @@
       <button type="submit" class="btn btn-secondary">Upload & Autofill</button>
     </form>
   </div>
-  <form method="POST" action="/expungement/generate">
+  <form method="POST" action="{{ url_for('generate_expungement') }}">
     <div class="mb-3">
       <label for="county" class="form-label">County</label>
       <select class="form-select" id="county" name="county" required onchange="fillProsecutor()">
