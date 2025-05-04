@@ -1,21 +1,27 @@
 {% extends "base.html" %}
 {% block title %}Expungement Generator{% endblock %}
 {% block content %}
-<div class="container mt-4">
+<div class="container-fluid mt-4 overflow-auto">
   <div class="row justify-content-center">
-    <div class="col-md-10">
+    <div class="col-12 col-md-10">
       <div class="card shadow p-4">
-  <h2 class="mb-4">Expungement Petition Form</h2>
-  <div class="mb-3">
-    <form id="main-upload-form" enctype="multipart/form-data" style="margin-bottom: 2rem;">
-      <label for="file"><strong>Upload Court Document (PDF):</strong></label>
-      <input type="file" name="file" id="file" accept=".pdf" required>
-    </form>
-  </div>
-  <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true">
-    <div class="mb-3">
-      <label for="county" class="form-label">County</label>
-      <select class="form-select" id="county" name="county" required onchange="fillProsecutor()">
+        <h2 class="mb-4">Expungement Petition Form</h2>
+        <form id="main-upload-form" enctype="multipart/form-data">
+          <div class="row mb-4">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <label for="file" class="form-label"><strong>Upload Court Document (PDF):</strong></label>
+              <input type="file" name="file" id="file" class="form-control w-100" accept=".pdf" required>
+            </div>
+            <div class="col-12 col-md-6 d-flex align-items-end">
+              <button type="submit" class="btn btn-secondary w-100">Upload & Autofill</button>
+            </div>
+          </div>
+        </form>
+        <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true">
+          <div class="row mb-4 pt-3 pb-3">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="county" class="form-label">County</label>
+              <select class="form-select w-100" id="county" name="county" required onchange="fillProsecutor()">
         <option value="" {% if county == "" %}selected{% endif %}>Select County</option>
         <option value="Fairfax County" {% if county == "Fairfax County" %}selected{% endif %}>Fairfax County</option>
         <option value="Arlington County" {% if county == "Arlington County" %}selected{% endif %}>Arlington County</option>
@@ -24,45 +30,47 @@
         <option value="City of Alexandria" {% if county == "City of Alexandria" %}selected{% endif %}>City of Alexandria</option>
         <option value="Stafford County" {% if county == "Stafford County" %}selected{% endif %}>Stafford County</option>
         <option value="Fauquier County" {% if county == "Fauquier County" %}selected{% endif %}>Fauquier County</option>
-      </select>
-    </div>
-    <div class="mb-3">
-      <label for="name" class="form-label">Full Legal Name</label>
-      <input type="text" class="form-control" id="name" name="name" required value="{{ name|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="dob" class="form-label">Date of Birth</label>
-      <input type="text" class="form-control" id="dob" name="dob" required value="{{ dob|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
-      <input type="text" class="form-control" id="name_arrest" name="name_arrest" value="{{ name_arrest|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="expungement_type" class="form-label">Type of Expungement</label>
-      <select class="form-select" id="expungement_type" name="expungement_type" onchange="toggleManifestInjustice()">
+              </select>
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="name" class="form-label">Full Legal Name</label>
+              <input type="text" class="form-control w-100" id="name" name="name" required value="{{ name|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="dob" class="form-label">Date of Birth</label>
+              <input type="text" class="form-control w-100" id="dob" name="dob" required value="{{ dob|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
+              <input type="text" class="form-control w-100" id="name_arrest" name="name_arrest" value="{{ name_arrest|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="expungement_type" class="form-label">Type of Expungement</label>
+              <select class="form-select w-100" id="expungement_type" name="expungement_type" onchange="toggleManifestInjustice()">
         <option value="" {% if expungement_type == "" %}selected{% endif %}>Select Type</option>
         <option value="Expungement of Right" {% if expungement_type == "Expungement of Right" %}selected{% endif %}>Expungement of Right</option>
         <option value="Manifest Injustice" {% if expungement_type == "Manifest Injustice" %}selected{% endif %}>Manifest Injustice</option>
-      </select>
-    </div>
-    <div class="mb-3" id="manifest_injustice_details_container" style="display: none;">
-      <label for="manifest_injustice_details" class="form-label">Manifest Injustice Details</label>
-      <textarea class="form-control" id="manifest_injustice_details" name="manifest_injustice_details" rows="4">{{ manifest_injustice_details|default('') }}</textarea>
-    </div>
-    <hr />
-    <h4>Charge Details #1</h4>
-    <div class="mb-3">
-      <label for="arrest_date" class="form-label">Date of Arrest</label>
-      <input type="text" class="form-control" id="arrest_date" name="arrest_date" value="{{ arrest_date|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="officer_name" class="form-label">Arresting Officer</label>
-      <input type="text" class="form-control" id="officer_name" name="officer_name" value="{{ officer_name|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="police_department" class="form-label">Law Enforcement Agency</label>
-      <select class="form-select" id="police_department" name="police_department" required>
+              </select>
+            </div>
+            <div class="col-12 mb-3" id="manifest_injustice_details_container" style="display: none;">
+              <label for="manifest_injustice_details" class="form-label">Manifest Injustice Details</label>
+              <textarea class="form-control w-100" id="manifest_injustice_details" name="manifest_injustice_details" rows="4">{{ manifest_injustice_details|default('') }}</textarea>
+            </div>
+          </div>
+          <hr />
+          <h4 class="mt-4 mb-3">Charge Details #1</h4>
+          <div class="row mb-4 pt-3 pb-3">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="arrest_date" class="form-label">Date of Arrest</label>
+              <input type="text" class="form-control w-100" id="arrest_date" name="arrest_date" value="{{ arrest_date|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="officer_name" class="form-label">Arresting Officer</label>
+              <input type="text" class="form-control w-100" id="officer_name" name="officer_name" value="{{ officer_name|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="police_department" class="form-label">Law Enforcement Agency</label>
+              <select class="form-select w-100" id="police_department" name="police_department" required>
         <option value="">Select Agency</option>
         <option value="Fairfax County Police Department">Fairfax County Police Department</option>
         <option value="Arlington County Police Department">Arlington County Police Department</option>
@@ -73,104 +81,123 @@
         <option value="Fauquier County Sheriff's Office">Fauquier County Sheriff's Office</option>
         <option value="Virginia State Police">Virginia State Police</option>
         <option value="Other">Other</option>
-      </select>
-    </div>
-    <div class="mb-3" id="other_police_department_container" style="display: none;">
-      <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
-      <input type="text" class="form-control" id="other_police_department" name="other_police_department" value="{{ other_police_department|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="charge_name" class="form-label">Charge Description</label>
-      <input type="text" class="form-control" id="charge_name" name="charge_name" value="{{ charge_name|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="code_section" class="form-label">Code Section</label>
-      <input type="text" class="form-control" id="code_section" name="code_section" value="{{ code_section|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="vcc_code" class="form-label">VCC Code</label>
-      <input type="text" class="form-control" id="vcc_code" name="vcc_code" value="{{ vcc_code|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="otn" class="form-label">OTN</label>
-      <input type="text" class="form-control" id="otn" name="otn" value="{{ otn|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="court_dispo" class="form-label">Court of Final Disposition</label>
-      <input type="text" class="form-control" id="court_dispo" name="court_dispo" value="{{ court_dispo|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="case_no" class="form-label">Case Number</label>
-      <input type="text" class="form-control" id="case_no" name="case_no" value="{{ case_no|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="final_dispo" class="form-label">Final Disposition</label>
-      <input type="text" class="form-control" id="final_dispo" name="final_dispo" value="{{ final_dispo|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="dispo_date" class="form-label">Disposition Date</label>
-      <input type="text" class="form-control" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('') }}">
-    </div>
-    <button type="button" class="btn btn-outline-primary mt-3" onclick="addAdditionalCaseSection()">Add Additional Case</button>
-    <div id="additionalCasesContainer" class="mt-4"></div>
-    <template id="additional-case-template">
-      <div class="border p-3 mt-3">
-        <div class="mb-3">
-          <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
-          <input type="file" name="file_case_2" class="form-control-file case-upload-input" data-case-index="2" accept=".pdf">
-          <button type="button" class="btn btn-secondary btn-sm upload-case-btn">Upload & Autofill</button>
-        </div>
-        <h4 class="mt-4">Charge Details #<span class="case-index">2</span></h4>
-        <div class="mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control" value=""></div>
-        <div class="mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control" value=""></div>
-        <div class="mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control" value=""></div>
-        <div class="mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control" value=""></div>
-        <div class="mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control" value=""></div>
-        <div class="mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control" value=""></div>
-        <div class="mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control" value=""></div>
-        <div class="mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control" value=""></div>
-        <div class="mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control" value=""></div>
-        <div class="mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control" value=""></div>
-      </div>
-    </template>
-    <hr />
-    <h4>Prosecutor Info</h4>
-    <div class="mb-3">
-      <label for="prosecutor" class="form-label">Prosecutor Name</label>
-      <input type="text" class="form-control" id="prosecutor" name="prosecutor" value="{{ prosecutor|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
-      <input type="text" class="form-control" id="prosecutor_title" name="prosecutor_title" value="{{ prosecutor_title|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="prosecutor_address1" class="form-label">Address Line 1</label>
-      <input type="text" class="form-control" id="prosecutor_address1" name="prosecutor_address1" value="{{ prosecutor_address1|default('') }}">
-    </div>
-    <div class="mb-3">
-      <label for="prosecutor_address2" class="form-label">Address Line 2</label>
-      <input type="text" class="form-control" id="prosecutor_address2" name="prosecutor_address2" value="{{ prosecutor_address2|default('') }}">
-    </div>
-    <hr />
-    <h4>Filing Information</h4>
-    <div class="mb-3">
-      <label for="month" class="form-label">Month of Petition</label>
-      <input type="text" class="form-control" id="month" name="month" value="{{ current_month }}">
-    </div>
-    <div class="mb-3">
-      <label for="year" class="form-label">Year of Petition</label>
-      <input type="text" class="form-control" id="year" name="year" value="{{ current_year }}">
-    </div>
-    <div class="mb-3">
-      <label for="attorney" class="form-label">Attorney Name</label>
-      <select class="form-select" id="attorney" name="attorney" required>
-        <option value="David J. Dischley (VSB No. 73703)" {% if attorney == "David J. Dischley (VSB No. 73703)" %}selected{% endif %}>David J. Dischley (VSB No. 73703)</option>
-        <option value="Patrick T. O'Brien (VSB No. 81211)" {% if attorney == "Patrick T. O'Brien (VSB No. 81211)" %}selected{% endif %}>Patrick T. O'Brien (VSB No. 81211)</option>
-      </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Generate Petition</button>
-    <button type="reset" class="btn btn-danger ms-2">Clear Form</button>
-  </form>
+              </select>
+            </div>
+            <div class="col-12 col-md-6 mb-3" id="other_police_department_container" style="display: none;">
+              <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
+              <input type="text" class="form-control w-100" id="other_police_department" name="other_police_department" value="{{ other_police_department|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="charge_name" class="form-label">Charge Description</label>
+              <input type="text" class="form-control w-100" id="charge_name" name="charge_name" value="{{ charge_name|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="code_section" class="form-label">Code Section</label>
+              <input type="text" class="form-control w-100" id="code_section" name="code_section" value="{{ code_section|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="vcc_code" class="form-label">VCC Code</label>
+              <input type="text" class="form-control w-100" id="vcc_code" name="vcc_code" value="{{ vcc_code|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="otn" class="form-label">OTN</label>
+              <input type="text" class="form-control w-100" id="otn" name="otn" value="{{ otn|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="court_dispo" class="form-label">Court of Final Disposition</label>
+              <input type="text" class="form-control w-100" id="court_dispo" name="court_dispo" value="{{ court_dispo|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="case_no" class="form-label">Case Number</label>
+              <input type="text" class="form-control w-100" id="case_no" name="case_no" value="{{ case_no|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="final_dispo" class="form-label">Final Disposition</label>
+              <input type="text" class="form-control w-100" id="final_dispo" name="final_dispo" value="{{ final_dispo|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="dispo_date" class="form-label">Disposition Date</label>
+              <input type="text" class="form-control w-100" id="dispo_date" name="dispo_date" value="{{ dispo_date|default('') }}">
+            </div>
+          </div>
+          <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="addAdditionalCaseSection()">Add Additional Case</button>
+          <div id="additionalCasesContainer" class="row mt-4"></div>
+          <template id="additional-case-template">
+            <div class="col-12 mb-3">
+              <div class="card shadow">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-12 col-md-6 mb-3">
+                      <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
+                      <input type="file" name="file_case_2" class="form-control case-upload-input w-100" data-case-index="2" accept=".pdf">
+                      <button type="button" class="btn btn-secondary btn-sm upload-case-btn mt-2 w-100">Upload & Autofill</button>
+                    </div>
+                  </div>
+                  <h4 class="mt-4 mb-3">Charge Details #<span class="case-index">2</span></h4>
+                  <div class="row">
+                    <div class="col-12 col-md-6 mb-3"><label>Arrest Date</label><input type="text" name="case_2_arrest_date" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Officer Name</label><input type="text" name="case_2_officer_name" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Police Department</label><input type="text" name="case_2_police_department" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Charge Name</label><input type="text" name="case_2_charge_name" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Code Section</label><input type="text" name="case_2_code_section" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>VCC Code</label><input type="text" name="case_2_vcc_code" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>OTN</label><input type="text" name="case_2_otn" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Court of Final Dispo</label><input type="text" name="case_2_court_dispo" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Case No</label><input type="text" name="case_2_case_no" class="form-control w-100" value=""></div>
+                    <div class="col-12 col-md-6 mb-3"><label>Dispo Date</label><input type="text" name="case_2_dispo_date" class="form-control w-100" value=""></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </template>
+          <hr />
+          <h4 class="mt-4 mb-3">Prosecutor Info</h4>
+          <div class="row mb-4 pt-3 pb-3">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="prosecutor" class="form-label">Prosecutor Name</label>
+              <input type="text" class="form-control w-100" id="prosecutor" name="prosecutor" value="{{ prosecutor|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
+              <input type="text" class="form-control w-100" id="prosecutor_title" name="prosecutor_title" value="{{ prosecutor_title|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="prosecutor_address1" class="form-label">Address Line 1</label>
+              <input type="text" class="form-control w-100" id="prosecutor_address1" name="prosecutor_address1" value="{{ prosecutor_address1|default('') }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="prosecutor_address2" class="form-label">Address Line 2</label>
+              <input type="text" class="form-control w-100" id="prosecutor_address2" name="prosecutor_address2" value="{{ prosecutor_address2|default('') }}">
+            </div>
+          </div>
+          <hr />
+          <h4 class="mt-4 mb-3">Filing Information</h4>
+          <div class="row mb-4 pt-3 pb-3">
+            <div class="col-12 col-md-6 mb-3">
+              <label for="month" class="form-label">Month of Petition</label>
+              <input type="text" class="form-control w-100" id="month" name="month" value="{{ current_month }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="year" class="form-label">Year of Petition</label>
+              <input type="text" class="form-control w-100" id="year" name="year" value="{{ current_year }}">
+            </div>
+            <div class="col-12 col-md-6 mb-3">
+              <label for="attorney" class="form-label">Attorney Name</label>
+              <select class="form-select w-100" id="attorney" name="attorney" required>
+                <option value="David J. Dischley (VSB No. 73703)" {% if attorney == "David J. Dischley (VSB No. 73703)" %}selected{% endif %}>David J. Dischley (VSB No. 73703)</option>
+                <option value="Patrick T. O'Brien (VSB No. 81211)" {% if attorney == "Patrick T. O'Brien (VSB No. 81211)" %}selected{% endif %}>Patrick T. O'Brien (VSB No. 81211)</option>
+              </select>
+            </div>
+          </div>
+          <div class="row mb-4">
+            <div class="col-12 col-md-6 mb-3 mb-md-0">
+              <button type="submit" class="btn btn-primary w-100">Generate Petition</button>
+            </div>
+            <div class="col-12 col-md-6">
+              <button type="reset" class="btn btn-danger w-100">Clear Form</button>
+            </div>
+          </div>
+        </form>
       </div>
     </div>
   </div>
