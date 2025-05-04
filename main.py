@@ -19,9 +19,14 @@ def generate_expungement():
         # Date formatting helpers
         def format_date_long(date_str):
             try:
+                # Parse to ensure consistent parsing, output as "Month Day, Year"
                 return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
-                return date_str
+                # Try alternate parsing for "M/D/YYYY" (if needed in future)
+                try:
+                    return datetime.strptime(date_str, "%-m/%-d/%Y").strftime("%B %d, %Y")
+                except Exception:
+                    return date_str
 
         arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
         dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
@@ -44,7 +49,7 @@ def generate_expungement():
             "{DOB}": format_date_long(form_data.get("dob", "")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
-            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
             "{Arresting Officer}": form_data.get("officer_name", ""),
@@ -71,7 +76,46 @@ def generate_expungement():
             "{Officer Name}": form_data.get("officer_name", ""),
             "{Court of Final Dispo}": form_data.get("court_dispo", ""),
             "{Case No}": form_data.get("case_no", ""),
+            # Ensure these fields are present
+            "{Charge Name}": form_data.get("charge_name", ""),
+            "{Code Section}": form_data.get("code_section", ""),
         }
+        # Add {additional Cases} field for Word template
+        data["{additional Cases}"] = ""
+        cases = []
+        if "cases" in data:
+            cases = data["cases"]
+        if not cases:
+            # Try to build list of cases if possible (single case from form)
+            single_case = {
+                "arrest_date": form_data.get("arrest_date", ""),
+                "officer_name": form_data.get("officer_name", ""),
+                "police_department": selected_police_department,
+                "charge_name": form_data.get("charge_name", ""),
+                "code_section": form_data.get("code_section", ""),
+                "vcc_code": form_data.get("vcc_code", ""),
+                "otn": form_data.get("otn", ""),
+                "court_dispo": form_data.get("court_dispo", ""),
+                "case_no": form_data.get("case_no", ""),
+                "dispo_date": dispo_date_formatted,
+            }
+            cases = [single_case]
+        if len(cases) > 1:
+            for i, case in enumerate(cases[1:], 1):
+                data["{additional Cases}"] += (
+                    f"Additional Case {i}:\n"
+                    f"Date of Arrest: {format_date_long(case.get('arrest_date', ''))}\n"
+                    f"Arresting Officer: {case.get('officer_name', '')}\n"
+                    f"Police Department: {case.get('police_department', '')}\n"
+                    f"Charge Name: {case.get('charge_name', '')}\n"
+                    f"Code Section: {case.get('code_section', '')}\n"
+                    f"VCC Code: {case.get('vcc_code', '')}\n"
+                    f"OTN: {case.get('otn', '')}\n"
+                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
+                    f"Case Number: {case.get('case_no', '')}\n"
+                    f"Disposition Date: {format_date_long(case.get('dispo_date', ''))}\n"
+                    "\n"
+                )
 
         output_dir = "temp"
         os.makedirs(output_dir, exist_ok=True)
@@ -1126,9 +1170,6 @@ def expungement_form():
             except ValueError:
                 return date_str
 
-        arrest_date_formatted = format_date_long(form_data.get("arrest_date", ""))
-        dispo_date_formatted = format_date_long(form_data.get("dispo_date", ""))
-
         expungement_type = form_data.get("expungement_type", "")
         manifest_injustice_details = form_data.get("manifest_injustice_details", "")
         # Compose {Type of Expungement} logic as required
@@ -1136,6 +1177,43 @@ def expungement_form():
             type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
         else:
             type_of_expungement = "The Petitioner has no prior criminal record..."
+
+        # --- Collect all case fields (support multiple) ---
+        # Detect all keys that match the pattern case_{i}_fieldname
+        from collections import defaultdict
+        import re
+        case_fields = [
+            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
+            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
+        ]
+        # We'll collect cases as a list of dicts
+        cases = []
+        # First, add the main case (no index) as case 0
+        main_case = {}
+        for field in case_fields:
+            main_case[field] = form_data.get(field, "")
+        cases.append(main_case)
+        # Now, look for additional cases by index
+        # Find all case_{i}_arrest_date, etc.
+        indexed_case_data = defaultdict(dict)
+        for key, value in form_data.items():
+            match = re.match(r"case_(\d+)_(\w+)", key)
+            if match:
+                idx, field = match.groups()
+                if field in case_fields:
+                    indexed_case_data[int(idx)][field] = value
+        # Add additional cases, in order
+        for idx in sorted(indexed_case_data.keys()):
+            cases.append(indexed_case_data[idx])
+
+        # Optionally: Merge multiple sets of charges into the generated document.
+        # For now, we will only use the first case for main document fields, but
+        # include all cases in a list in data for potential use in document generation.
+        # (To merge all cases into a single document, pass the list to populate_document if supported.)
+        # Use the first case as the main one:
+        first_case = cases[0] if cases else {}
+        arrest_date_formatted = format_date_long(first_case.get("arrest_date", ""))
+        dispo_date_formatted = format_date_long(first_case.get("dispo_date", ""))
 
         # Map form fields to template fields
         data = {
@@ -1146,14 +1224,14 @@ def expungement_form():
             "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
-            "{Arresting Officer}": form_data.get("officer_name", ""),
+            "{Arresting Officer}": first_case.get("officer_name", ""),
             "{Police Department}": selected_police_department,
-            "{Charge Name}": form_data.get("charge_name", ""),
-            "{Code Section}": form_data.get("code_section", ""),
-            "{VCC Code}": form_data.get("vcc_code", ""),
-            "{OTN}": form_data.get("otn", ""),
-            "{Court Dispo}": form_data.get("court_dispo", ""),
-            "{Case Number}": form_data.get("case_no", ""),
+            "{Charge Name}": first_case.get("charge_name", ""),
+            "{Code Section}": first_case.get("code_section", ""),
+            "{VCC Code}": first_case.get("vcc_code", ""),
+            "{OTN}": first_case.get("otn", ""),
+            "{Court Dispo}": first_case.get("court_dispo", ""),
+            "{Case Number}": first_case.get("case_no", ""),
             "{Final Disposition}": form_data.get("final_dispo", ""),
             "{Dispo Date}": dispo_date_formatted,
             "{Prosecutor}": form_data.get("prosecutor", ""),
@@ -1167,10 +1245,30 @@ def expungement_form():
             "{Manifest Injustice Details}": manifest_injustice_details,
             # --- Additional keys added below ---
             "{Arrest Date}": arrest_date_formatted,
-            "{Officer Name}": form_data.get("officer_name", ""),
-            "{Court of Final Dispo}": form_data.get("court_dispo", ""),
-            "{Case No}": form_data.get("case_no", ""),
+            "{Officer Name}": first_case.get("officer_name", ""),
+            "{Court of Final Dispo}": first_case.get("court_dispo", ""),
+            "{Case No}": first_case.get("case_no", ""),
+            # Add all cases for further processing if needed
+            "cases": cases,
         }
+        # Add {additional Cases} field for Word template
+        data["{additional Cases}"] = ""
+        if len(cases) > 1:
+            for i, case in enumerate(cases[1:], 1):
+                data["{additional Cases}"] += (
+                    f"Additional Case {i}:\n"
+                    f"Date of Arrest: {case.get('arrest_date', '')}\n"
+                    f"Arresting Officer: {case.get('officer_name', '')}\n"
+                    f"Police Department: {case.get('police_department', '')}\n"
+                    f"Charge Name: {case.get('charge_name', '')}\n"
+                    f"Code Section: {case.get('code_section', '')}\n"
+                    f"VCC Code: {case.get('vcc_code', '')}\n"
+                    f"OTN: {case.get('otn', '')}\n"
+                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
+                    f"Case Number: {case.get('case_no', '')}\n"
+                    f"Disposition Date: {case.get('dispo_date', '')}\n"
+                    "\n"
+                )
 
         output_dir = "temp"
         os.makedirs(output_dir, exist_ok=True)
