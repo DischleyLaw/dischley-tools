@@ -414,17 +414,16 @@
         Object.entries(data.data).forEach(([key, value]) => {
           if (typeof value === 'string') {
             const decoded = decodeHTML(value);
-            // Try by name first
+            // Try by name
             let field = document.querySelector(`[name="${key}"]`);
             if (field) {
               field.value = decoded;
             } else {
-              // Try by id as fallback
+              // Try by id
               field = document.getElementById(key);
               if (field) {
                 field.value = decoded;
               } else {
-                // Key not matched to element, log and continue
                 console.warn(`Autofill: No form field found for key "${key}"`);
               }
             }
