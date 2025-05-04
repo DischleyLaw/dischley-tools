@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash
+import os
 
 # --- Login Required Decorator ---
 # This decorator is now a no-op; login is not required for any routes.
@@ -7,72 +8,75 @@ def login_required(f):
 
 app = Flask(__name__)
 
-# --- Expungement Generator POST Route ---
-@app.route("/expungement/generate", methods=["POST"])
+
+# --- Expungement Generator GET and POST Route ---
+@app.route("/expungement/generate", methods=["GET", "POST"])
 def generate_expungement():
-    from datetime import datetime
-    form_data = request.form.to_dict()
+    if request.method == "POST":
+        from datetime import datetime
+        form_data = request.form.to_dict()
 
-    # Format dates
-    def format_date(date_str):
-        try:
-            return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
-        except ValueError:
-            return date_str
+        # Format dates
+        def format_date(date_str):
+            try:
+                return datetime.strptime(date_str, "%Y-%m-%d").strftime("%B %d, %Y")
+            except ValueError:
+                return date_str
 
-    arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
-    dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
+        arrest_date_formatted = format_date(form_data.get("arrest_date", ""))
+        dispo_date_formatted = format_date(form_data.get("dispo_date", ""))
 
-    expungement_type = form_data.get("expungement_type", "")
-    manifest_injustice_details = form_data.get("manifest_injustice_details", "")
-    if expungement_type == "Manifest Injustice":
-        type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
-    else:
-        type_of_expungement = "The Petitioner has no prior criminal record..."
+        expungement_type = form_data.get("expungement_type", "")
+        manifest_injustice_details = form_data.get("manifest_injustice_details", "")
+        if expungement_type == "Manifest Injustice":
+            type_of_expungement = f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice_details})."
+        else:
+            type_of_expungement = "The Petitioner has no prior criminal record..."
 
-    police_department = form_data.get("police_department", "")
-    police_department_other = form_data.get("other_police_department", "")
-    selected_police_department = police_department if police_department != "Other" else police_department_other
+        police_department = form_data.get("police_department", "")
+        police_department_other = form_data.get("other_police_department", "")
+        selected_police_department = police_department if police_department != "Other" else police_department_other
 
-    data = {
-        "{NAME}": form_data.get("name", ""),
-        "{DOB}": form_data.get("dob", ""),
-        "{County2}": form_data.get("county", "").title(),
-        "{COUNTY}": form_data.get("county", "").upper(),
-        "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
-        "{Type of Expungement}": type_of_expungement,
-        "{Date of Arrest}": arrest_date_formatted,
-        "{Arresting Officer}": form_data.get("officer_name", ""),
-        "{Police Department}": selected_police_department,
-        "{Charge Name}": form_data.get("charge_name", ""),
-        "{Code Section}": form_data.get("code_section", ""),
-        "{VCC Code}": form_data.get("vcc_code", ""),
-        "{OTN}": form_data.get("otn", ""),
-        "{Court Dispo}": form_data.get("court_dispo", ""),
-        "{Case Number}": form_data.get("case_no", ""),
-        "{Final Disposition}": form_data.get("final_dispo", ""),
-        "{Dispo Date}": dispo_date_formatted,
-        "{Prosecutor}": form_data.get("prosecutor", ""),
-        "{Prosecutor Title}": form_data.get("prosecutor_title", ""),
-        "{Prosecutor Address 1}": form_data.get("prosecutor_address1", ""),
-        "{Prosecutor Address 2}": form_data.get("prosecutor_address2", ""),
-        "{Month}": form_data.get("month", datetime.now().strftime("%B")),
-        "{Year}": form_data.get("year", datetime.now().year),
-        "{Attorney}": form_data.get("attorney", ""),
-        "{Expungement Type}": expungement_type,
-        "{Manifest Injustice Details}": manifest_injustice_details
-    }
+        data = {
+            "{NAME}": form_data.get("name", ""),
+            "{DOB}": form_data.get("dob", ""),
+            "{County2}": form_data.get("county", "").title(),
+            "{COUNTY}": form_data.get("county", "").upper(),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", ""),
+            "{Type of Expungement}": type_of_expungement,
+            "{Date of Arrest}": arrest_date_formatted,
+            "{Arresting Officer}": form_data.get("officer_name", ""),
+            "{Police Department}": selected_police_department,
+            "{Charge Name}": form_data.get("charge_name", ""),
+            "{Code Section}": form_data.get("code_section", ""),
+            "{VCC Code}": form_data.get("vcc_code", ""),
+            "{OTN}": form_data.get("otn", ""),
+            "{Court Dispo}": form_data.get("court_dispo", ""),
+            "{Case Number}": form_data.get("case_no", ""),
+            "{Final Disposition}": form_data.get("final_dispo", ""),
+            "{Dispo Date}": dispo_date_formatted,
+            "{Prosecutor}": form_data.get("prosecutor", ""),
+            "{Prosecutor Title}": form_data.get("prosecutor_title", ""),
+            "{Prosecutor Address 1}": form_data.get("prosecutor_address1", ""),
+            "{Prosecutor Address 2}": form_data.get("prosecutor_address2", ""),
+            "{Month}": form_data.get("month", datetime.now().strftime("%B")),
+            "{Year}": form_data.get("year", datetime.now().year),
+            "{Attorney}": form_data.get("attorney", ""),
+            "{Expungement Type}": expungement_type,
+            "{Manifest Injustice Details}": manifest_injustice_details
+        }
 
-    output_dir = "temp"
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Draft_Petition.docx")
+        output_dir = "temp"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Draft_Petition.docx")
 
-    template_path = 'static/data/Exp_Petition (Template).docx'
-    from Expungement.expungement_utils import populate_document
-    populate_document(template_path, output_path, data)
+        template_path = 'static/data/Exp_Petition (Template).docx'
+        from Expungement.expungement_utils import populate_document
+        populate_document(template_path, output_path, data)
 
-    print("✅ Expungement document generated and ready to download:", output_path)
-    return send_file(output_path, as_attachment=True)
+        return send_file(output_path, as_attachment=True)
+    # For GET request, render the expungement form template
+    return render_template('expungement_form.html')
 
 from Expungement.expungement_utils import extract_expungement_data
 from flask_mail import Mail, Message

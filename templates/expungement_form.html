@@ -1,47 +1,45 @@
-replacements = {}
+{% extends "base.html" %}
+{% block title %}Expungement Form{% endblock %}
 
-for key, value in request.form.items():
-    if key.startswith("{") and key.endswith("}"):
-        replacements[key] = value
+{% block content %}
+<div class="container mt-5">
+  <h2>Generate Expungement Petition</h2>
+  <form method="POST" action="/expungement/generate">
+    <div class="mb-3">
+      <label for="NAME" class="form-label">Full Name</label>
+      <input type="text" class="form-control" id="NAME" name="{NAME}" required>
+    </div>
 
-# Add uppercased NAME if present
-if "{NAME}" in replacements:
-    replacements["{NAME}"] = replacements["{NAME}"].upper()
+    <div class="mb-3">
+      <label for="county" class="form-label">County</label>
+      <input type="text" class="form-control" id="county" name="county" required>
+    </div>
 
-# Add county and prosecutor details
-county = request.form.get("county", "").strip()
-expungement_type = request.form.get("expungement_type", "").strip()
-final_disposition = request.form.get("final_disposition", "").strip()
-manifest_injustice = request.form.get("manifest_injustice", "").strip()
+    <div class="mb-3">
+      <label for="final_disposition" class="form-label">Final Disposition</label>
+      <input type="text" class="form-control" id="final_disposition" name="final_disposition" required>
+    </div>
 
-prosecutor = prosecutor_info.get(county, {})
-replacements.update({
-    "{COUNTY}": county.upper(),
-    "{County2}": county.title(),
-    "{Prosecutor}": prosecutor.get("name", ""),
-    "{Prosecutor Title}": prosecutor.get("title", ""),
-    "{Prosecutor Address 1}": prosecutor.get("address1", ""),
-    "{Prosecutor Address 2}": prosecutor.get("address2", ""),
-    "{Final Disposition}": final_disposition,
-    "{Type of Expungement}": (
-        "The Petitioner has no prior criminal record..." if expungement_type == "Expungement of Right"
-        else f"The continued existence... constitutes a manifest injustice... (to wit: {manifest_injustice})."
-    )
-})
+    <div class="mb-3">
+      <label for="expungement_type" class="form-label">Type of Expungement</label>
+      <select class="form-select" id="expungement_type" name="expungement_type" required>
+        <option value="">-- Select --</option>
+        <option value="Expungement of Right">Expungement of Right</option>
+        <option value="Discretionary Expungement">Discretionary Expungement</option>
+      </select>
+    </div>
 
-# Add any fallback from Clio contact if NAME is still not present
-clio_contact_id = request.form.get("clio_contact_id", "").strip()
-if "{NAME}" not in replacements and clio_contact_id:
-    try:
-        access_token = get_valid_token()
-        headers = {"Authorization": f"Bearer {access_token}"}
-        contact_url = f"https://app.clio.com/api/v4/contacts/{clio_contact_id}"
-        response = requests.get(contact_url, headers=headers)
-        if response.status_code == 200:
-            contact = response.json().get("data", {})
-            if contact.get("type") == "Person":
-                replacements["{NAME}"] = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}"
-            else:
-                replacements["{NAME}"] = contact.get("name", "").strip()
-    except Exception as e:
-        print("Failed to fetch Clio contact:", e)
+    <div class="mb-3">
+      <label for="manifest_injustice" class="form-label">Manifest Injustice (if applicable)</label>
+      <textarea class="form-control" id="manifest_injustice" name="manifest_injustice" rows="3"></textarea>
+    </div>
+
+    <div class="mb-3">
+      <label for="clio_contact_id" class="form-label">Clio Contact ID (optional)</label>
+      <input type="text" class="form-control" id="clio_contact_id" name="clio_contact_id">
+    </div>
+
+    <button type="submit" class="btn btn-primary">Generate Petition</button>
+  </form>
+</div>
+{% endblock %}
