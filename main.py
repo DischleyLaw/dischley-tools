@@ -1458,7 +1458,6 @@ def expungement_upload():
         'final_dispo': extracted_data.get('final_dispo', ''),
         'court_dispo': extracted_data.get('court_dispo', '')
     }
-    # No resetting of fields to empty string; pass as-is to template
     return render_template(
         "expungement.html",
         **form_data
