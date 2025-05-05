@@ -1437,6 +1437,7 @@ def upload():
         return jsonify({'error': 'No file uploaded'}), 400
     text = extract_text(file)
     cases = parse_case_info(text)
+    print("Parsed cases:", cases)
     if cases:
         # Use the first case for autofill
         parsed_case = cases[0]
