@@ -1443,7 +1443,6 @@ def upload():
     return redirect(url_for("expungement_form"))
 
 
-# --- Expungement File Upload Route ---
 @app.route('/expungement/upload', methods=['POST'])
 def expungement_upload():
     if 'file' not in request.files:
@@ -1451,10 +1450,17 @@ def expungement_upload():
     file = request.files['file']
     if file.filename == '':
         return jsonify({'error': 'No selected file'}), 400
-    if file:
-        # Save and process the file here
-        # For example, return a success response
-        return jsonify({'message': 'File uploaded successfully'}), 200
+    if file and file.filename.endswith('.pdf'):
+        from Expungement.expungement_utils import extract_expungement_data
+        temp_path = os.path.join("temp", file.filename)
+        os.makedirs("temp", exist_ok=True)
+        file.save(temp_path)
+        try:
+            extracted_data = extract_expungement_data(temp_path)
+            return jsonify(extracted_data), 200
+        except Exception as e:
+            return jsonify({'error': f'Failed to extract data: {str(e)}'}), 500
+    return jsonify({'error': 'Invalid file type'}), 400
 
 
 # Run the Flask app
