@@ -195,7 +195,7 @@
               <button type="submit" class="btn btn-primary w-100">Generate Petition</button>
             </div>
             <div class="col-12 col-md-6">
-              <button type="reset" class="btn btn-danger w-100">Clear Form</button>
+              <button type="button" class="btn btn-danger w-100" onclick="clearForm()">Clear Form</button>
             </div>
           </div>
         </form>
@@ -439,3 +439,26 @@
   });
 </script>
 {% endblock %}
+
+<script>
+  function clearForm() {
+    // Clear all inputs, textareas, and selects
+    const form = document.querySelector('form[action*="expungement_form"]');
+    if (!form) return;
+    form.reset();
+
+    // Manually clear values (for autofill fields not affected by .reset)
+    form.querySelectorAll('input, textarea, select').forEach(el => {
+      el.value = '';
+    });
+
+    // Hide dynamic elements like "Other Police Department"
+    document.getElementById('other_police_department_container').style.display = 'none';
+    document.getElementById('manifest_injustice_details_container').style.display = 'none';
+
+    // Clear all dynamically added additional case sections
+    const container = document.getElementById("additionalCasesContainer");
+    container.innerHTML = '';
+    window.additionalCaseCount = 1;
+  }
+</script>
