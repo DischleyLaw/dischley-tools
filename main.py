@@ -1411,7 +1411,7 @@ def download_generated_file(filename):
 
 
 # --- General PDF Upload and Case Parsing Route ---
-from flask import request, render_template
+from flask import request, render_template, jsonify
 from pdfminer.high_level import extract_text
 import re
 
@@ -1441,6 +1441,20 @@ def upload():
         # Use the first case for now to autofill the main form
         session["expungement_autofill_data"] = cases[0]
     return redirect(url_for("expungement_form"))
+
+
+# --- Expungement File Upload Route ---
+@app.route('/expungement/upload', methods=['POST'])
+def expungement_upload():
+    if 'file' not in request.files:
+        return jsonify({'error': 'No file part'}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({'error': 'No selected file'}), 400
+    if file:
+        # Save and process the file here
+        # For example, return a success response
+        return jsonify({'message': 'File uploaded successfully'}), 200
 
 
 # Run the Flask app
