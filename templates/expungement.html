@@ -305,6 +305,21 @@
     return parser.parseFromString(value, "text/html").body.textContent || value;
   }
 
+  // Centralized autofill helper for main and additional case uploads
+  function fillFormFields(data, scope = document) {
+    Object.entries(data).forEach(([key, value]) => {
+      if (typeof value === 'string') {
+        const decoded = decodeHTML(value);
+        let field = scope.querySelector(`[name="${key}"]`) || scope.querySelector(`#${key}`);
+        if (field) {
+          field.value = decoded;
+        } else {
+          console.warn(`Autofill: No form field found for key "${key}"`);
+        }
+      }
+    });
+  }
+
   // Handler for AJAX PDF upload in additional case sections
   document.addEventListener('click', function (event) {
     // Additional case AJAX autofill
@@ -349,28 +364,11 @@
         }
       })
       .then(data => {
-        const prefix = `case_${caseIndex}_`;
         if (!data || !data.data) {
-          console.warn('No autofill data returned for case', caseIndex, data);
+          console.warn('No autofill data returned in additional case upload', data);
           return;
         }
-        Object.entries(data.data).forEach(([key, value]) => {
-          if (typeof value === 'string' && key.startsWith(prefix)) {
-            const decoded = decodeHTML(value);
-            const field = parent.querySelector(`[name="${key}"]`);
-            if (field) {
-              field.value = decoded;
-            } else {
-              // Try to match by id as fallback
-              const idField = parent.querySelector(`#${key}`);
-              if (idField) {
-                idField.value = decoded;
-              } else {
-                console.warn(`Autofill (case): No field found for key "${key}" in case ${caseIndex}`);
-              }
-            }
-          }
-        });
+        fillFormFields(data.data, parent);
       })
       .catch(err => {
         console.error('Upload failed', err);
@@ -412,24 +410,7 @@
           console.warn('No autofill data returned in main upload', data);
           return;
         }
-        Object.entries(data.data).forEach(([key, value]) => {
-          if (typeof value === 'string') {
-            const decoded = decodeHTML(value);
-            // Try by name
-            let field = document.querySelector(`[name="${key}"]`);
-            if (field) {
-              field.value = decoded;
-            } else {
-              // Try by id
-              field = document.getElementById(key);
-              if (field) {
-                field.value = decoded;
-              } else {
-                console.warn(`Autofill: No form field found for key "${key}"`);
-              }
-            }
-          }
-        });
+        fillFormFields(data.data);
       })
       .catch(err => {
         console.error('Upload failed', err);
