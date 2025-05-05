@@ -820,6 +820,31 @@ def update_lead(lead_id):
     if getattr(lead, "homework_additional", None):
         note = lead.homework_additional_notes or ""
         email_html += f"<li><strong>Additional Homework:</strong> ✅ {note}</li>"
+
+    # --- Ensure the following checkboxes are included in the update email summary if checked ---
+    # If not already included above, these will be included if True.
+    if getattr(lead, "homework_vasap", False):
+        # Already rendered above, but ensure label matches requirements
+        if "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>" not in email_html:
+            email_html += "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>"
+    if getattr(lead, "homework_vip", False):
+        # Only add if not already present
+        if "<li><strong>VIP:</strong> ✅</li>" not in email_html:
+            email_html += "<li><strong>VIP:</strong> ✅</li>"
+    if getattr(lead, "homework_community_service", False):
+        # Already rendered above with hours if available, but ensure this form is present
+        # Only add if not already present as simple Community Service
+        # If hours are present, already rendered; else, ensure the plain label is present
+        if lead.homework_community_service_hours:
+            # Already rendered with hours
+            pass
+        else:
+            if "<li><strong>Community Service:</strong> ✅</li>" not in email_html:
+                email_html += "<li><strong>Community Service:</strong> ✅</li>"
+    if getattr(lead, "homework_anger_management_courseforcourt", False):
+        # Only add if not already present
+        if "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>" not in email_html:
+            email_html += "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
     email_html += "</ul>"
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
@@ -1107,14 +1132,14 @@ def case_result():
         summary_fields = []
 
         # --- Inserted: Include checked checkboxes in summary ---
-        additional_summary_fields = {
+        checkbox_labels = {
             "VASAP": vasap,
             "VIP": vip,
             "Community Service": community_service,
             "Anger Management": anger_management,
         }
-        for label, values in additional_summary_fields.items():
-            if values and any(v.strip().lower() == "yes" for v in values):
+        for label, items in checkbox_labels.items():
+            if any(item.strip().lower() == "yes" for item in items if item.strip()):
                 summary_fields.append(f"<li><strong>{label}:</strong> ✅</li>")
 
         if was_continued:
