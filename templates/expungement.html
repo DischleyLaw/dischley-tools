@@ -1,208 +1,244 @@
 {% extends "base.html" %}
 {% block title %}Expungement Generator{% endblock %}
 {% block content %}
-{% set autofill_data = session.get("expungement_autofill_data", {}) %}
-<div class="container-fluid mt-4 overflow-auto">
+<div class="container my-5">
   <div class="row justify-content-center">
-    <div class="col-12 col-md-10">
-      <div class="card shadow p-4">
-        <h2 class="mb-4">Expungement Petition Form</h2>
-        <form id="main-upload-form" enctype="multipart/form-data">
-          <div class="row mb-4">
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
+    <div class="col-12 col-lg-9">
+      <div class="card shadow p-4 mb-4">
+        <div class="card-body">
+          <h2 class="mb-3">Expungement Petition Generator</h2>
+          <p class="text-muted mb-0">Use this tool to generate a Virginia expungement petition. Upload a court PDF to autofill, then complete or edit the form as needed. You may add additional charges/cases below.</p>
+        </div>
+      </div>
+
+      <!-- PDF Upload Section -->
+      <div class="card shadow mb-4">
+        <div class="card-body">
+          <form id="main-upload-form" enctype="multipart/form-data" class="row g-3 align-items-end">
+            <div class="col-12 col-md-8">
               <label for="file" class="form-label"><strong>Upload Court Document (PDF):</strong></label>
-              <input type="file" name="file" id="file" class="form-control w-100" accept=".pdf" required>
+              <input type="file" name="file" id="file" class="form-control" accept=".pdf" required>
             </div>
-            <div class="col-12 col-md-6 d-flex align-items-end">
-              <button type="submit" class="btn btn-secondary w-100">Upload & Autofill</button>
+            <div class="col-12 col-md-4">
+              <button type="submit" class="btn btn-secondary w-100">Upload &amp; Autofill</button>
             </div>
-          </div>
-        </form>
-        <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true">
-          <div class="row mb-4 pt-3 pb-3">
-            <div class="col-12 col-md-6 mb-3">
-              <label for="county" class="form-label">County</label>
-              <select class="form-select w-100" id="county" name="county" required onchange="fillProsecutor()">
-        <option value="">Select County</option>
-        <option value="Fairfax County">Fairfax County</option>
-        <option value="Arlington County">Arlington County</option>
-        <option value="Prince William County">Prince William County</option>
-        <option value="Loudoun County">Loudoun County</option>
-        <option value="City of Alexandria">City of Alexandria</option>
-        <option value="Stafford County">Stafford County</option>
-        <option value="Fauquier County">Fauquier County</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="name" class="form-label">Full Legal Name</label>
-              <input type="text" class="form-control w-100" id="name" name="name" required>
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="dob" class="form-label">Date of Birth</label>
-              <input type="text" class="form-control w-100" id="dob" name="dob" required>
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
-              <input type="text" class="form-control w-100" id="name_arrest" name="name_arrest">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="expungement_type" class="form-label">Type of Expungement</label>
-              <select class="form-select w-100" id="expungement_type" name="expungement_type" onchange="toggleManifestInjustice()">
-        <option value="">Select Type</option>
-        <option value="Expungement of Right">Expungement of Right</option>
-        <option value="Manifest Injustice">Manifest Injustice</option>
-              </select>
-            </div>
-            <div class="col-12 mb-3" id="manifest_injustice_details_container" style="display: none;">
-              <label for="manifest_injustice_details" class="form-label">Manifest Injustice Details</label>
-              <textarea class="form-control w-100" id="manifest_injustice_details" name="manifest_injustice_details" rows="4"></textarea>
-            </div>
-          </div>
-          <hr />
-          <h4 class="mt-4 mb-3">Charge Details #1</h4>
-          <div class="row mb-4 pt-3 pb-3">
-            <div class="col-12 col-md-6 mb-3">
-              <label for="arrest_date" class="form-label">Date of Arrest</label>
-              <input type="text" class="form-control w-100" id="arrest_date" name="arrest_date">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="officer_name" class="form-label">Arresting Officer</label>
-              <input type="text" class="form-control w-100" id="officer_name" name="officer_name">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="police_department" class="form-label">Law Enforcement Agency</label>
-              <select class="form-select w-100" id="police_department" name="police_department" required>
-        <option value="">Select Agency</option>
-        <option value="Fairfax County Police Department">Fairfax County Police Department</option>
-        <option value="Arlington County Police Department">Arlington County Police Department</option>
-        <option value="Prince William County Police Department">Prince William County Police Department</option>
-        <option value="Loudoun County Sheriff's Office">Loudoun County Sheriff's Office</option>
-        <option value="Alexandria Police Department">Alexandria Police Department</option>
-        <option value="Stafford County Sheriff's Office">Stafford County Sheriff's Office</option>
-        <option value="Fauquier County Sheriff's Office">Fauquier County Sheriff's Office</option>
-        <option value="Virginia State Police">Virginia State Police</option>
-        <option value="Other">Other</option>
-              </select>
-            </div>
-            <div class="col-12 col-md-6 mb-3" id="other_police_department_container" style="display: none;">
-              <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
-              <input type="text" class="form-control w-100" id="other_police_department" name="other_police_department">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="charge_name" class="form-label">Charge Description</label>
-              <input type="text" class="form-control w-100" id="charge_name" name="charge_name">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="code_section" class="form-label">Code Section</label>
-              <input type="text" class="form-control w-100" id="code_section" name="code_section">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="vcc_code" class="form-label">VCC Code</label>
-              <input type="text" class="form-control w-100" id="vcc_code" name="vcc_code">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="otn" class="form-label">OTN</label>
-              <input type="text" class="form-control w-100" id="otn" name="otn">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="court_dispo" class="form-label">Court of Final Disposition</label>
-              <input type="text" class="form-control w-100" id="court_dispo" name="court_dispo">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="case_no" class="form-label">Case Number</label>
-              <input type="text" class="form-control w-100" id="case_no" name="case_no">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="final_dispo" class="form-label">Final Disposition</label>
-              <input type="text" class="form-control w-100" id="final_dispo" name="final_dispo">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="dispo_date" class="form-label">Disposition Date</label>
-              <input type="text" class="form-control w-100" id="dispo_date" name="dispo_date">
-            </div>
-          </div>
-          <button type="button" class="btn btn-outline-primary mt-3 w-100" onclick="addAdditionalCaseSection()">Add Additional Case</button>
-          <div id="additionalCasesContainer" class="row mt-4"></div>
-          <template id="additional-case-template">
-            <div class="col-12 mb-3">
-              <div class="card shadow">
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-12 col-md-6 mb-3">
-                      <label for="file_case_2"><strong>Upload Court Document (PDF):</strong></label>
-                      <input type="file" name="file_case_2" id="file_case_2" class="form-control case-upload-input w-100" data-case-index="2" accept=".pdf">
-                      <button type="button" class="btn btn-secondary btn-sm upload-case-btn mt-2 w-100">Upload & Autofill</button>
-                    </div>
-                  </div>
-                  <h4 class="mt-4 mb-3">Charge Details #<span class="case-index">2</span></h4>
-                  <div class="row">
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_arrest_date">Arrest Date</label><input type="text" name="case_2_arrest_date" id="case_2_arrest_date" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_officer_name">Officer Name</label><input type="text" name="case_2_officer_name" id="case_2_officer_name" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_police_department">Police Department</label><input type="text" name="case_2_police_department" id="case_2_police_department" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_charge_name">Charge Name</label><input type="text" name="case_2_charge_name" id="case_2_charge_name" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_code_section">Code Section</label><input type="text" name="case_2_code_section" id="case_2_code_section" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_vcc_code">VCC Code</label><input type="text" name="case_2_vcc_code" id="case_2_vcc_code" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_otn">OTN</label><input type="text" name="case_2_otn" id="case_2_otn" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_court_dispo">Court of Final Dispo</label><input type="text" name="case_2_court_dispo" id="case_2_court_dispo" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_case_no">Case No</label><input type="text" name="case_2_case_no" id="case_2_case_no" class="form-control w-100" value=""></div>
-                    <div class="col-12 col-md-6 mb-3"><label for="case_2_dispo_date">Dispo Date</label><input type="text" name="case_2_dispo_date" id="case_2_dispo_date" class="form-control w-100" value=""></div>
-                  </div>
-                </div>
+          </form>
+        </div>
+      </div>
+
+      <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true" id="expungement-main-form">
+        <!-- Expungement Details -->
+        <div class="card shadow mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Expungement Details</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="county" class="form-label">County</label>
+                <select class="form-select" id="county" name="county" required onchange="fillProsecutor()">
+                  <option value="">Select County</option>
+                  <option value="Fairfax County">Fairfax County</option>
+                  <option value="Arlington County">Arlington County</option>
+                  <option value="Prince William County">Prince William County</option>
+                  <option value="Loudoun County">Loudoun County</option>
+                  <option value="City of Alexandria">City of Alexandria</option>
+                  <option value="Stafford County">Stafford County</option>
+                  <option value="Fauquier County">Fauquier County</option>
+                </select>
+              </div>
+              <div class="col-md-6">
+                <label for="name" class="form-label">Full Legal Name</label>
+                <input type="text" class="form-control" id="name" name="name" required>
+              </div>
+              <div class="col-md-6">
+                <label for="dob" class="form-label">Date of Birth</label>
+                <input type="text" class="form-control" id="dob" name="dob" required>
+              </div>
+              <div class="col-md-6">
+                <label for="name_arrest" class="form-label">Name at Time of Arrest</label>
+                <input type="text" class="form-control" id="name_arrest" name="name_arrest">
+              </div>
+              <div class="col-md-6">
+                <label for="expungement_type" class="form-label">Type of Expungement</label>
+                <select class="form-select" id="expungement_type" name="expungement_type" onchange="toggleManifestInjustice()">
+                  <option value="">Select Type</option>
+                  <option value="Expungement of Right">Expungement of Right</option>
+                  <option value="Manifest Injustice">Manifest Injustice</option>
+                </select>
+              </div>
+              <div class="col-12" id="manifest_injustice_details_container" style="display:none;">
+                <label for="manifest_injustice_details" class="form-label">Manifest Injustice Details</label>
+                <textarea class="form-control" id="manifest_injustice_details" name="manifest_injustice_details" rows="3"></textarea>
               </div>
             </div>
-          </template>
-          <hr />
-          <h4 class="mt-4 mb-3">Prosecutor Info</h4>
-          <div class="row mb-4 pt-3 pb-3">
-            <div class="col-12 col-md-6 mb-3">
-              <label for="prosecutor" class="form-label">Prosecutor Name</label>
-              <input type="text" class="form-control w-100" id="prosecutor" name="prosecutor">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
-              <input type="text" class="form-control w-100" id="prosecutor_title" name="prosecutor_title">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="prosecutor_address1" class="form-label">Address Line 1</label>
-              <input type="text" class="form-control w-100" id="prosecutor_address1" name="prosecutor_address1">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="prosecutor_address2" class="form-label">Address Line 2</label>
-              <input type="text" class="form-control w-100" id="prosecutor_address2" name="prosecutor_address2">
+          </div>
+        </div>
+
+        <!-- Charge Details Section -->
+        <div class="card shadow mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Charge Details #1</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="arrest_date" class="form-label">Date of Arrest</label>
+                <input type="text" class="form-control" id="arrest_date" name="arrest_date">
+              </div>
+              <div class="col-md-6">
+                <label for="officer_name" class="form-label">Arresting Officer</label>
+                <input type="text" class="form-control" id="officer_name" name="officer_name">
+              </div>
+              <div class="col-md-6">
+                <label for="police_department" class="form-label">Law Enforcement Agency</label>
+                <select class="form-select" id="police_department" name="police_department" required>
+                  <option value="">Select Agency</option>
+                  <option value="Fairfax County Police Department">Fairfax County Police Department</option>
+                  <option value="Arlington County Police Department">Arlington County Police Department</option>
+                  <option value="Prince William County Police Department">Prince William County Police Department</option>
+                  <option value="Loudoun County Sheriff's Office">Loudoun County Sheriff's Office</option>
+                  <option value="Alexandria Police Department">Alexandria Police Department</option>
+                  <option value="Stafford County Sheriff's Office">Stafford County Sheriff's Office</option>
+                  <option value="Fauquier County Sheriff's Office">Fauquier County Sheriff's Office</option>
+                  <option value="Virginia State Police">Virginia State Police</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
+              <div class="col-md-6" id="other_police_department_container" style="display:none;">
+                <label for="other_police_department" class="form-label">Specify Other Law Enforcement Agency</label>
+                <input type="text" class="form-control" id="other_police_department" name="other_police_department">
+              </div>
+              <div class="col-md-6">
+                <label for="charge_name" class="form-label">Charge Description</label>
+                <input type="text" class="form-control" id="charge_name" name="charge_name">
+              </div>
+              <div class="col-md-6">
+                <label for="code_section" class="form-label">Code Section</label>
+                <input type="text" class="form-control" id="code_section" name="code_section">
+              </div>
+              <div class="col-md-6">
+                <label for="vcc_code" class="form-label">VCC Code</label>
+                <input type="text" class="form-control" id="vcc_code" name="vcc_code">
+              </div>
+              <div class="col-md-6">
+                <label for="otn" class="form-label">OTN</label>
+                <input type="text" class="form-control" id="otn" name="otn">
+              </div>
+              <div class="col-md-6">
+                <label for="court_dispo" class="form-label">Court of Final Disposition</label>
+                <input type="text" class="form-control" id="court_dispo" name="court_dispo">
+              </div>
+              <div class="col-md-6">
+                <label for="case_no" class="form-label">Case Number</label>
+                <input type="text" class="form-control" id="case_no" name="case_no">
+              </div>
+              <div class="col-md-6">
+                <label for="final_dispo" class="form-label">Final Disposition</label>
+                <input type="text" class="form-control" id="final_dispo" name="final_dispo">
+              </div>
+              <div class="col-md-6">
+                <label for="dispo_date" class="form-label">Disposition Date</label>
+                <input type="text" class="form-control" id="dispo_date" name="dispo_date">
+              </div>
             </div>
           </div>
-          <hr />
-          <h4 class="mt-4 mb-3">Filing Information</h4>
-          <div class="row mb-4 pt-3 pb-3">
-            <div class="col-12 col-md-6 mb-3">
-              <label for="month" class="form-label">Month of Petition</label>
-              <input type="text" class="form-control w-100" id="month" name="month">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="year" class="form-label">Year of Petition</label>
-              <input type="text" class="form-control w-100" id="year" name="year">
-            </div>
-            <div class="col-12 col-md-6 mb-3">
-              <label for="attorney" class="form-label">Attorney Name</label>
-              <select class="form-select w-100" id="attorney" name="attorney" required>
-                <option value="David J. Dischley (VSB No. 73703)">David J. Dischley (VSB No. 73703)</option>
-                <option value="Patrick T. O'Brien (VSB No. 81211)">Patrick T. O'Brien (VSB No. 81211)</option>
-              </select>
+        </div>
+
+        <!-- Add Additional Charge Button -->
+        <div class="mb-4">
+          <button type="button" class="btn btn-outline-primary w-100" onclick="addAdditionalCaseSection()">Add Additional Charge / Case</button>
+        </div>
+        <div id="additionalCasesContainer" class="mb-4"></div>
+        <template id="additional-case-template">
+          <div class="card shadow mb-3">
+            <div class="card-body">
+              <div class="row g-3 align-items-end">
+                <div class="col-md-8">
+                  <label><strong>Upload Court Document (PDF):</strong></label>
+                  <input type="file" class="form-control case-upload-input" accept=".pdf" data-case-index="2" name="file_case_2">
+                </div>
+                <div class="col-md-4">
+                  <button type="button" class="btn btn-secondary upload-case-btn w-100">Upload &amp; Autofill</button>
+                </div>
+              </div>
+              <h6 class="mt-3 mb-3">Charge Details #<span class="case-index">2</span></h6>
+              <div class="row g-3">
+                <div class="col-md-6"><label>Arrest Date</label><input type="text" class="form-control" name="case_2_arrest_date" id="case_2_arrest_date"></div>
+                <div class="col-md-6"><label>Officer Name</label><input type="text" class="form-control" name="case_2_officer_name" id="case_2_officer_name"></div>
+                <div class="col-md-6"><label>Police Department</label><input type="text" class="form-control" name="case_2_police_department" id="case_2_police_department"></div>
+                <div class="col-md-6"><label>Charge Name</label><input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name"></div>
+                <div class="col-md-6"><label>Code Section</label><input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section"></div>
+                <div class="col-md-6"><label>VCC Code</label><input type="text" class="form-control" name="case_2_vcc_code" id="case_2_vcc_code"></div>
+                <div class="col-md-6"><label>OTN</label><input type="text" class="form-control" name="case_2_otn" id="case_2_otn"></div>
+                <div class="col-md-6"><label>Court of Final Dispo</label><input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo"></div>
+                <div class="col-md-6"><label>Case No</label><input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no"></div>
+                <div class="col-md-6"><label>Dispo Date</label><input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date"></div>
+              </div>
             </div>
           </div>
-          <div class="row mb-4">
-            <div class="col-12 col-md-6 mb-3 mb-md-0">
-              <button type="submit" class="btn btn-primary w-100">Generate Petition</button>
-            </div>
-            <div class="col-12 col-md-6">
-              <button type="button" class="btn btn-danger w-100" onclick="clearForm()">Clear Form</button>
+        </template>
+
+        <!-- Prosecutor Info -->
+        <div class="card shadow mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Prosecutor Information</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="prosecutor" class="form-label">Prosecutor Name</label>
+                <input type="text" class="form-control" id="prosecutor" name="prosecutor">
+              </div>
+              <div class="col-md-6">
+                <label for="prosecutor_title" class="form-label">Prosecutor Title</label>
+                <input type="text" class="form-control" id="prosecutor_title" name="prosecutor_title">
+              </div>
+              <div class="col-md-6">
+                <label for="prosecutor_address1" class="form-label">Address Line 1</label>
+                <input type="text" class="form-control" id="prosecutor_address1" name="prosecutor_address1">
+              </div>
+              <div class="col-md-6">
+                <label for="prosecutor_address2" class="form-label">Address Line 2</label>
+                <input type="text" class="form-control" id="prosecutor_address2" name="prosecutor_address2">
+              </div>
             </div>
           </div>
-        </form>
-      </div>
+        </div>
+
+        <!-- Filing Information -->
+        <div class="card shadow mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Filing Information</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="month" class="form-label">Month of Petition</label>
+                <input type="text" class="form-control" id="month" name="month">
+              </div>
+              <div class="col-md-6">
+                <label for="year" class="form-label">Year of Petition</label>
+                <input type="text" class="form-control" id="year" name="year">
+              </div>
+              <div class="col-md-6">
+                <label for="attorney" class="form-label">Attorney Name</label>
+                <select class="form-select" id="attorney" name="attorney" required>
+                  <option value="David J. Dischley (VSB No. 73703)">David J. Dischley (VSB No. 73703)</option>
+                  <option value="Patrick T. O'Brien (VSB No. 81211)">Patrick T. O'Brien (VSB No. 81211)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Submission Buttons -->
+        <div class="row g-3 mb-5">
+          <div class="col-md-6">
+            <button type="submit" class="btn btn-primary w-100">Generate Petition</button>
+          </div>
+          <div class="col-md-6">
+            <button type="button" class="btn btn-danger w-100" onclick="clearForm()">Clear Form</button>
+          </div>
+        </div>
+      </form>
     </div>
   </div>
 </div>
+
+<!-- JS Logic (Retained) -->
 <script>
   const prosecutorData = {
     "Fairfax County": {
@@ -274,21 +310,17 @@
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     window.additionalCaseCount = 1;
-
     window.addAdditionalCaseSection = function () {
       window.additionalCaseCount++;
       const container = document.getElementById("additionalCasesContainer");
       const template = document.getElementById("additional-case-template");
       if (!template) return;
-
       const clone = template.content.cloneNode(true);
       clone.querySelectorAll("input").forEach(input => {
         const name = input.getAttribute("name");
-        // Update all input names that follow case_2_ pattern
         if (name && name.startsWith("case_2_")) {
           input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
         }
-        // Update the data-case-index attribute for the file input
         if (input.classList.contains("case-upload-input")) {
           input.setAttribute("data-case-index", window.additionalCaseCount);
         }
@@ -299,13 +331,10 @@
   });
 </script>
 <script>
-  // Centralized HTML entity decoding for all upload autofill
   function decodeHTML(value) {
     const parser = new DOMParser();
     return parser.parseFromString(value, "text/html").body.textContent || value;
   }
-
-  // Centralized autofill helper for main and additional case uploads
   function fillFormFields(data, scope = document) {
     Object.entries(data).forEach(([key, value]) => {
       if (typeof value === 'string') {
@@ -319,16 +348,11 @@
       }
     });
   }
-
-  // Handler for AJAX PDF upload in additional case sections
   document.addEventListener('click', function (event) {
-    // Additional case AJAX autofill
     if (event.target.classList.contains('upload-case-btn')) {
       event.preventDefault();
-      // The parent container should be the .card-body
       let parent = event.target.closest('.card-body');
       if (!parent) {
-        // fallback: try .card or .col-12
         parent = event.target.closest('.card') || event.target.closest('.col-12');
         if (!parent) {
           alert('Could not find parent container for autofill.');
@@ -343,12 +367,10 @@
       const caseIndex = fileInput.dataset.caseIndex;
       const file = fileInput.files[0];
       if (!file) return alert('Please select a PDF to upload.');
-
       const formData = new FormData();
       formData.append('file', file);
       formData.append('case_index', caseIndex);
       formData.append('additional_case_upload', 'true');
-
       fetch('/expungement/upload', {
         method: 'POST',
         body: formData
@@ -378,7 +400,6 @@
   });
 </script>
 <script>
-  // Main upload form AJAX autofill logic
   document.addEventListener('DOMContentLoaded', () => {
     const mainForm = document.getElementById('main-upload-form');
     if (!mainForm) return;
@@ -387,10 +408,8 @@
       const fileInput = document.getElementById('file');
       const file = fileInput.files[0];
       if (!file) return alert('Please select a PDF to upload.');
-
       const formData = new FormData();
       formData.append('file', file);
-
       fetch('/expungement/upload', {
         method: 'POST',
         body: formData
@@ -419,27 +438,19 @@
     });
   });
 </script>
-{% endblock %}
-
 <script>
   function clearForm() {
-    // Clear all inputs, textareas, and selects
-    const form = document.querySelector('form[action*="expungement_form"]');
+    const form = document.querySelector('#expungement-main-form');
     if (!form) return;
     form.reset();
-
-    // Manually clear values (for autofill fields not affected by .reset)
     form.querySelectorAll('input, textarea, select').forEach(el => {
       el.value = '';
     });
-
-    // Hide dynamic elements like "Other Police Department"
     document.getElementById('other_police_department_container').style.display = 'none';
     document.getElementById('manifest_injustice_details_container').style.display = 'none';
-
-    // Clear all dynamically added additional case sections
     const container = document.getElementById("additionalCasesContainer");
     container.innerHTML = '';
     window.additionalCaseCount = 1;
   }
 </script>
+{% endblock %}
