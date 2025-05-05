@@ -1106,6 +1106,17 @@ def case_result():
         # Extra fields
         summary_fields = []
 
+        # --- Inserted: Include checked checkboxes in summary ---
+        additional_summary_fields = {
+            "VASAP": vasap,
+            "VIP": vip,
+            "Community Service": community_service,
+            "Anger Management": anger_management,
+        }
+        for label, values in additional_summary_fields.items():
+            if values and any(v.strip().lower() == "yes" for v in values):
+                summary_fields.append(f"<li><strong>{label}:</strong> ✅</li>")
+
         if was_continued:
             if continuation_date:
                 try:
