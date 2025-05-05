@@ -386,11 +386,11 @@
         }
       })
       .then(data => {
-        if (!data || !data.data) {
+        if (!data) {
           console.warn('No autofill data returned in additional case upload', data);
           return;
         }
-        fillFormFields(data.data, parent);
+        fillFormFields(data, parent);
       })
       .catch(err => {
         console.error('Upload failed', err);
@@ -425,11 +425,11 @@
         }
       })
       .then(data => {
-        if (!data || !data.data) {
+        if (!data) {
           console.warn('No autofill data returned in main upload', data);
           return;
         }
-        fillFormFields(data.data);
+        fillFormFields(data);
       })
       .catch(err => {
         console.error('Upload failed', err);

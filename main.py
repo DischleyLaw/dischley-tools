@@ -1434,13 +1434,22 @@ def parse_case_info(text):
 def upload():
     file = request.files['file']
     if not file:
-        return "No file uploaded", 400
+        return jsonify({'error': 'No file uploaded'}), 400
     text = extract_text(file)
     cases = parse_case_info(text)
     if cases:
-        # Use the first case for now to autofill the main form
-        session["expungement_autofill_data"] = cases[0]
-    return redirect(url_for("expungement_form"))
+        # Use the first case for autofill
+        parsed_case = cases[0]
+        formatted_data = {
+            "arrest_date": parsed_case.get("offense_date", ""),
+            "charge_name": parsed_case.get("charge_name", ""),
+            "case_no": parsed_case.get("case_no", ""),
+            "court_dispo": parsed_case.get("disposition", ""),
+            "dispo_date": parsed_case.get("disposition_date", "")
+        }
+        session["expungement_autofill_data"] = formatted_data
+        return jsonify(formatted_data), 200
+    return jsonify({}), 200
 
 
 @app.route('/expungement/upload', methods=['POST'])
