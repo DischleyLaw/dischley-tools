@@ -1074,7 +1074,7 @@ def case_result():
 
         subject = f"Case Result - {defendant_name}"
         email_html = "<h2 style='font-size:16pt;'>Case Result</h2>"
-        email_html += f"<p style='font-size:16pt;'><strong>Defendant:</strong> {defendant_name}</p>"
+        email_html += f"<p style='font-size:16pt;'><strong>Client:</strong> {defendant_name}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
             jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
@@ -1085,40 +1085,41 @@ def case_result():
         num_charges = max(len(field) for field in all_charge_fields)
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
-            email_html += "<ul style='font-size:16pt;'>"
             for i in range(num_charges):
-                email_html += f"<li style='font-size:16pt;'><strong>Charge {i+1}:</strong><ul style='font-size:16pt;'>"
+                # Instead of "Charge {i+1}", bold and underline the original charge name.
                 if i < len(original_charges) and original_charges[i]:
-                    email_html += f"<li style='font-size:16pt;'><strong>Original Charge:</strong> {original_charges[i]}</li>"
+                    email_html += f"&lt;p style='font-size:16pt; font-weight:bold; text-decoration:underline;'&gt;{original_charges[i]}&lt;/p&gt;"
+                email_html += "<p style='font-size:16pt; margin-left:20px;'>"
+                # The rest of the charge details still display under the bolded original charge.
                 if i < len(amended_charges) and amended_charges[i]:
-                    email_html += f"<li style='font-size:16pt;'><strong>Amended Charge:</strong> {amended_charges[i]}</li>"
+                    email_html += f"<strong>Amended Charge:</strong> {amended_charges[i]}<br>"
                 if i < len(pleas) and pleas[i]:
-                    email_html += f"<li style='font-size:16pt;'><strong>Plea:</strong> {pleas[i]}</li>"
+                    email_html += f"<strong>Plea:</strong> {pleas[i]}<br>"
                 if i < len(dispositions) and dispositions[i]:
-                    email_html += f"<li style='font-size:16pt;'><strong>Disposition:</strong> {dispositions[i]}</li>"
+                    email_html += f"<strong>Disposition:</strong> {dispositions[i]}<br>"
                 # NEW: If disposition in skip_dispositions, include disposition paragraph
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
-                        email_html += f"<li style='font-size:16pt;'><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}</li>"
+                        email_html += f"<strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
                     # Per-charge sentencing/probation fields:
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"<li style='font-size:16pt;'><strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended</li>"
+                            email_html += f"<strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended<br>"
                         else:
-                            email_html += f"<li style='font-size:16pt;'><strong>Jail:</strong> {jail_time_imposed[i]} days</li>"
+                            email_html += f"<strong>Jail:</strong> {jail_time_imposed[i]} days<br>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
-                            email_html += f"<li style='font-size:16pt;'><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
+                            email_html += f"<strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br>"
                         else:
-                            email_html += f"<li style='font-size:16pt;'><strong>Fine:</strong> ${fine_imposed[i]}</li>"
+                            email_html += f"<strong>Fine:</strong> ${fine_imposed[i]}<br>"
                     # License Suspension: Only show check if "Yes"
                     if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
-                        email_html += "<li style='font-size:16pt;'><strong>License Suspension:</strong> ✅</li>"
+                        email_html += "<strong>License Suspension:</strong> ✅<br>"
                     # Compose restricted license info: include type and term if granted
                     if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
-                        restricted_info = "<li style='font-size:16pt;'><strong>Restricted License Granted:</strong> Yes"
+                        restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
                         if i < len(restricted_license_type) and restricted_license_type[i]:
                             details.append(f"Type: {restricted_license_type[i]}")
@@ -1126,31 +1127,29 @@ def case_result():
                             details.append(f"Term: {license_suspension_term[i]}")
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
-                        restricted_info += "</li>"
-                        email_html += restricted_info
+                        email_html += restricted_info + "<br>"
                     # ASAP Ordered: Only show if "Yes"
                     if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<li style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅</li>"
+                        email_html += "<strong>ASAP Ordered:</strong> ✅<br>"
                     # Probation
-                    probation_fields = []
+                    probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Probation Type:</strong> {probation_type[i]}</li>")
+                        probation_lines.append(f"<strong>Probation Type:</strong> {probation_type[i]}")
                     if i < len(probation_term) and probation_term[i]:
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Probation Term:</strong> {probation_term[i]}</li>")
+                        probation_lines.append(f"<strong>Probation Term:</strong> {probation_term[i]}")
                     if i < len(vasap) and vasap[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>VASAP:</strong> ✅</li>")
+                        probation_lines.append(f"<strong>VASAP:</strong> ✅")
                     if i < len(vip) and vip[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>VIP:</strong> ✅</li>")
+                        probation_lines.append(f"<strong>VIP:</strong> ✅")
                     if i < len(community_service) and community_service[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Community Service:</strong> ✅</li>")
+                        probation_lines.append(f"<strong>Community Service:</strong> ✅")
                     if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Anger Management:</strong> ✅</li>")
-                    if probation_fields:
-                        email_html += "<li style='font-size:16pt;'><strong>Conditions of Probation:</strong><ul style='font-size:16pt;'>"
-                        email_html += "".join(probation_fields)
-                        email_html += "</ul></li>"
-                email_html += "</ul></li>"
-            email_html += "</ul>"
+                        probation_lines.append(f"<strong>Anger Management:</strong> ✅")
+                    if probation_lines:
+                        email_html += "<strong>Conditions of Probation:</strong><br>"
+                        for line in probation_lines:
+                            email_html += f"&nbsp;&nbsp;{line}<br>"
+                email_html += "</p>"
 
         # Extra fields
         summary_fields = []
@@ -1164,7 +1163,7 @@ def case_result():
         }
         for label, items in checkbox_labels.items():
             if any(item.strip().lower() in ("yes", "on", "true") for item in items if item.strip()):
-                summary_fields.append(f"<li style='font-size:16pt;'><strong>{label}:</strong> ✅</li>")
+                summary_fields.append(f"<p style='font-size:16pt;'><strong>{label}:</strong> ✅</p>")
 
         if was_continued:
             if continuation_date:
@@ -1177,29 +1176,27 @@ def case_result():
                         formatted_continuation_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p")
                     except ValueError:
                         formatted_continuation_time = continuation_time
-                    summary_fields.append(f"<li style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</li>")
+                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</p>")
                 else:
-                    summary_fields.append(f"<li style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
+                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date}</p>")
             else:
-                summary_fields.append("<li style='font-size:16pt;'><strong>Case Continued</strong></li>")
+                summary_fields.append("<p style='font-size:16pt;'><strong>Case Continued</strong></p>")
 
         if date_disposition:
             try:
                 formatted_disposition_date = datetime.strptime(date_disposition, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 formatted_disposition_date = date_disposition
-            summary_fields.append(f"<li style='font-size:16pt;'><strong>Disposition Date:</strong> {formatted_disposition_date}</li>")
+            summary_fields.append(f"<p style='font-size:16pt;'><strong>Disposition Date:</strong> {formatted_disposition_date}</p>")
 
         if notes:
-            summary_fields.append(f"<li style='font-size:16pt;'><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
+            summary_fields.append(f"<p style='font-size:16pt;'><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</p>")
 
         if send_review_links:
-            summary_fields.append("<li style='font-size:16pt;'><strong>Review Links Requested:</strong> Yes</li>")
+            summary_fields.append("<p style='font-size:16pt;'><strong>Review Links Requested:</strong> Yes</p>")
 
         if summary_fields:
-            email_html += "<ul style='font-size:16pt;'>"
             email_html += "".join(summary_fields)
-            email_html += "</ul>"
         msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
         msg.html = email_html
         mail.send(msg)
