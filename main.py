@@ -1139,7 +1139,7 @@ def case_result():
             "Anger Management": anger_management,
         }
         for label, items in checkbox_labels.items():
-            if any(item.strip().lower() == "yes" for item in items if item.strip()):
+            if any(item.strip().lower() in ("yes", "on", "true") for item in items if item.strip()):
                 summary_fields.append(f"<li><strong>{label}:</strong> ✅</li>")
 
         if was_continued:
