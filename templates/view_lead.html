@@ -1,185 +1,204 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+  .section-label {
+    font-weight: 600;
+    text-decoration: underline;
+    font-size: 1.1rem;
+    margin-top: 1.5rem;
+    margin-bottom: 0.75rem;
+    color: #002147;
+  }
+  .section-divider {
+    margin-top: 1.25rem;
+    margin-bottom: 0.75rem;
+  }
+</style>
 <div class="intake-card">
   <h2 class="mb-4">Manage Lead</h2>
   <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
-    <h4><u><b>Client Information:</b></u></h4>
-    <div class="mb-3">
-      <label for="name" class="form-label">Name</label>
-      <input type="text" name="name" class="form-control" value="{{ lead.name }}">
+    <div class="section-divider">
+      <h5 class="section-label">Client Information:</h5>
+      <div class="mb-3">
+        <label for="name" class="form-label">Name</label>
+        <input type="text" name="name" class="form-control" value="{{ lead.name }}">
+      </div>
+      <div class="mb-3">
+        <label for="phone" class="form-label">Phone</label>
+        <input type="tel" name="phone" class="form-control" value="{{ lead.phone }}">
+      </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" name="email" class="form-control" value="{{ lead.email }}">
+      </div>
     </div>
-    <div class="mb-3">
-      <label for="phone" class="form-label">Phone</label>
-      <input type="tel" name="phone" class="form-control" value="{{ lead.phone }}">
+    <div class="section-divider">
+      <h5 class="section-label">Case Information:</h5>
+      <div class="mb-3">
+        <label for="court" class="form-label">Court</label>
+        <input type="text" name="court" class="form-control" value="{{ lead.court }}">
+      </div>
+      <div class="mb-3">
+        <label for="charges" class="form-label">Charges</label>
+        <textarea name="charges" class="form-control">{{ lead.charges }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label for="facts" class="form-label">Facts</label>
+        <textarea name="facts" class="form-control">{{ lead.facts }}</textarea>
+      </div>
+      <div class="mb-3">
+        <label for="court_date" class="form-label">Court Date</label>
+        <input type="date" name="court_date" class="form-control" value="{{ lead.court_date }}">
+      </div>
+      <div class="mb-3">
+        <label for="court_time" class="form-label">Court Time</label>
+        <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
+      </div>
     </div>
-    <div class="mb-3">
-      <label for="email" class="form-label">Email</label>
-      <input type="email" name="email" class="form-control" value="{{ lead.email }}">
+    <div class="section-divider">
+      <h5 class="section-label">Homework:</h5>
+      <div class="mb-3">
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_driving_record" id="homework_driving_record">
+          <label class="form-check-label" for="homework_driving_record">Driving Record</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_reckless_program" id="homework_reckless_program">
+          <label class="form-check-label" for="homework_reckless_program">Reckless/Aggressive Driving Program</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_driver_improvement" id="homework_driver_improvement">
+          <label class="form-check-label" for="homework_driver_improvement">Driver Improvement Course</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_speedometer" id="homework_speedometer">
+          <label class="form-check-label" for="homework_speedometer">Speedometer Calibration</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_community_service" id="homework_community_service">
+          <label class="form-check-label" for="homework_community_service">Community Service</label>
+        </div>
+        <div class="mb-3" id="communityServiceHours" style="display: none;">
+          <label for="homework_community_service_hours" class="form-label">Community Service Hours</label>
+          <input type="text" class="form-control" name="homework_community_service_hours" id="homework_community_service_hours" placeholder="Enter number of hours">
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_substance_evaluation" id="homework_substance_evaluation">
+          <label class="form-check-label" for="homework_substance_evaluation">Substance Abuse Evaluation</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_asap" id="homework_asap">
+          <label class="form-check-label" for="homework_asap">Pre-enroll in ASAP</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_shoplifting" id="homework_shoplifting">
+          <label class="form-check-label" for="homework_shoplifting">Shoplifting Class</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_medical_conditions" id="homework_medical_conditions">
+          <label class="form-check-label" for="homework_medical_conditions">List of Medical Conditions / Surgeries</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_photos" id="homework_photos">
+          <label class="form-check-label" for="homework_photos">Photographs of Scene (Field Sobriety Testing)</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_shoplifting_program" id="homework_shoplifting_program">
+          <label class="form-check-label" for="homework_shoplifting_program">Shoplifting Theft Offenders Program</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_military_awards" id="homework_military_awards">
+          <label class="form-check-label" for="homework_military_awards">Copies of Military Awards</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_dd214" id="homework_dd214">
+          <label class="form-check-label" for="homework_dd214">Copy of DD-214</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_community_involvement" id="homework_community_involvement">
+          <label class="form-check-label" for="homework_community_involvement">List of Community Involvement</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_anger_management_courseforcourt" id="homework_anger_management_courseforcourt">
+          <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management</label>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
+          <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
+        </div>
+        <div class="mb-3 form-check">
+          <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
+          <label class="form-check-label" for="toggleAdditionalHomework">Additional Homework</label>
+        </div>
+        <div class="mb-3" id="additionalHomeworkBox" style="display: none;">
+          <label for="homework" class="form-label">Additional Homework Notes</label>
+          <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
+        </div>
+        <div class="form-check">
+          <input class="form-check-input" type="checkbox" name="homework_no_hw" id="homework_no_hw">
+          <label class="form-check-label" for="homework_no_hw">NO HW</label>
+        </div>
+      </div>
     </div>
-    <br><br>
-    <h4><u><b>Case Information:</b></u></h4>
-    <div class="mb-3">
-      <label for="court" class="form-label">Court</label>
-      <input type="text" name="court" class="form-control" value="{{ lead.court }}">
-    </div>
-    <div class="mb-3">
-      <label for="charges" class="form-label">Charges</label>
-      <textarea name="charges" class="form-control">{{ lead.charges }}</textarea>
-    </div>
-    <div class="mb-3">
-      <label for="facts" class="form-label">Facts</label>
-      <textarea name="facts" class="form-control">{{ lead.facts }}</textarea>
-    </div>
-    <div class="mb-3">
-      <label for="court_date" class="form-label">Court Date</label>
-      <input type="date" name="court_date" class="form-control" value="{{ lead.court_date }}">
-    </div>
-    <div class="mb-3">
-      <label for="court_time" class="form-label">Court Time</label>
-      <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
-    </div>
-    <br><br>
-    <h4><u><b>Homework:</b></u></h4>
-    <div class="mb-3">
-      <label class="form-label">Homework:</label>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_driving_record" id="homework_driving_record">
-        <label class="form-check-label" for="homework_driving_record">Driving Record</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_reckless_program" id="homework_reckless_program">
-        <label class="form-check-label" for="homework_reckless_program">Reckless/Aggressive Driving Program</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_driver_improvement" id="homework_driver_improvement">
-        <label class="form-check-label" for="homework_driver_improvement">Driver Improvement Course</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_speedometer" id="homework_speedometer">
-        <label class="form-check-label" for="homework_speedometer">Speedometer Calibration</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_community_service" id="homework_community_service">
-        <label class="form-check-label" for="homework_community_service">Community Service</label>
-      </div>
-      <div class="mb-3" id="communityServiceHours" style="display: none;">
-        <label for="homework_community_service_hours" class="form-label">Community Service Hours</label>
-        <input type="text" class="form-control" name="homework_community_service_hours" id="homework_community_service_hours" placeholder="Enter number of hours">
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_substance_evaluation" id="homework_substance_evaluation">
-        <label class="form-check-label" for="homework_substance_evaluation">Substance Abuse Evaluation</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_asap" id="homework_asap">
-        <label class="form-check-label" for="homework_asap">Pre-enroll in ASAP</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_shoplifting" id="homework_shoplifting">
-        <label class="form-check-label" for="homework_shoplifting">Shoplifting Class</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_medical_conditions" id="homework_medical_conditions">
-        <label class="form-check-label" for="homework_medical_conditions">List of Medical Conditions / Surgeries</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_photos" id="homework_photos">
-        <label class="form-check-label" for="homework_photos">Photographs of Scene (Field Sobriety Testing)</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_shoplifting_program" id="homework_shoplifting_program">
-        <label class="form-check-label" for="homework_shoplifting_program">Shoplifting Theft Offenders Program</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_military_awards" id="homework_military_awards">
-        <label class="form-check-label" for="homework_military_awards">Copies of Military Awards</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_dd214" id="homework_dd214">
-        <label class="form-check-label" for="homework_dd214">Copy of DD-214</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_community_involvement" id="homework_community_involvement">
-        <label class="form-check-label" for="homework_community_involvement">List of Community Involvement</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_anger_management_courseforcourt" id="homework_anger_management_courseforcourt">
-        <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
-        <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
+    <div class="section-divider">
+      <h5 class="section-label">Action/Status:</h5>
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="calling" class="form-check-input" id="calling" {% if lead.calling %}checked{% endif %}>
+        <label class="form-check-label" for="calling">Calling</label>
       </div>
       <div class="mb-3 form-check">
-        <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
-        <label class="form-check-label" for="toggleAdditionalHomework">Additional Homework</label>
+        <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
+        <label class="form-check-label" for="sendRetainer">Send Retainer</label>
       </div>
-      <div class="mb-3" id="additionalHomeworkBox" style="display: none;">
-        <label for="homework" class="form-label">Additional Homework Notes</label>
-        <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
+      <div class="mb-3" id="retainerAmountBox" {% if not lead.send_retainer %}style="display:none;"{% endif %}>
+        <label for="retainer_amount" class="form-label">Retainer Amount</label>
+        <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount or '' }}">
       </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_no_hw" id="homework_no_hw">
-        <label class="form-check-label" for="homework_no_hw">NO HW</label>
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="lvm" class="form-check-input" id="lvm" {% if lead.lvm %}checked{% endif %}>
+        <label class="form-check-label" for="lvm">Left Voicemail</label>
+      </div>
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="not_pc" class="form-check-input" id="notPC" {% if lead.not_pc %}checked{% endif %}>
+        <label class="form-check-label" for="notPC">Not a Potential Client</label>
+      </div>
+      <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="toggleQuote" name="toggle_quote">
+        <label class="form-check-label" for="toggleQuote">Quote Given</label>
+      </div>
+      <div class="mb-3" id="quoteAmountField" style="display: none;">
+        <label for="quote" class="form-label">Quoted Amount</label>
+        <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
       </div>
     </div>
-    <br><br>
-    <h4><u><b>Action/Status:</b></u></h4>
-    <div class="mb-3 form-check">
-      <input type="checkbox" name="calling" class="form-check-input" id="calling" {% if lead.calling %}checked{% endif %}>
-      <label class="form-check-label" for="calling">Calling</label>
-    </div>
-    <div class="mb-3 form-check">
-      <input type="checkbox" name="send_retainer" class="form-check-input" id="sendRetainer" {% if lead.send_retainer %}checked{% endif %}>
-      <label class="form-check-label" for="sendRetainer">Send Retainer</label>
-    </div>
-    <div class="mb-3" id="retainerAmountBox" {% if not lead.send_retainer %}style="display:none;"{% endif %}>
-      <label for="retainer_amount" class="form-label">Retainer Amount</label>
-      <input type="text" name="retainer_amount" class="form-control" value="{{ lead.retainer_amount or '' }}">
-    </div>
-    <div class="mb-3 form-check">
-      <input type="checkbox" name="lvm" class="form-check-input" id="lvm" {% if lead.lvm %}checked{% endif %}>
-      <label class="form-check-label" for="lvm">Left Voicemail</label>
-    </div>
-    <div class="mb-3 form-check">
-      <input type="checkbox" name="not_pc" class="form-check-input" id="notPC" {% if lead.not_pc %}checked{% endif %}>
-      <label class="form-check-label" for="notPC">Not a Potential Client</label>
-    </div>
-    <div class="mb-3 form-check">
-      <input type="checkbox" class="form-check-input" id="toggleQuote" name="toggle_quote">
-      <label class="form-check-label" for="toggleQuote">Quote Given</label>
-    </div>
-    <div class="mb-3" id="quoteAmountField" style="display: none;">
-      <label for="quote" class="form-label">Quoted Amount</label>
-      <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
-    </div>
-    <br><br>
-    <h4><u><b>Internal Use Only:</b></u></h4>
-    <div class="mb-3 form-floating">
-      <select name="staff_member" class="form-select" id="staffMemberSelect">
-        <option value="">-- Select Staff Member --</option>
-        <option value="Tatum Brownlee" {% if lead.staff_member == "Tatum Brownlee" %}selected{% endif %}>Tatum Brownlee</option>
-        <option value="Nicole Purvis" {% if lead.staff_member == "Nicole Purvis" %}selected{% endif %}>Nicole Purvis</option>
-        <option value="Patrick O'Brien" {% if lead.staff_member == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
-        <option value="David Dischley" {% if lead.staff_member == "David Dischley" %}selected{% endif %}>David Dischley</option>
-      </select>
-      <label for="staffMemberSelect" class="form-label">Staff Member</label>
-    </div>
-    <div class="mb-3">
-      <label for="lead_source" class="form-label">Lead Source</label>
-      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
-    </div>
-    <div class="mb-3 form-floating">
-      <select name="attorney" id="attorney" class="form-select">
-        <option value="">-- Select Attorney --</option>
-        <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
-        <option value="David Dischley" {% if lead.attorney == "David Dischley" %}selected{% endif %}>David Dischley</option>
-      </select>
-      <label for="attorney" class="form-label">Attorney</label>
-    </div>
-    <div class="mb-3">
-      <label for="notes" class="form-label">Notes</label>
-      <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
+    <div class="section-divider">
+      <h5 class="section-label">Internal Use Only:</h5>
+      <div class="mb-3 form-floating">
+        <select name="staff_member" class="form-select" id="staffMemberSelect">
+          <option value="">-- Select Staff Member --</option>
+          <option value="Tatum Brownlee" {% if lead.staff_member == "Tatum Brownlee" %}selected{% endif %}>Tatum Brownlee</option>
+          <option value="Nicole Purvis" {% if lead.staff_member == "Nicole Purvis" %}selected{% endif %}>Nicole Purvis</option>
+          <option value="Patrick O'Brien" {% if lead.staff_member == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+          <option value="David Dischley" {% if lead.staff_member == "David Dischley" %}selected{% endif %}>David Dischley</option>
+        </select>
+        <label for="staffMemberSelect" class="form-label">Staff Member</label>
+      </div>
+      <div class="mb-3">
+        <label for="lead_source" class="form-label">Lead Source</label>
+        <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+      </div>
+      <div class="mb-3 form-floating">
+        <select name="attorney" id="attorney" class="form-select">
+          <option value="">-- Select Attorney --</option>
+          <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+          <option value="David Dischley" {% if lead.attorney == "David Dischley" %}selected{% endif %}>David Dischley</option>
+        </select>
+        <label for="attorney" class="form-label">Attorney</label>
+      </div>
+      <div class="mb-3">
+        <label for="notes" class="form-label">Notes</label>
+        <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
+      </div>
     </div>
     <button type="submit" class="btn btn-primary">Update Lead</button>
   </form>
@@ -214,8 +233,6 @@
 
     const exclusiveStatusBoxes = [
       "calling",
-      "absence_waiver",
-      "sendRetainer",
       "lvm",
       "notPC",
       "toggleQuote"
@@ -224,23 +241,16 @@
       const checkbox = document.getElementById(id);
       if (checkbox) {
         checkbox.addEventListener("change", function () {
-          exclusiveStatusBoxes.forEach(otherId => {
-            if (otherId !== id) {
-              const otherCheckbox = document.getElementById(otherId);
-              if (otherCheckbox) {
-                otherCheckbox.checked = false;
-                if (otherId === "toggleQuote") {
-                  document.getElementById("quoteAmountField").style.display = "none";
-                  const quoteInput = document.querySelector("input[name='quote']");
-                  if (quoteInput) quoteInput.value = "";
-                }
-                if (otherId === "sendRetainer") {
-                  const retainerInput = document.querySelector("input[name='retainer_amount']");
-                  if (retainerInput) retainerInput.value = "";
+          if (this.checked) {
+            exclusiveStatusBoxes.forEach(otherId => {
+              if (otherId !== id) {
+                const otherCheckbox = document.getElementById(otherId);
+                if (otherCheckbox) {
+                  otherCheckbox.checked = false;
                 }
               }
-            }
-          });
+            });
+          }
           if (!this.checked) {
             if (id === "toggleQuote") {
               document.getElementById("quoteAmountField").style.display = "none";

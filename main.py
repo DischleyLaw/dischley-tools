@@ -523,7 +523,7 @@ def intake():
 
         # Compose HTML email with all submitted fields if present, using required mapping
         email_html = "<h2>New Lead:</h2>"
-        email_html += "<ul style='list-style-type:none;padding-left:0;'>"
+        email_html += "<ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
         field_items = [
             ("Type of Case", case_type),
             ("First Name", first_name),
@@ -747,13 +747,13 @@ def update_lead(lead_id):
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
     email_html = f"<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2><br>"
 
-    email_html += "<h3><u><b>Client Information:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
-    email_html += f"<li><strong>Name:</strong> {lead.name}</li>"
-    email_html += f"<li><strong>Phone:</strong> {lead.phone}</li>"
-    email_html += f"<li><strong>Email:</strong> {lead.email}</li>"
+    email_html += "<h3 style='margin-bottom:5px;'><u><b>Client Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+    email_html += f"<li style='font-size:16px;'><strong>Name:</strong> {lead.name}</li>"
+    email_html += f"<li style='font-size:16px;'><strong>Phone:</strong> {lead.phone}</li>"
+    email_html += f"<li style='font-size:16px;'><strong>Email:</strong> {lead.email}</li>"
     email_html += "</ul>"
 
-    email_html += "<h3><u><b>Case Information:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
+    email_html += "<h3 style='margin-bottom:5px;'><u><b>Case Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
     # Formatting for court date and time
     formatted_court_date = None
     if lead.court_date:
@@ -774,53 +774,15 @@ def update_lead(lead_id):
         ("Court Date", formatted_court_date),
         ("Court Time", formatted_time),
         ("Brief Description of the Facts", lead.facts),
-        # REMOVED: ("Notes", lead.notes),
-        # REMOVED: ("Staff Member", lead.staff_member),
-        # REMOVED: ("Attorney", request.form.get("attorney")),
-        # REMOVED: ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
-        # REMOVED: ("Custom Source", lead.custom_source if lead.custom_source else None),
-        # REMOVED: ("Send Retainer", "✅" if lead.send_retainer else None),
-        # REMOVED: ("Retainer Amount", f"${float(lead.retainer_amount):.2f}" if lead.retainer_amount and lead.retainer_amount.replace('.', '', 1).isdigit() else lead.retainer_amount),
-        # REMOVED: ("LVM", "✅" if lead.lvm else None),
-        # REMOVED: ("Not a PC", "✅" if lead.not_pc else None),
-        # REMOVED: ("Quote", f"${float(lead.quote.strip()):.2f}" if lead.quote and lead.quote.strip().lower() != "none" and lead.quote.strip().replace('.', '', 1).isdigit() else lead.quote.strip() if lead.quote else None),
-        # REMOVED: ("Absence Waiver", "✅" if lead.absence_waiver else None),
         ("Homework", lead.homework if lead.homework else None),
         ("Calling", "✅" if lead.calling else None),
     ]
     for label, value in field_items:
         if value:
             email_html += f"<li><strong>{label}:</strong> {value}</li>"
-    # --- Homework Section ---
-    email_html += """
-<h3><u><b>Homework:</b></u></h3><br>
-<ul style='list-style-type:none;padding-left:0;'>
-  <li><strong>Client to provide character references</strong></li>
-  <li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>
-  <li><strong>Driver Improvement Course:</strong> ✅</li>
-  <li><strong>Community Service:</strong> ✅ (25 hours)</li>
-  <li><strong>Substance Abuse Evaluation:</strong> ✅</li>
-  <li><strong>Driving Record:</strong> ✅</li>
-  <li><strong>Pre-enroll in ASAP:</strong> ✅</li>
-  <li><strong>Shoplifting Class:</strong> ✅</li>
-  <li><strong>Speedometer Calibration:</strong> ✅</li>
-  <li><strong>Medical Conditions / Surgeries List:</strong> ✅</li>
-  <li><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>
-  <li><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>
-  <li><strong>Copies of Military Awards:</strong> ✅</li>
-  <li><strong>Copy of DD-214:</strong> ✅</li>
-  <li><strong>Community Involvement List:</strong> ✅</li>
-  <li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>
-  <li><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>
-  <li><strong>Substance Abuse Counseling:</strong> ✅</li>
-  <li><strong>High School or College Transcripts:</strong> ✅</li>
-  <li><strong>NO HW:</strong> ✅</li>
-  <li><strong>Additional Homework:</strong> ✅ Complete mental health evaluation</li>
-</ul>
-"""
 
     # --- Insert Action/Status Section ---
-    email_html += "<h3><u><b>Action/Status:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
+    email_html += "<h3 style='margin-bottom:5px;'><u><b>Action/Status:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
     if lead.send_retainer:
         email_html += "<li><strong>Send Retainer:</strong> ✅</li>"
         if lead.retainer_amount:
@@ -845,6 +807,54 @@ def update_lead(lead_id):
         email_html += "<li><strong>Absence Waiver:</strong> ✅</li>"
     email_html += "</ul>"
 
+    # --- Dynamic Homework Section ---
+    if lead.send_retainer:
+        email_html += "<h3 style='margin-bottom:5px;'><u><b>Homework:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+        if lead.homework_driving_record:
+            email_html += "<li style='font-size:16px;'><strong>Driving Record:</strong> ✅</li>"
+        if lead.homework_reckless_program:
+            email_html += "<li style='font-size:16px;'><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
+        if lead.homework_driver_improvement:
+            email_html += "<li style='font-size:16px;'><strong>Driver Improvement Course:</strong> ✅</li>"
+        if lead.homework_speedometer:
+            email_html += "<li style='font-size:16px;'><strong>Speedometer Calibration:</strong> ✅</li>"
+        if lead.homework_community_service:
+            hours = lead.homework_community_service_hours or ""
+            email_html += f"<li style='font-size:16px;'><strong>Community Service:</strong> ✅ ({hours} hours)</li>"
+        if lead.homework_substance_evaluation:
+            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Evaluation:</strong> ✅</li>"
+        if lead.homework_asap:
+            email_html += "<li style='font-size:16px;'><strong>Pre-enroll in ASAP:</strong> ✅</li>"
+        if lead.homework_shoplifting:
+            email_html += "<li style='font-size:16px;'><strong>Shoplifting Class:</strong> ✅</li>"
+        if lead.homework_medical_conditions:
+            email_html += "<li style='font-size:16px;'><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
+        if lead.homework_photos:
+            email_html += "<li style='font-size:16px;'><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
+        if lead.homework_shoplifting_program:
+            email_html += "<li style='font-size:16px;'><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>"
+        if lead.homework_military_awards:
+            email_html += "<li style='font-size:16px;'><strong>Copies of Military Awards:</strong> ✅</li>"
+        if lead.homework_dd214:
+            email_html += "<li style='font-size:16px;'><strong>Copy of DD-214:</strong> ✅</li>"
+        if lead.homework_community_involvement:
+            email_html += "<li style='font-size:16px;'><strong>Community Involvement List:</strong> ✅</li>"
+        if lead.homework_anger_management_courseforcourt:
+            email_html += "<li style='font-size:16px;'><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
+        if lead.homework_vasap:
+            email_html += "<li style='font-size:16px;'><strong>VASAP:</strong> ✅</li>"
+        if lead.homework_substance_abuse_treatment:
+            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
+        if lead.homework_substance_abuse_counseling:
+            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Counseling:</strong> ✅</li>"
+        if lead.homework_transcripts:
+            email_html += "<li style='font-size:16px;'><strong>High School or College Transcripts:</strong> ✅</li>"
+        if lead.homework_no_hw:
+            email_html += "<li style='font-size:16px;'><strong>NO HW:</strong> ✅</li>"
+        if lead.homework_additional:
+            email_html += f"<li style='font-size:16px;'><strong>Additional Homework:</strong> ✅ {lead.homework_additional_notes}</li>"
+        email_html += "</ul>"
+
     # --- Add Internal Use Only Section if any internal fields are present ---
     internal_fields = [
         getattr(lead, "notes", None),
@@ -856,13 +866,13 @@ def update_lead(lead_id):
     # Check if at least one is non-empty (not None and not empty/whitespace)
     if any(f and str(f).strip() for f in internal_fields):
         email_html += (
-            "<h3><u><b>INTERNAL USE ONLY:</b></u></h3><br>"
-            "<ul style='list-style-type:none;padding-left:0;'>"
-            f"<li><strong>Notes:</strong> {lead.notes or ''}</li>"
-            f"<li><strong>Staff Member:</strong> {lead.staff_member or ''}</li>"
-            f"<li><strong>Attorney:</strong> {lead.attorney or ''}</li>"
-            f"<li><strong>Lead Source:</strong> {lead.lead_source or ''}</li>"
-            f"<li><strong>Custom Source:</strong> {lead.custom_source or ''}</li>"
+            "<h3 style='margin-bottom:5px;'><u><b>INTERNAL USE ONLY:</b></u></h3>"
+            "<ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+            f"<li style='font-size:16px;'><strong>Notes:</strong> {lead.notes or ''}</li>"
+            f"<li style='font-size:16px;'><strong>Staff Member:</strong> {lead.staff_member or ''}</li>"
+            f"<li style='font-size:16px;'><strong>Attorney:</strong> {lead.attorney or ''}</li>"
+            f"<li style='font-size:16px;'><strong>Lead Source:</strong> {lead.lead_source or ''}</li>"
+            f"<li style='font-size:16px;'><strong>Custom Source:</strong> {lead.custom_source or ''}</li>"
             "</ul>"
         )
 
