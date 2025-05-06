@@ -171,6 +171,12 @@
         <label for="quote" class="form-label">Quoted Amount</label>
         <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
       </div>
+      <div class="mb-3" id="absenceWaiverBox" {% if not lead.send_retainer %}style="display:none;"{% endif %}>
+        <div class="form-check">
+          <input type="checkbox" name="absence_waiver" class="form-check-input" id="absenceWaiver" {% if lead.absence_waiver %}checked{% endif %}>
+          <label class="form-check-label" for="absenceWaiver">Send Absence Waiver</label>
+        </div>
+      </div>
     </div>
     <div class="section-divider">
       <h5 class="section-label">Internal Use Only:</h5>
@@ -226,11 +232,13 @@
       quoteField.style.display = this.checked ? "block" : "none";
     });
 
-    // Retainer amount toggle logic
+    // Retainer amount and absence waiver toggle logic
     const sendRetainer = document.getElementById("sendRetainer");
     const retainerAmountBox = document.getElementById("retainerAmountBox");
+    const absenceWaiverBox = document.getElementById("absenceWaiverBox");
     sendRetainer.addEventListener("change", function () {
       retainerAmountBox.style.display = this.checked ? "block" : "none";
+      absenceWaiverBox.style.display = this.checked ? "block" : "none";
     });
 
     const exclusiveStatusBoxes = [

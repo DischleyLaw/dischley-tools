@@ -435,7 +435,9 @@ def intake():
     if request.method == "POST":
         data = request.form
 
-        lead_source = data.get("lead_source")
+        # Retrieve and strip custom_source and lead_source before use.
+        custom_source = request.form.get("custom_source", "").strip()
+        lead_source = request.form.get("lead_source", "").strip()
 
         # Extract additional dynamic case-type fields from the form
         case_type = data.get("case_type")
