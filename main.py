@@ -1172,9 +1172,9 @@ def case_result():
                         formatted_continuation_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p")
                     except ValueError:
                         formatted_continuation_time = continuation_time
-                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</p>")
+                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case continued to</strong> {formatted_continuation_date} at {formatted_continuation_time}</p>")
                 else:
-                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date}</p>")
+                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case continued to</strong> {formatted_continuation_date}</p>")
             else:
                 summary_fields.append("<p style='font-size:16pt;'><strong>Case Continued</strong></p>")
 
