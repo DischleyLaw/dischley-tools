@@ -3,6 +3,7 @@
 <div class="intake-card">
   <h2 class="mb-4">Manage Lead</h2>
   <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
+    <h4><u><b>Client Information:</b></u></h4>
     <div class="mb-3">
       <label for="name" class="form-label">Name</label>
       <input type="text" name="name" class="form-control" value="{{ lead.name }}">
@@ -15,6 +16,8 @@
       <label for="email" class="form-label">Email</label>
       <input type="email" name="email" class="form-control" value="{{ lead.email }}">
     </div>
+    <br><br>
+    <h4><u><b>Case Information:</b></u></h4>
     <div class="mb-3">
       <label for="court" class="form-label">Court</label>
       <input type="text" name="court" class="form-control" value="{{ lead.court }}">
@@ -28,9 +31,15 @@
       <textarea name="facts" class="form-control">{{ lead.facts }}</textarea>
     </div>
     <div class="mb-3">
-      <label for="notes" class="form-label">Notes</label>
-      <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
+      <label for="court_date" class="form-label">Court Date</label>
+      <input type="date" name="court_date" class="form-control" value="{{ lead.court_date }}">
     </div>
+    <div class="mb-3">
+      <label for="court_time" class="form-label">Court Time</label>
+      <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
+    </div>
+    <br><br>
+    <h4><u><b>Homework:</b></u></h4>
     <div class="mb-3">
       <label class="form-label">Homework:</label>
       <div class="form-check">
@@ -98,10 +107,6 @@
         <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management</label>
       </div>
       <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_vasap" id="homework_vasap">
-        <label class="form-check-label" for="homework_vasap">Pre-Enroll in VASAP</label>
-      </div>
-      <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
         <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
       </div>
@@ -118,53 +123,8 @@
         <label class="form-check-label" for="homework_no_hw">NO HW</label>
       </div>
     </div>
-    <div class="mb-3">
-      <label for="court_date" class="form-label">Court Date</label>
-      <input type="date" name="court_date" class="form-control" value="{{ lead.court_date }}">
-    </div>
-    <div class="mb-3">
-      <label for="court_time" class="form-label">Court Time</label>
-      <input type="time" name="court_time" class="form-control" value="{{ lead.court_time }}">
-    </div>
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="absence_waiver" id="absence_waiver" {% if lead.absence_waiver %}checked{% endif %}>
-      <label class="form-check-label" for="absence_waiver">Absence Waiver</label>
-    </div>
-    <div class="mb-3 form-floating">
-      <select name="staff_member" class="form-select" id="staffMemberSelect">
-        <option value="">-- Select Staff Member --</option>
-        <option value="Tatum Brownlee" {% if lead.staff_member == "Tatum Brownlee" %}selected{% endif %}>Tatum Brownlee</option>
-        <option value="Nicole Purvis" {% if lead.staff_member == "Nicole Purvis" %}selected{% endif %}>Nicole Purvis</option>
-        <option value="Patrick O'Brien" {% if lead.staff_member == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
-        <option value="David Dischley" {% if lead.staff_member == "David Dischley" %}selected{% endif %}>David Dischley</option>
-      </select>
-      <label for="staffMemberSelect" class="form-label">Staff Member</label>
-    </div>
-    <div class="mb-3 form-floating">
-      <select name="case_type" id="caseTypeDropdown" class="form-select">
-        <option value="">-- Select Case Type --</option>
-        <option value="Criminal" {% if lead.case_type == "Criminal" %}selected{% endif %}>Criminal</option>
-        <option value="DUI" {% if lead.case_type == "DUI" %}selected{% endif %}>DUI</option>
-        <option value="Traffic" {% if lead.case_type == "Traffic" %}selected{% endif %}>Traffic</option>
-        <option value="Protective Order" {% if lead.case_type == "Protective Order" %}selected{% endif %}>Protective Order</option>
-        <option value="Expungement" {% if lead.case_type == "Expungement" %}selected{% endif %}>Expungement</option>
-        <option value="Probation Violation" {% if lead.case_type == "Probation Violation" %}selected{% endif %}>Probation Violation</option>
-        <option value="Civil" {% if lead.case_type == "Civil" %}selected{% endif %}>Civil</option>
-      </select>
-      <label for="caseTypeDropdown" class="form-label">Type of Case</label>
-    </div>
-    <div class="mb-3">
-      <label for="lead_source" class="form-label">Lead Source</label>
-      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
-    </div>
-    <div class="mb-3 form-floating">
-      <select name="attorney" id="attorney" class="form-select">
-        <option value="">-- Select Attorney --</option>
-        <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
-        <option value="David Dischley" {% if lead.attorney == "David Dischley" %}selected{% endif %}>David Dischley</option>
-      </select>
-      <label for="attorney" class="form-label">Attorney</label>
-    </div>
+    <br><br>
+    <h4><u><b>Action/Status:</b></u></h4>
     <div class="mb-3 form-check">
       <input type="checkbox" name="calling" class="form-check-input" id="calling" {% if lead.calling %}checked{% endif %}>
       <label class="form-check-label" for="calling">Calling</label>
@@ -192,6 +152,34 @@
     <div class="mb-3" id="quoteAmountField" style="display: none;">
       <label for="quote" class="form-label">Quoted Amount</label>
       <input type="text" name="quote" class="form-control" value="{{ lead.quote }}">
+    </div>
+    <br><br>
+    <h4><u><b>Internal Use Only:</b></u></h4>
+    <div class="mb-3 form-floating">
+      <select name="staff_member" class="form-select" id="staffMemberSelect">
+        <option value="">-- Select Staff Member --</option>
+        <option value="Tatum Brownlee" {% if lead.staff_member == "Tatum Brownlee" %}selected{% endif %}>Tatum Brownlee</option>
+        <option value="Nicole Purvis" {% if lead.staff_member == "Nicole Purvis" %}selected{% endif %}>Nicole Purvis</option>
+        <option value="Patrick O'Brien" {% if lead.staff_member == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+        <option value="David Dischley" {% if lead.staff_member == "David Dischley" %}selected{% endif %}>David Dischley</option>
+      </select>
+      <label for="staffMemberSelect" class="form-label">Staff Member</label>
+    </div>
+    <div class="mb-3">
+      <label for="lead_source" class="form-label">Lead Source</label>
+      <input type="text" name="lead_source" class="form-control" value="{{ lead.lead_source }}">
+    </div>
+    <div class="mb-3 form-floating">
+      <select name="attorney" id="attorney" class="form-select">
+        <option value="">-- Select Attorney --</option>
+        <option value="Patrick O'Brien" {% if lead.attorney == "Patrick O'Brien" %}selected{% endif %}>Patrick O'Brien</option>
+        <option value="David Dischley" {% if lead.attorney == "David Dischley" %}selected{% endif %}>David Dischley</option>
+      </select>
+      <label for="attorney" class="form-label">Attorney</label>
+    </div>
+    <div class="mb-3">
+      <label for="notes" class="form-label">Notes</label>
+      <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
     </div>
     <button type="submit" class="btn btn-primary">Update Lead</button>
   </form>

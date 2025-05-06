@@ -745,8 +745,15 @@ def update_lead(lead_id):
     msg = Message(subject_line,
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    email_html = f"<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2>"
-    email_html += "<ul style='list-style-type:none;padding-left:0;'>"
+    email_html = f"<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2><br>"
+
+    email_html += "<h3><u><b>Client Information:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
+    email_html += f"<li><strong>Name:</strong> {lead.name}</li>"
+    email_html += f"<li><strong>Phone:</strong> {lead.phone}</li>"
+    email_html += f"<li><strong>Email:</strong> {lead.email}</li>"
+    email_html += "</ul>"
+
+    email_html += "<h3><u><b>Case Information:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
     # Formatting for court date and time
     formatted_court_date = None
     if lead.court_date:
@@ -760,91 +767,105 @@ def update_lead(lead_id):
             formatted_time = datetime.strptime(lead.court_time, "%H:%M").strftime("%I:%M %p")
         except ValueError:
             formatted_time = lead.court_time
-    # Compose using the required mapping
+    # Compose using the required mapping, omitting internal-only fields and action/status fields
     field_items = [
-        ("Type of Case", lead.case_type),
-        ("Name", lead.name),
-        ("Phone", lead.phone),
-        ("Email", lead.email),
         ("Charges", lead.charges),
         ("Court", lead.court),
         ("Court Date", formatted_court_date),
         ("Court Time", formatted_time),
         ("Brief Description of the Facts", lead.facts),
-        ("Notes", lead.notes),
-        ("Staff Member", lead.staff_member),
-        ("Attorney", request.form.get("attorney")),
-        ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
-        ("Custom Source", lead.custom_source if lead.custom_source else None),
-        ("Send Retainer", "✅" if lead.send_retainer else None),
-        ("Retainer Amount", f"${float(lead.retainer_amount):.2f}" if lead.retainer_amount and lead.retainer_amount.replace('.', '', 1).isdigit() else lead.retainer_amount),
-        ("LVM", "✅" if lead.lvm else None),
-        ("Not a PC", "✅" if lead.not_pc else None),
-        ("Quote", f"${float(lead.quote.strip()):.2f}" if lead.quote and lead.quote.strip().lower() != "none" and lead.quote.strip().replace('.', '', 1).isdigit() else lead.quote.strip() if lead.quote else None),
-        ("Absence Waiver", "✅" if lead.absence_waiver else None),
+        # REMOVED: ("Notes", lead.notes),
+        # REMOVED: ("Staff Member", lead.staff_member),
+        # REMOVED: ("Attorney", request.form.get("attorney")),
+        # REMOVED: ("Lead Source", lead.lead_source if lead.lead_source and lead.lead_source != "Other" else None),
+        # REMOVED: ("Custom Source", lead.custom_source if lead.custom_source else None),
+        # REMOVED: ("Send Retainer", "✅" if lead.send_retainer else None),
+        # REMOVED: ("Retainer Amount", f"${float(lead.retainer_amount):.2f}" if lead.retainer_amount and lead.retainer_amount.replace('.', '', 1).isdigit() else lead.retainer_amount),
+        # REMOVED: ("LVM", "✅" if lead.lvm else None),
+        # REMOVED: ("Not a PC", "✅" if lead.not_pc else None),
+        # REMOVED: ("Quote", f"${float(lead.quote.strip()):.2f}" if lead.quote and lead.quote.strip().lower() != "none" and lead.quote.strip().replace('.', '', 1).isdigit() else lead.quote.strip() if lead.quote else None),
+        # REMOVED: ("Absence Waiver", "✅" if lead.absence_waiver else None),
         ("Homework", lead.homework if lead.homework else None),
         ("Calling", "✅" if lead.calling else None),
     ]
     for label, value in field_items:
         if value:
             email_html += f"<li><strong>{label}:</strong> {value}</li>"
-    # Add homework checkboxes to email
-    if getattr(lead, "homework_reckless_program", None): email_html += "<li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
-    if lead.homework_driver_improvement: email_html += "<li><strong>Driver Improvement Course:</strong> ✅</li>"
-    if lead.homework_community_service:
-        email_html += "<li><strong>Community Service:</strong> ✅"
-        if lead.homework_community_service_hours:
-            email_html += f" ({lead.homework_community_service_hours} hours)"
-        email_html += "</li>"
-    if lead.homework_substance_evaluation: email_html += "<li><strong>Substance Abuse Evaluation:</strong> ✅</li>"
-    if lead.homework_driving_record: email_html += "<li><strong>Driving Record:</strong> ✅</li>"
-    if lead.homework_asap: email_html += "<li><strong>Pre-enroll in ASAP:</strong> ✅</li>"
-    if lead.homework_shoplifting: email_html += "<li><strong>Shoplifting Class:</strong> ✅</li>"
-    # Additional homework fields for email
-    if getattr(lead, "homework_speedometer", None): email_html += "<li><strong>Speedometer Calibration:</strong> ✅</li>"
-    if getattr(lead, "homework_medical_conditions", None): email_html += "<li><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
-    if getattr(lead, "homework_photos", None): email_html += "<li><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
-    if getattr(lead, "homework_shoplifting_program", None): email_html += "<li><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>"
-    if getattr(lead, "homework_military_awards", None): email_html += "<li><strong>Copies of Military Awards:</strong> ✅</li>"
-    if getattr(lead, "homework_dd214", None): email_html += "<li><strong>Copy of DD-214:</strong> ✅</li>"
-    if getattr(lead, "homework_community_involvement", None): email_html += "<li><strong>Community Involvement List:</strong> ✅</li>"
-    if getattr(lead, "homework_anger_management_courseforcourt", None): email_html += "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
-    if getattr(lead, "homework_vasap", None): email_html += "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>"
-    if getattr(lead, "homework_substance_abuse_treatment", None): email_html += "<li><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
-    if getattr(lead, "homework_substance_abuse_counseling", None): email_html += "<li><strong>Substance Abuse Counseling:</strong> ✅</li>"
-    if getattr(lead, "homework_transcripts", None): email_html += "<li><strong>High School or College Transcripts:</strong> ✅</li>"
-    # New: NO HW
-    if getattr(lead, "homework_no_hw", None): email_html += "<li><strong>NO HW:</strong> ✅</li>"
-    # Additional Homework (with notes)
-    if getattr(lead, "homework_additional", None):
-        note = lead.homework_additional_notes or ""
-        email_html += f"<li><strong>Additional Homework:</strong> ✅ {note}</li>"
+    # --- Homework Section ---
+    email_html += """
+<h3><u><b>Homework:</b></u></h3><br>
+<ul style='list-style-type:none;padding-left:0;'>
+  <li><strong>Client to provide character references</strong></li>
+  <li><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>
+  <li><strong>Driver Improvement Course:</strong> ✅</li>
+  <li><strong>Community Service:</strong> ✅ (25 hours)</li>
+  <li><strong>Substance Abuse Evaluation:</strong> ✅</li>
+  <li><strong>Driving Record:</strong> ✅</li>
+  <li><strong>Pre-enroll in ASAP:</strong> ✅</li>
+  <li><strong>Shoplifting Class:</strong> ✅</li>
+  <li><strong>Speedometer Calibration:</strong> ✅</li>
+  <li><strong>Medical Conditions / Surgeries List:</strong> ✅</li>
+  <li><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>
+  <li><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>
+  <li><strong>Copies of Military Awards:</strong> ✅</li>
+  <li><strong>Copy of DD-214:</strong> ✅</li>
+  <li><strong>Community Involvement List:</strong> ✅</li>
+  <li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>
+  <li><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>
+  <li><strong>Substance Abuse Counseling:</strong> ✅</li>
+  <li><strong>High School or College Transcripts:</strong> ✅</li>
+  <li><strong>NO HW:</strong> ✅</li>
+  <li><strong>Additional Homework:</strong> ✅ Complete mental health evaluation</li>
+</ul>
+"""
 
-    # --- Ensure the following checkboxes are included in the update email summary if checked ---
-    # If not already included above, these will be included if True.
-    if getattr(lead, "homework_vasap", False):
-        # Already rendered above, but ensure label matches requirements
-        if "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>" not in email_html:
-            email_html += "<li><strong>Pre-Enroll in VASAP:</strong> ✅</li>"
-    if getattr(lead, "homework_vip", False):
-        # Only add if not already present
-        if "<li><strong>VIP:</strong> ✅</li>" not in email_html:
-            email_html += "<li><strong>VIP:</strong> ✅</li>"
-    if getattr(lead, "homework_community_service", False):
-        # Already rendered above with hours if available, but ensure this form is present
-        # Only add if not already present as simple Community Service
-        # If hours are present, already rendered; else, ensure the plain label is present
-        if lead.homework_community_service_hours:
-            # Already rendered with hours
-            pass
-        else:
-            if "<li><strong>Community Service:</strong> ✅</li>" not in email_html:
-                email_html += "<li><strong>Community Service:</strong> ✅</li>"
-    if getattr(lead, "homework_anger_management_courseforcourt", False):
-        # Only add if not already present
-        if "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>" not in email_html:
-            email_html += "<li><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
+    # --- Insert Action/Status Section ---
+    email_html += "<h3><u><b>Action/Status:</b></u></h3><br><ul style='list-style-type:none;padding-left:0;'>"
+    if lead.send_retainer:
+        email_html += "<li><strong>Send Retainer:</strong> ✅</li>"
+        if lead.retainer_amount:
+            try:
+                email_html += f"<li><strong>Retainer Amount:</strong> ${float(lead.retainer_amount):.2f}</li>"
+            except Exception:
+                email_html += f"<li><strong>Retainer Amount:</strong> {lead.retainer_amount}</li>"
+    if lead.lvm:
+        email_html += "<li><strong>LVM:</strong> ✅</li>"
+    if lead.calling:
+        email_html += "<li><strong>Calling:</strong> ✅</li>"
+    if lead.not_pc:
+        email_html += "<li><strong>Not a PC:</strong> ✅</li>"
+    # Quote (if present and not "none")
+    if lead.quote and lead.quote.strip() and lead.quote.strip().lower() != "none":
+        try:
+            email_html += f"<li><strong>Quote:</strong> ${float(lead.quote.strip()):.2f}</li>"
+        except Exception:
+            email_html += f"<li><strong>Quote:</strong> {lead.quote.strip()}</li>"
+    # Absence Waiver
+    if lead.absence_waiver:
+        email_html += "<li><strong>Absence Waiver:</strong> ✅</li>"
     email_html += "</ul>"
+
+    # --- Add Internal Use Only Section if any internal fields are present ---
+    internal_fields = [
+        getattr(lead, "notes", None),
+        getattr(lead, "staff_member", None),
+        getattr(lead, "attorney", None),
+        getattr(lead, "lead_source", None),
+        getattr(lead, "custom_source", None)
+    ]
+    # Check if at least one is non-empty (not None and not empty/whitespace)
+    if any(f and str(f).strip() for f in internal_fields):
+        email_html += (
+            "<h3><u><b>INTERNAL USE ONLY:</b></u></h3><br>"
+            "<ul style='list-style-type:none;padding-left:0;'>"
+            f"<li><strong>Notes:</strong> {lead.notes or ''}</li>"
+            f"<li><strong>Staff Member:</strong> {lead.staff_member or ''}</li>"
+            f"<li><strong>Attorney:</strong> {lead.attorney or ''}</li>"
+            f"<li><strong>Lead Source:</strong> {lead.lead_source or ''}</li>"
+            f"<li><strong>Custom Source:</strong> {lead.custom_source or ''}</li>"
+            "</ul>"
+        )
+
     email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
     mail.send(msg)
