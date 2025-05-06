@@ -1107,7 +1107,7 @@ def case_result():
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
                     # RE-ADD "Sentence" heading just before jail/fine output, with updated style
-                    email_html += "<p style='font-size:16pt; font-weight:bold; margin-bottom:0;'>Sentence</p>"
+                    email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence<br></span>"
                     # Jail and Fine output per new requirements
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
@@ -1160,17 +1160,6 @@ def case_result():
 
         # Extra fields
         summary_fields = []
-
-        # --- Inserted: Include checked checkboxes in summary ---
-        checkbox_labels = {
-            "VASAP": vasap,
-            "VIP": vip,
-            "Community Service": community_service,
-            "Anger Management": anger_management,
-        }
-        for label, items in checkbox_labels.items():
-            if any(item.strip().lower() in ("yes", "on", "true") for item in items if item.strip()):
-                summary_fields.append(f"<p style='font-size:16pt;'><strong>{label}:</strong> ✅</p>")
 
         if was_continued:
             if continuation_date:
