@@ -836,7 +836,7 @@ def update_lead(lead_id):
         if lead.homework_community_involvement:
             email_html += "<li style='font-size:16pt;'><strong>Community Involvement List:</strong> ✅</li>"
         if lead.homework_anger_management_courseforcourt:
-            email_html += "<li style='font-size:16pt;'><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Anger Management</strong> ✅</li>"
         if lead.homework_vasap:
             email_html += "<li style='font-size:16pt;'><strong>VASAP:</strong> ✅</li>"
         if lead.homework_substance_abuse_treatment:
