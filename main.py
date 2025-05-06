@@ -1088,32 +1088,36 @@ def case_result():
             for i in range(num_charges):
                 # Instead of "Charge {i+1}", bold and underline the original charge name.
                 if i < len(original_charges) and original_charges[i]:
-                    email_html += f"&lt;p style='font-size:16pt; font-weight:bold; text-decoration:underline;'&gt;{original_charges[i]}&lt;/p&gt;"
+                    email_html += f"<p style='font-size:16pt; font-weight:bold; text-decoration:underline;'>{original_charges[i]}</p>"
                 email_html += "<p style='font-size:16pt; margin-left:20px;'>"
                 # The rest of the charge details still display under the bolded original charge.
                 if i < len(amended_charges) and amended_charges[i]:
                     email_html += f"<strong>Amended Charge:</strong> {amended_charges[i]}<br>"
+                # Insert plea and disposition bullets after amended charge
                 if i < len(pleas) and pleas[i]:
-                    email_html += f"<strong>Plea:</strong> {pleas[i]}<br>"
+                    email_html += f"• <strong>Plea:</strong> {pleas[i]}<br>"
+                # Change "Disposition" to "Finding"
                 if i < len(dispositions) and dispositions[i]:
-                    email_html += f"<strong>Disposition:</strong> {dispositions[i]}<br>"
+                    email_html += f"• <strong>Finding:</strong> {dispositions[i]}<br>"
                 # NEW: If disposition in skip_dispositions, include disposition paragraph
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
                         email_html += f"<strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
+                    # Before jail/fine/license, insert Sentence heading
+                    email_html += "<p style='font-size:16pt; font-weight:bold; text-decoration:underline;'>Sentence</p>"
                     # Per-charge sentencing/probation fields:
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"<strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended<br>"
+                            email_html += f"• <strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended<br>"
                         else:
-                            email_html += f"<strong>Jail:</strong> {jail_time_imposed[i]} days<br>"
+                            email_html += f"• <strong>Jail:</strong> {jail_time_imposed[i]} days<br>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
-                            email_html += f"<strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br>"
+                            email_html += f"• <strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br>"
                         else:
-                            email_html += f"<strong>Fine:</strong> ${fine_imposed[i]}<br>"
+                            email_html += f"• <strong>Fine:</strong> ${fine_imposed[i]}<br>"
                     # License Suspension: Only show check if "Yes"
                     if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
                         email_html += "<strong>License Suspension:</strong> ✅<br>"
@@ -1130,7 +1134,7 @@ def case_result():
                         email_html += restricted_info + "<br>"
                     # ASAP Ordered: Only show if "Yes"
                     if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<strong>ASAP Ordered:</strong> ✅<br>"
+                        email_html += "<strong>ASAP:</strong> ✅<br>"
                     # Probation
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
