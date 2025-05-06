@@ -1089,38 +1089,39 @@ def case_result():
                 # Instead of "Charge {i+1}", bold and underline the original charge name.
                 if i < len(original_charges) and original_charges[i]:
                     email_html += f"<p style='font-size:16pt; font-weight:bold; text-decoration:underline;'>{original_charges[i]}</p>"
+                # Ensure all charge detail paragraphs use 16pt
                 email_html += "<p style='font-size:16pt; margin-left:20px;'>"
                 # The rest of the charge details still display under the bolded original charge.
                 if i < len(amended_charges) and amended_charges[i]:
-                    email_html += f"<strong>Amended Charge:</strong> {amended_charges[i]}<br>"
+                    email_html += f"<span style='font-size:16pt;'><strong>Amended Charge:</strong> {amended_charges[i]}<br></span>"
                 # Insert plea and disposition bullets after amended charge
                 if i < len(pleas) and pleas[i]:
-                    email_html += f"• <strong>Plea:</strong> {pleas[i]}<br>"
-                # Change "Disposition" to "Finding"
+                    email_html += f"<span style='font-size:16pt;'>• <strong>Plea:</strong> {pleas[i]}<br></span>"
+                # Change "Finding" back to "Disposition" and ensure 16pt font
                 if i < len(dispositions) and dispositions[i]:
-                    email_html += f"• <strong>Finding:</strong> {dispositions[i]}<br>"
+                    email_html += f"<span style='font-size:16pt;'>• <strong>Disposition:</strong> {dispositions[i]}<br></span>"
                 # NEW: If disposition in skip_dispositions, include disposition paragraph
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
-                        email_html += f"<strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br>"
+                        email_html += f"<span style='font-size:16pt;'><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br></span>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
-                    # Before jail/fine/license, insert Sentence heading
-                    email_html += "<p style='font-size:16pt; font-weight:bold; text-decoration:underline;'>Sentence</p>"
-                    # Per-charge sentencing/probation fields:
+                    # RE-ADD "Sentence" heading just before jail/fine output, with updated style
+                    email_html += "<p style='font-size:16pt; font-weight:bold; margin-bottom:0;'>Sentence</p>"
+                    # Jail and Fine output per new requirements
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"• <strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended<br>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} days in jail with {jail_time_suspended[i]} days suspended<br></span>"
                         else:
-                            email_html += f"• <strong>Jail:</strong> {jail_time_imposed[i]} days<br>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} days in jail<br></span>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
-                            email_html += f"• <strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br></span>"
                         else:
-                            email_html += f"• <strong>Fine:</strong> ${fine_imposed[i]}<br>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]}<br></span>"
                     # License Suspension: Only show check if "Yes"
                     if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
-                        email_html += "<strong>License Suspension:</strong> ✅<br>"
+                        email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # Compose restricted license info: include type and term if granted
                     if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
@@ -1131,10 +1132,11 @@ def case_result():
                             details.append(f"Term: {license_suspension_term[i]}")
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
-                        email_html += restricted_info + "<br>"
+                        email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
+                    # END restricted license block before ASAP section
                     # ASAP Ordered: Only show if "Yes"
-                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<strong>ASAP:</strong> ✅<br>"
+                    # if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
+                    #     email_html += "<span style='font-size:16pt;'><strong>ASAP:</strong> ✅<br></span>"
                     # Probation
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
@@ -1150,9 +1152,10 @@ def case_result():
                     if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>Anger Management:</strong> ✅")
                     if probation_lines:
-                        email_html += "<strong>Conditions of Probation:</strong><br>"
+                        email_html += "<span style='font-size:16pt;'><strong>Conditions of Probation:</strong><br>"
                         for line in probation_lines:
                             email_html += f"&nbsp;&nbsp;{line}<br>"
+                        email_html += "</span>"
                 email_html += "</p>"
 
         # Extra fields
