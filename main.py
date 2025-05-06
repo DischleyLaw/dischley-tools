@@ -1107,7 +1107,7 @@ def case_result():
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
                     # RE-ADD "Sentence" heading just before jail/fine output, with updated style
-                    email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence<br></span>"
+                    email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
                     # Jail and Fine output per new requirements
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
