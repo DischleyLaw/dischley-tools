@@ -14,9 +14,10 @@
     margin-bottom: 0.75rem;
   }
 </style>
-<div class="intake-card">
-  <h2 class="mb-4">Manage Lead</h2>
-  <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
+<div class="container py-4">
+  <div class="card shadow-sm p-4 mb-4">
+    <h2 class="mb-4">Manage Lead</h2>
+    <form method="POST" action="{{ url_for('update_lead', lead_id=lead.id) }}">
     <div class="section-divider">
       <h5 class="section-label">Client Information:</h5>
       <div class="mb-3">
@@ -200,8 +201,9 @@
         <textarea name="notes" class="form-control">{{ lead.notes }}</textarea>
       </div>
     </div>
-    <button type="submit" class="btn btn-primary">Update Lead</button>
-  </form>
+      <button type="submit" class="btn btn-primary">Update Lead</button>
+    </form>
+  </div>
 </div>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
