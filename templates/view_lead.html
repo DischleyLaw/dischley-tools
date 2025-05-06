@@ -58,6 +58,10 @@
         <input type="text" class="form-control" name="homework_community_service_hours" id="homework_community_service_hours" placeholder="Enter number of hours">
       </div>
       <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_substance_evaluation" id="homework_substance_evaluation">
+        <label class="form-check-label" for="homework_substance_evaluation">Substance Abuse Evaluation</label>
+      </div>
+      <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_asap" id="homework_asap">
         <label class="form-check-label" for="homework_asap">Pre-enroll in ASAP</label>
       </div>
@@ -91,15 +95,15 @@
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_anger_management_courseforcourt" id="homework_anger_management_courseforcourt">
-        <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management: Courseforcourt.com</label>
+        <label class="form-check-label" for="homework_anger_management_courseforcourt">Anger Management</label>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_vasap" id="homework_vasap">
+        <label class="form-check-label" for="homework_vasap">Pre-Enroll in VASAP</label>
       </div>
       <div class="form-check">
         <input class="form-check-input" type="checkbox" name="homework_transcripts" id="homework_transcripts">
         <label class="form-check-label" for="homework_transcripts">High School or College Transcripts</label>
-      </div>
-      <div class="form-check">
-        <input class="form-check-input" type="checkbox" name="homework_no_hw" id="homework_no_hw">
-        <label class="form-check-label" for="homework_no_hw">NO HW</label>
       </div>
       <div class="mb-3 form-check">
         <input class="form-check-input" type="checkbox" id="toggleAdditionalHomework" name="toggle_additional_homework">
@@ -108,6 +112,10 @@
       <div class="mb-3" id="additionalHomeworkBox" style="display: none;">
         <label for="homework" class="form-label">Additional Homework Notes</label>
         <textarea name="homework" class="form-control">{{ lead.homework }}</textarea>
+      </div>
+      <div class="form-check">
+        <input class="form-check-input" type="checkbox" name="homework_no_hw" id="homework_no_hw">
+        <label class="form-check-label" for="homework_no_hw">NO HW</label>
       </div>
     </div>
     <div class="mb-3">

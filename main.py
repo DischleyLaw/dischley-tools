@@ -604,7 +604,6 @@ def intake_success():
 
 @app.route("/lead/<int:lead_id>")
 def view_lead(lead_id):
-    print(f"Loading view_lead for ID: {lead_id}")
     lead = Lead.query.get_or_404(lead_id)
     return render_template("view_lead.html", lead=lead)
 
