@@ -298,7 +298,6 @@ class Lead(db.Model):
     not_pc = db.Column(db.Boolean, default=False)
     quote = db.Column(db.String(50), default="")
     lead_source = db.Column(db.String(100))
-    custom_source = db.Column(db.String(100))
     case_type = db.Column(db.String(100))
     charges = db.Column(db.Text)
     staff_member = db.Column(db.String(100))
@@ -437,7 +436,6 @@ def intake():
         data = request.form
 
         lead_source = data.get("lead_source")
-        custom_source = data.get("custom_source") if lead_source == "Other" else None
 
         # Extract additional dynamic case-type fields from the form
         case_type = data.get("case_type")
@@ -484,7 +482,6 @@ def intake():
             quote=None,
             retainer_amount=None,
             lead_source=lead_source,
-            custom_source=custom_source,
             case_type=case_type,
             charges=data.get("charges"),
             staff_member=staff_member,
@@ -522,8 +519,8 @@ def intake():
                       sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
 
         # Compose HTML email with all submitted fields if present, using required mapping
-        email_html = "<h2>New Lead:</h2>"
-        email_html += "<ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+        email_html = "<h2 style='font-size:16pt;'>New Lead:</h2>"
+        email_html += "<ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
         field_items = [
             ("Type of Case", case_type),
             ("First Name", first_name),
@@ -540,7 +537,6 @@ def intake():
             ("Staff Member", staff_member),
             ("Attorney", data.get("attorney")),
             ("Lead Source", lead_source if lead_source and lead_source != "Other" else None),
-            ("Custom Source", custom_source if custom_source else None),
             ("Send Retainer", "✅" if new_lead.send_retainer else None),
             ("Retainer Amount", new_lead.retainer_amount),
             ("LVM", "✅" if new_lead.lvm else None),
@@ -563,9 +559,9 @@ def intake():
         ]
         for label, value in field_items:
             if value:
-                email_html += f"<li><strong>{label}:</strong> {value}</li>"
+                email_html += f"<li style='font-size:16pt;'><strong>{label}:</strong> {value}</li>"
         email_html += "</ul>"
-        email_html += f"<p><a href='{lead_url}'>Manage Lead</a></p>"
+        email_html += f"<p style='font-size:16pt;'><a href='{lead_url}'>Manage Lead</a></p>"
         msg.html = email_html
         mail.send(msg)
 
@@ -663,7 +659,6 @@ def update_lead(lead_id):
     else:
         lead.quote = ""
     lead.lead_source = request.form.get("lead_source") if request.form.get("lead_source") else lead.lead_source
-    lead.custom_source = request.form.get("custom_source") if request.form.get("custom_source") else lead.custom_source
     lead.case_type = request.form.get("case_type") if request.form.get("case_type") else lead.case_type
     lead.staff_member = request.form.get("staff_member") if request.form.get("staff_member") else lead.staff_member
     # Add attorney update
@@ -745,15 +740,15 @@ def update_lead(lead_id):
     msg = Message(subject_line,
                   recipients=["attorneys@dischleylaw.com"],
                   sender=("New Lead", os.getenv('MAIL_DEFAULT_SENDER')))
-    email_html = f"<h2>Lead Updated - {status_str if status_str else 'No Status'}</h2><br>"
+    email_html = f"<h2 style='font-size:16pt;'>Lead Updated - {status_str if status_str else 'No Status'}</h2><br>"
 
-    email_html += "<h3 style='margin-bottom:5px;'><u><b>Client Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
-    email_html += f"<li style='font-size:16px;'><strong>Name:</strong> {lead.name}</li>"
-    email_html += f"<li style='font-size:16px;'><strong>Phone:</strong> {lead.phone}</li>"
-    email_html += f"<li style='font-size:16px;'><strong>Email:</strong> {lead.email}</li>"
+    email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Client Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
+    email_html += f"<li style='font-size:16pt;'><strong>Name:</strong> {lead.name}</li>"
+    email_html += f"<li style='font-size:16pt;'><strong>Phone:</strong> {lead.phone}</li>"
+    email_html += f"<li style='font-size:16pt;'><strong>Email:</strong> {lead.email}</li>"
     email_html += "</ul>"
 
-    email_html += "<h3 style='margin-bottom:5px;'><u><b>Case Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+    email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Case Information:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
     # Formatting for court date and time
     formatted_court_date = None
     if lead.court_date:
@@ -775,84 +770,83 @@ def update_lead(lead_id):
         ("Court Time", formatted_time),
         ("Brief Description of the Facts", lead.facts),
         ("Homework", lead.homework if lead.homework else None),
-        ("Calling", "✅" if lead.calling else None),
     ]
     for label, value in field_items:
         if value:
-            email_html += f"<li><strong>{label}:</strong> {value}</li>"
+            email_html += f"<li style='font-size:16pt;'><strong>{label}:</strong> {value}</li>"
 
     # --- Insert Action/Status Section ---
-    email_html += "<h3 style='margin-bottom:5px;'><u><b>Action/Status:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+    email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Action/Status:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
     if lead.send_retainer:
-        email_html += "<li><strong>Send Retainer:</strong> ✅</li>"
+        email_html += "<li style='font-size:16pt;'><strong>Send Retainer:</strong> ✅</li>"
         if lead.retainer_amount:
             try:
-                email_html += f"<li><strong>Retainer Amount:</strong> ${float(lead.retainer_amount):.2f}</li>"
+                email_html += f"<li style='font-size:16pt;'><strong>Retainer Amount:</strong> ${float(lead.retainer_amount):.2f}</li>"
             except Exception:
-                email_html += f"<li><strong>Retainer Amount:</strong> {lead.retainer_amount}</li>"
+                email_html += f"<li style='font-size:16pt;'><strong>Retainer Amount:</strong> {lead.retainer_amount}</li>"
     if lead.lvm:
-        email_html += "<li><strong>LVM:</strong> ✅</li>"
+        email_html += "<li style='font-size:16pt;'><strong>LVM:</strong> ✅</li>"
     if lead.calling:
-        email_html += "<li><strong>Calling:</strong> ✅</li>"
+        email_html += "<li style='font-size:16pt;'><strong>Calling:</strong> ✅</li>"
     if lead.not_pc:
-        email_html += "<li><strong>Not a PC:</strong> ✅</li>"
+        email_html += "<li style='font-size:16pt;'><strong>Not a PC:</strong> ✅</li>"
     # Quote (if present and not "none")
     if lead.quote and lead.quote.strip() and lead.quote.strip().lower() != "none":
         try:
-            email_html += f"<li><strong>Quote:</strong> ${float(lead.quote.strip()):.2f}</li>"
+            email_html += f"<li style='font-size:16pt;'><strong>Quote:</strong> ${float(lead.quote.strip()):.2f}</li>"
         except Exception:
-            email_html += f"<li><strong>Quote:</strong> {lead.quote.strip()}</li>"
+            email_html += f"<li style='font-size:16pt;'><strong>Quote:</strong> {lead.quote.strip()}</li>"
     # Absence Waiver
     if lead.absence_waiver:
-        email_html += "<li><strong>Absence Waiver:</strong> ✅</li>"
+        email_html += "<li style='font-size:16pt;'><strong>Absence Waiver:</strong> ✅</li>"
     email_html += "</ul>"
 
     # --- Dynamic Homework Section ---
     if lead.send_retainer:
-        email_html += "<h3 style='margin-bottom:5px;'><u><b>Homework:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
+        email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Homework:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
         if lead.homework_driving_record:
-            email_html += "<li style='font-size:16px;'><strong>Driving Record:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Driving Record:</strong> ✅</li>"
         if lead.homework_reckless_program:
-            email_html += "<li style='font-size:16px;'><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Reckless/Aggressive Driving Program:</strong> ✅</li>"
         if lead.homework_driver_improvement:
-            email_html += "<li style='font-size:16px;'><strong>Driver Improvement Course:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Driver Improvement Course:</strong> ✅</li>"
         if lead.homework_speedometer:
-            email_html += "<li style='font-size:16px;'><strong>Speedometer Calibration:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Speedometer Calibration:</strong> ✅</li>"
         if lead.homework_community_service:
             hours = lead.homework_community_service_hours or ""
-            email_html += f"<li style='font-size:16px;'><strong>Community Service:</strong> ✅ ({hours} hours)</li>"
+            email_html += f"<li style='font-size:16pt;'><strong>Community Service:</strong> ✅ ({hours} hours)</li>"
         if lead.homework_substance_evaluation:
-            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Evaluation:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Substance Abuse Evaluation:</strong> ✅</li>"
         if lead.homework_asap:
-            email_html += "<li style='font-size:16px;'><strong>Pre-enroll in ASAP:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Pre-enroll in ASAP:</strong> ✅</li>"
         if lead.homework_shoplifting:
-            email_html += "<li style='font-size:16px;'><strong>Shoplifting Class:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Shoplifting Class:</strong> ✅</li>"
         if lead.homework_medical_conditions:
-            email_html += "<li style='font-size:16px;'><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Medical Conditions / Surgeries List:</strong> ✅</li>"
         if lead.homework_photos:
-            email_html += "<li style='font-size:16px;'><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Photographs of Field Sobriety Scene:</strong> ✅</li>"
         if lead.homework_shoplifting_program:
-            email_html += "<li style='font-size:16px;'><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Shoplifting Theft Offenders Program:</strong> ✅</li>"
         if lead.homework_military_awards:
-            email_html += "<li style='font-size:16px;'><strong>Copies of Military Awards:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Copies of Military Awards:</strong> ✅</li>"
         if lead.homework_dd214:
-            email_html += "<li style='font-size:16px;'><strong>Copy of DD-214:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Copy of DD-214:</strong> ✅</li>"
         if lead.homework_community_involvement:
-            email_html += "<li style='font-size:16px;'><strong>Community Involvement List:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Community Involvement List:</strong> ✅</li>"
         if lead.homework_anger_management_courseforcourt:
-            email_html += "<li style='font-size:16px;'><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Anger Management (Courseforcourt.com):</strong> ✅</li>"
         if lead.homework_vasap:
-            email_html += "<li style='font-size:16px;'><strong>VASAP:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>VASAP:</strong> ✅</li>"
         if lead.homework_substance_abuse_treatment:
-            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Substance Abuse Eval/Treatment:</strong> ✅</li>"
         if lead.homework_substance_abuse_counseling:
-            email_html += "<li style='font-size:16px;'><strong>Substance Abuse Counseling:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>Substance Abuse Counseling:</strong> ✅</li>"
         if lead.homework_transcripts:
-            email_html += "<li style='font-size:16px;'><strong>High School or College Transcripts:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>High School or College Transcripts:</strong> ✅</li>"
         if lead.homework_no_hw:
-            email_html += "<li style='font-size:16px;'><strong>NO HW:</strong> ✅</li>"
+            email_html += "<li style='font-size:16pt;'><strong>NO HW:</strong> ✅</li>"
         if lead.homework_additional:
-            email_html += f"<li style='font-size:16px;'><strong>Additional Homework:</strong> ✅ {lead.homework_additional_notes}</li>"
+            email_html += f"<li style='font-size:16pt;'><strong>Additional Homework:</strong> ✅ {lead.homework_additional_notes}</li>"
         email_html += "</ul>"
 
     # --- Add Internal Use Only Section if any internal fields are present ---
@@ -861,22 +855,20 @@ def update_lead(lead_id):
         getattr(lead, "staff_member", None),
         getattr(lead, "attorney", None),
         getattr(lead, "lead_source", None),
-        getattr(lead, "custom_source", None)
     ]
     # Check if at least one is non-empty (not None and not empty/whitespace)
     if any(f and str(f).strip() for f in internal_fields):
         email_html += (
-            "<h3 style='margin-bottom:5px;'><u><b>INTERNAL USE ONLY:</b></u></h3>"
-            "<ul style='list-style-type:none;padding-left:0;font-size:16px;'>"
-            f"<li style='font-size:16px;'><strong>Notes:</strong> {lead.notes or ''}</li>"
-            f"<li style='font-size:16px;'><strong>Staff Member:</strong> {lead.staff_member or ''}</li>"
-            f"<li style='font-size:16px;'><strong>Attorney:</strong> {lead.attorney or ''}</li>"
-            f"<li style='font-size:16px;'><strong>Lead Source:</strong> {lead.lead_source or ''}</li>"
-            f"<li style='font-size:16px;'><strong>Custom Source:</strong> {lead.custom_source or ''}</li>"
-            "</ul>"
+            "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>INTERNAL USE ONLY:</b></u></h3>"
+            "<ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
+            f"<li style='font-size:16pt;'><strong>Notes:</strong> {lead.notes or ''}</li>"
+            f"<li style='font-size:16pt;'><strong>Staff Member:</strong> {lead.staff_member or ''}</li>"
+            f"<li style='font-size:16pt;'><strong>Attorney:</strong> {lead.attorney or ''}</li>"
+            f"<li style='font-size:16pt;'><strong>Lead Source:</strong> {lead.lead_source or ''}</li>"
         )
+        email_html += "</ul>"
 
-    email_html += f"<p><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
+    email_html += f"<p style='font-size:16pt;'><a href='{url_for('view_lead', lead_id=lead.id, _external=True)}'>Manage Lead</a></p>"
     msg.html = email_html
     mail.send(msg)
 
@@ -1079,8 +1071,8 @@ def case_result():
         send_review_links = 'send_review_links' in request.form
 
         subject = f"Case Result - {defendant_name}"
-        email_html = "<h2>Case Result</h2>"
-        email_html += f"<p><strong>Defendant:</strong> {defendant_name}</p>"
+        email_html = "<h2 style='font-size:16pt;'>Case Result</h2>"
+        email_html += f"<p style='font-size:16pt;'><strong>Defendant:</strong> {defendant_name}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
             jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
@@ -1091,40 +1083,40 @@ def case_result():
         num_charges = max(len(field) for field in all_charge_fields)
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
-            email_html += "<ul>"
+            email_html += "<ul style='font-size:16pt;'>"
             for i in range(num_charges):
-                email_html += f"<li><strong>Charge {i+1}:</strong><ul>"
+                email_html += f"<li style='font-size:16pt;'><strong>Charge {i+1}:</strong><ul style='font-size:16pt;'>"
                 if i < len(original_charges) and original_charges[i]:
-                    email_html += f"<li><strong>Original Charge:</strong> {original_charges[i]}</li>"
+                    email_html += f"<li style='font-size:16pt;'><strong>Original Charge:</strong> {original_charges[i]}</li>"
                 if i < len(amended_charges) and amended_charges[i]:
-                    email_html += f"<li><strong>Amended Charge:</strong> {amended_charges[i]}</li>"
+                    email_html += f"<li style='font-size:16pt;'><strong>Amended Charge:</strong> {amended_charges[i]}</li>"
                 if i < len(pleas) and pleas[i]:
-                    email_html += f"<li><strong>Plea:</strong> {pleas[i]}</li>"
+                    email_html += f"<li style='font-size:16pt;'><strong>Plea:</strong> {pleas[i]}</li>"
                 if i < len(dispositions) and dispositions[i]:
-                    email_html += f"<li><strong>Disposition:</strong> {dispositions[i]}</li>"
+                    email_html += f"<li style='font-size:16pt;'><strong>Disposition:</strong> {dispositions[i]}</li>"
                 # NEW: If disposition in skip_dispositions, include disposition paragraph
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
-                        email_html += f"<li><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}</li>"
+                        email_html += f"<li style='font-size:16pt;'><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}</li>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
                     # Per-charge sentencing/probation fields:
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended</li>"
+                            email_html += f"<li style='font-size:16pt;'><strong>Jail:</strong> {jail_time_imposed[i]} days with {jail_time_suspended[i]} days suspended</li>"
                         else:
-                            email_html += f"<li><strong>Jail:</strong> {jail_time_imposed[i]} days</li>"
+                            email_html += f"<li style='font-size:16pt;'><strong>Jail:</strong> {jail_time_imposed[i]} days</li>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
-                            email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
+                            email_html += f"<li style='font-size:16pt;'><strong>Fine:</strong> ${fine_imposed[i]} with ${fine_suspended[i]} suspended</li>"
                         else:
-                            email_html += f"<li><strong>Fine:</strong> ${fine_imposed[i]}</li>"
+                            email_html += f"<li style='font-size:16pt;'><strong>Fine:</strong> ${fine_imposed[i]}</li>"
                     # License Suspension: Only show check if "Yes"
                     if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
-                        email_html += "<li><strong>License Suspension:</strong> ✅</li>"
+                        email_html += "<li style='font-size:16pt;'><strong>License Suspension:</strong> ✅</li>"
                     # Compose restricted license info: include type and term if granted
                     if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
-                        restricted_info = "<li><strong>Restricted License Granted:</strong> Yes"
+                        restricted_info = "<li style='font-size:16pt;'><strong>Restricted License Granted:</strong> Yes"
                         details = []
                         if i < len(restricted_license_type) and restricted_license_type[i]:
                             details.append(f"Type: {restricted_license_type[i]}")
@@ -1136,23 +1128,23 @@ def case_result():
                         email_html += restricted_info
                     # ASAP Ordered: Only show if "Yes"
                     if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<li><strong>ASAP Ordered:</strong> ✅</li>"
+                        email_html += "<li style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅</li>"
                     # Probation
                     probation_fields = []
                     if i < len(probation_type) and probation_type[i]:
-                        probation_fields.append(f"<li><strong>Probation Type:</strong> {probation_type[i]}</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Probation Type:</strong> {probation_type[i]}</li>")
                     if i < len(probation_term) and probation_term[i]:
-                        probation_fields.append(f"<li><strong>Probation Term:</strong> {probation_term[i]}</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Probation Term:</strong> {probation_term[i]}</li>")
                     if i < len(vasap) and vasap[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li><strong>VASAP:</strong> ✅</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>VASAP:</strong> ✅</li>")
                     if i < len(vip) and vip[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li><strong>VIP:</strong> ✅</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>VIP:</strong> ✅</li>")
                     if i < len(community_service) and community_service[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li><strong>Community Service:</strong> ✅</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Community Service:</strong> ✅</li>")
                     if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
-                        probation_fields.append(f"<li><strong>Anger Management:</strong> ✅</li>")
+                        probation_fields.append(f"<li style='font-size:16pt;'><strong>Anger Management:</strong> ✅</li>")
                     if probation_fields:
-                        email_html += "<li><strong>Conditions of Probation:</strong><ul>"
+                        email_html += "<li style='font-size:16pt;'><strong>Conditions of Probation:</strong><ul style='font-size:16pt;'>"
                         email_html += "".join(probation_fields)
                         email_html += "</ul></li>"
                 email_html += "</ul></li>"
@@ -1170,7 +1162,7 @@ def case_result():
         }
         for label, items in checkbox_labels.items():
             if any(item.strip().lower() in ("yes", "on", "true") for item in items if item.strip()):
-                summary_fields.append(f"<li><strong>{label}:</strong> ✅</li>")
+                summary_fields.append(f"<li style='font-size:16pt;'><strong>{label}:</strong> ✅</li>")
 
         if was_continued:
             if continuation_date:
@@ -1183,27 +1175,27 @@ def case_result():
                         formatted_continuation_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p")
                     except ValueError:
                         formatted_continuation_time = continuation_time
-                    summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</li>")
+                    summary_fields.append(f"<li style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date} at {formatted_continuation_time}</li>")
                 else:
-                    summary_fields.append(f"<li><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
+                    summary_fields.append(f"<li style='font-size:16pt;'><strong>Case Continued To:</strong> {formatted_continuation_date}</li>")
             else:
-                summary_fields.append("<li><strong>Case Continued</strong></li>")
+                summary_fields.append("<li style='font-size:16pt;'><strong>Case Continued</strong></li>")
 
         if date_disposition:
             try:
                 formatted_disposition_date = datetime.strptime(date_disposition, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 formatted_disposition_date = date_disposition
-            summary_fields.append(f"<li><strong>Disposition Date:</strong> {formatted_disposition_date}</li>")
+            summary_fields.append(f"<li style='font-size:16pt;'><strong>Disposition Date:</strong> {formatted_disposition_date}</li>")
 
         if notes:
-            summary_fields.append(f"<li><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
+            summary_fields.append(f"<li style='font-size:16pt;'><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</li>")
 
         if send_review_links:
-            summary_fields.append("<li><strong>Review Links Requested:</strong> Yes</li>")
+            summary_fields.append("<li style='font-size:16pt;'><strong>Review Links Requested:</strong> Yes</li>")
 
         if summary_fields:
-            email_html += "<ul>"
+            email_html += "<ul style='font-size:16pt;'>"
             email_html += "".join(summary_fields)
             email_html += "</ul>"
         msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
