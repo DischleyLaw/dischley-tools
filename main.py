@@ -1580,3 +1580,9 @@ def upload_batch():
         # Add print/log statement for debugging
         app.logger.exception("Batch upload failed")
         return jsonify({"status": "error", "message": str(e)}), 500
+# --- Utility function to get a valid Clio token ---
+def get_valid_token():
+    token = ClioToken.query.first()
+    if token and not token.is_expired():
+        return token.access_token
+    raise Exception("No valid Clio token found.")
