@@ -417,17 +417,6 @@ class ClioToken(db.Model):
         return datetime.utcnow() >= self.expires_at
 
 
-# --- Clio OAuth2 Authorization Route (restored original working logic) ---
-@app.route("/clio/authorize")
-def clio_authorize():
-    clio = OAuth2Session(
-        os.getenv("CLIO_CLIENT_ID"),
-        redirect_uri="https://tools.dischleylaw.com/clio/callback",
-        scope=["all"]
-    )
-    authorization_url, state = clio.authorization_url("https://app.clio.com/oauth/authorize")
-    session["oauth_state"] = state
-    return redirect(authorization_url)
 
 
 # --- Clio OAuth2 Callback Route (restored original working logic) ---
