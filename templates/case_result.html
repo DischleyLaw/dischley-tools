@@ -326,9 +326,11 @@ contactInput.addEventListener("input", function () {
   if (query.length < 2) return;
 
   debounceTimeout = setTimeout(() => {
+    console.log("Searching Clio contacts for:", query);
     fetch(`/clio/contact-search?query=${encodeURIComponent(query)}`)
       .then(res => res.json())
       .then(data => {
+        console.log("Clio contact search response:", data);
         contactList.innerHTML = "";
         if (data.data) {
           data.data.forEach(contact => {
