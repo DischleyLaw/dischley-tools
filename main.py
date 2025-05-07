@@ -417,6 +417,7 @@ class ClioToken(db.Model):
 
 
 
+#
 # --- Clio OAuth2 Authorization ---
 @app.route("/clio/authorize")
 def clio_authorize():
