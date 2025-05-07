@@ -332,16 +332,11 @@ contactInput.addEventListener("input", function () {
         contactList.innerHTML = "";
         if (data.data) {
           data.data.forEach(contact => {
-            if (contact.type !== "Person") return;
-
-            const fullName = contact.name || `${contact.first_name || ""} ${contact.last_name || ""}`.trim();
-            if (!fullName) return;
+            if (!contact.name) return;
 
             const option = document.createElement("option");
-            option.value = fullName;
-            // Show name and email if available, but omit redundant (Person)
-            const email = contact.email || "";
-            option.textContent = email ? `${fullName} - ${email}` : `${fullName}`;
+            option.value = contact.name;
+            option.textContent = contact.name;
             contactList.appendChild(option);
           });
         }
