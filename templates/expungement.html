@@ -752,13 +752,6 @@
     container.innerHTML = '';
     window.additionalCaseCount = 1;
   }
-</script>
-{% if autofill_data %}
-<script>
-  document.addEventListener("DOMContentLoaded", function () {
-    const autofill_data = {{ autofill_data|tojson|safe }};
-    fillFormFields(autofill_data);
-  });
-</script>
+
 {% endif %}
 {% endblock %}
