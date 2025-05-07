@@ -1,10 +1,12 @@
-from main import app, db, get_valid_token
+from main import app, db
 
 with app.app_context():
     print("🔄 Resetting database...")
     db.drop_all()
     db.create_all()
     print("✅ Database reset complete.")
+
+    from main import get_valid_token
 
     print("🔄 Attempting Clio authorization...")
     try:
