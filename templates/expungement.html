@@ -1,3 +1,41 @@
+        <!-- Additional Case 2 Static Fields (if desired to always show the second case) -->
+        <!--
+        <div id="additional-case-2" class="card shadow mb-4">
+          <div class="card-body">
+            <h5 class="mb-3">Charge Details #2</h5>
+            <div class="row g-3">
+              <div class="col-md-6">
+                <label for="case_2_charge_name" class="form-label">Charge Name:</label>
+                <input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_code_section" class="form-label">Code Section:</label>
+                <input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_case_no" class="form-label">Case Number:</label>
+                <input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_otn" class="form-label">OTN:</label>
+                <input type="text" class="form-control" name="case_2_otn" id="case_2_otn">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_dispo_date" class="form-label">Disposition Date:</label>
+                <input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_final_dispo" class="form-label">Final Disposition:</label>
+                <input type="text" class="form-control" name="case_2_final_dispo" id="case_2_final_dispo">
+              </div>
+              <div class="col-md-6">
+                <label for="case_2_court_dispo" class="form-label">Court Disposition:</label>
+                <input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo">
+              </div>
+            </div>
+          </div>
+        </div>
+        -->
 {% extends "base.html" %}
 {% block title %}Expungement Generator{% endblock %}
 {% block content %}
@@ -11,16 +49,19 @@
         </div>
       </div>
 
-      <!-- PDF Upload Section -->
+      <!-- PDF Multi-Upload Section -->
       <div class="card shadow mb-4">
         <div class="card-body">
-          <form id="main-upload-form" enctype="multipart/form-data" class="row g-3 align-items-end">
-            <div class="col-12 col-md-8">
-              <label for="file" class="form-label"><strong>Upload Court Document (PDF):</strong></label>
-              <input type="file" name="file" id="file" class="form-control" accept=".pdf" required>
+          <form id="multi-upload-form" enctype="multipart/form-data" class="row g-3 align-items-end">
+            <div class="col-12">
+              <label for="file_1" class="form-label"><strong>Upload Court Document (PDF) for Charge #1:</strong></label>
+              <input type="file" name="file_1" id="file_1" class="form-control" accept=".pdf">
             </div>
-            <div class="col-12 col-md-4">
-              <button type="submit" class="btn btn-secondary w-100">Upload &amp; Autofill</button>
+            <div class="col-12">
+              <button type="button" class="btn btn-outline-secondary w-100" onclick="addUploadInput()">Add Another PDF Upload</button>
+            </div>
+            <div class="col-12">
+              <button type="submit" class="btn btn-secondary w-100">Upload All PDFs &amp; Autofill</button>
             </div>
           </form>
         </div>
@@ -47,7 +88,7 @@
               </div>
               <div class="col-md-6">
                 <label for="name" class="form-label">Full Legal Name</label>
-                <input type="text" class="form-control" id="name" name="name" required>
+                <input type="text" class="form-control" id="name" name="full_legal_name" required>
               </div>
               <div class="col-md-6">
                 <label for="dob" class="form-label">Date of Birth</label>
@@ -88,7 +129,7 @@
               </div>
               <div class="col-md-6">
                 <label for="police_department" class="form-label">Law Enforcement Agency</label>
-                <select class="form-select" id="police_department" name="police_department" required>
+                <select class="form-select" id="police_department" name="police_department" required onchange="toggleOtherPoliceDepartment()">
                   <option value="">Select Agency</option>
                   <option value="Fairfax County Police Department">Fairfax County Police Department</option>
                   <option value="Arlington County Police Department">Arlington County Police Department</option>
@@ -140,40 +181,59 @@
             </div>
           </div>
         </div>
-
-        <!-- Add Additional Charge Button -->
-        <div class="mb-4">
-          <button type="button" class="btn btn-outline-primary w-100" onclick="addAdditionalCaseSection()">Add Additional Charge / Case</button>
-        </div>
         <div id="additionalCasesContainer" class="mb-4"></div>
+
+        <!-- Add Additional Charge Button (moved above) -->
         <template id="additional-case-template">
-          <div class="card shadow mb-3">
-            <div class="card-body">
-              <div class="row g-3 align-items-end">
-                <div class="col-md-8">
-                  <label><strong>Upload Court Document (PDF):</strong></label>
-                  <input type="file" class="form-control case-upload-input" accept=".pdf" data-case-index="2" name="file_case_2">
-                </div>
-                <div class="col-md-4">
-                  <button type="button" class="btn btn-secondary upload-case-btn w-100">Upload &amp; Autofill</button>
-                </div>
-              </div>
-              <h6 class="mt-3 mb-3">Charge Details #<span class="case-index">2</span></h6>
-              <div class="row g-3">
-                <div class="col-md-6"><label>Arrest Date</label><input type="text" class="form-control" name="case_2_arrest_date" id="case_2_arrest_date"></div>
-                <div class="col-md-6"><label>Officer Name</label><input type="text" class="form-control" name="case_2_officer_name" id="case_2_officer_name"></div>
-                <div class="col-md-6"><label>Police Department</label><input type="text" class="form-control" name="case_2_police_department" id="case_2_police_department"></div>
-                <div class="col-md-6"><label>Charge Name</label><input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name"></div>
-                <div class="col-md-6"><label>Code Section</label><input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section"></div>
-                <div class="col-md-6"><label>VCC Code</label><input type="text" class="form-control" name="case_2_vcc_code" id="case_2_vcc_code"></div>
-                <div class="col-md-6"><label>OTN</label><input type="text" class="form-control" name="case_2_otn" id="case_2_otn"></div>
-                <div class="col-md-6"><label>Court of Final Dispo</label><input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo"></div>
-                <div class="col-md-6"><label>Case No</label><input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no"></div>
-                <div class="col-md-6"><label>Dispo Date</label><input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date"></div>
-              </div>
-            </div>
-          </div>
-        </template>
+  <div class="card shadow mb-3">
+    <div class="card-body">
+      <div class="mb-3">
+        <label class="form-label">Upload Court Document (PDF) for Charge #<span class="case-index">2</span>:</label>
+        <input type="file" class="form-control case-upload-input" accept=".pdf" data-case-index="2" name="file_case_2">
+        <button type="button" class="btn btn-sm btn-outline-secondary mt-2 upload-case-btn">Upload & Autofill</button>
+      </div>
+      <h6 class="mb-3">Charge Details #<span class="case-index">2</span></h6>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <label for="case_2_arrest_date">Arrest Date</label>
+          <input type="text" class="form-control" name="case_2_arrest_date" id="case_2_arrest_date">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_officer_name">Officer Name</label>
+          <input type="text" class="form-control" name="case_2_officer_name" id="case_2_officer_name">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_police_department">Police Department</label>
+          <input type="text" class="form-control" name="case_2_police_department" id="case_2_police_department">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_charge_name">Charge Name</label>
+          <input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_code_section">Code Section</label>
+          <input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_otn">OTN</label>
+          <input type="text" class="form-control" name="case_2_otn" id="case_2_otn">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_court_dispo">Court Disposition</label>
+          <input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_case_no">Case Number</label>
+          <input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no">
+        </div>
+        <div class="col-md-6">
+          <label for="case_2_dispo_date">Disposition Date</label>
+          <input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date">
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
 
         <!-- Prosecutor Info -->
         <div class="card shadow mb-4">
@@ -207,11 +267,11 @@
             <div class="row g-3">
               <div class="col-md-6">
                 <label for="month" class="form-label">Month of Petition</label>
-                <input type="text" class="form-control" id="month" name="month">
+                <input type="text" class="form-control" id="month" name="month" value="{{ current_month }}">
               </div>
               <div class="col-md-6">
                 <label for="year" class="form-label">Year of Petition</label>
-                <input type="text" class="form-control" id="year" name="year">
+                <input type="text" class="form-control" id="year" name="year" value="{{ current_year }}">
               </div>
               <div class="col-md-6">
                 <label for="attorney" class="form-label">Attorney Name</label>
@@ -239,6 +299,41 @@
 </div>
 
 <!-- JS Logic (Retained) -->
+<script>
+  function addUploadInput() {
+    const container = document.getElementById('multi-upload-form');
+    const currentInputs = container.querySelectorAll('input[type="file"]').length;
+    const nextIndex = currentInputs + 1;
+    if (nextIndex > 20) {
+      alert('You may not upload more than 20 documents.');
+      return;
+    }
+
+    const div = document.createElement('div');
+    div.className = 'col-12';
+    div.innerHTML = `
+      <label for="file_${nextIndex}" class="form-label">Upload Court Document (PDF) for Charge #${nextIndex}:</label>
+      <input type="file" name="file_${nextIndex}" id="file_${nextIndex}" class="form-control" accept=".pdf">
+    `;
+    // Insert before the last two buttons (add and submit)
+    // Find the submit button (last child), and insert before the two buttons
+    // But since the new add button is above submit, always insert before the add button
+    const addBtn = Array.from(container.children).find(
+      el => el.querySelector && el.querySelector('button.btn-outline-secondary')
+    );
+    if (addBtn) {
+      container.insertBefore(div, addBtn);
+    } else {
+      // fallback: before last child
+      container.insertBefore(div, container.lastElementChild);
+    }
+    // Also create corresponding additional case section
+    if (typeof addAdditionalCaseSection === 'function') {
+      addAdditionalCaseSection();
+    }
+  }
+</script>
+</script>
 <script>
   const prosecutorData = {
     "Fairfax County": {
@@ -294,6 +389,7 @@
     document.getElementById('prosecutor_address2').value = data.address2 || '';
   }
 </script>
+</script>
 <script>
   function toggleManifestInjustice() {
     const type = document.getElementById('expungement_type').value;
@@ -302,31 +398,93 @@
   }
 </script>
 <script>
-  document.getElementById('police_department').addEventListener('change', function () {
+  function toggleOtherPoliceDepartment() {
+    const policeSelect = document.getElementById('police_department');
     const otherContainer = document.getElementById('other_police_department_container');
-    otherContainer.style.display = this.value === 'Other' ? 'block' : 'none';
+    otherContainer.style.display = policeSelect.value === 'Other' ? 'block' : 'none';
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    toggleOtherPoliceDepartment(); // run on load in case value is preserved
+    const policeSelect = document.getElementById('police_department');
+    policeSelect.addEventListener('change', toggleOtherPoliceDepartment);
   });
 </script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     window.additionalCaseCount = 1;
     window.addAdditionalCaseSection = function () {
-      window.additionalCaseCount++;
-      const container = document.getElementById("additionalCasesContainer");
-      const template = document.getElementById("additional-case-template");
-      if (!template) return;
-      const clone = template.content.cloneNode(true);
-      clone.querySelectorAll("input").forEach(input => {
-        const name = input.getAttribute("name");
-        if (name && name.startsWith("case_2_")) {
-          input.setAttribute("name", name.replace(/^case_2_/, `case_${window.additionalCaseCount}_`));
-        }
-        if (input.classList.contains("case-upload-input")) {
-          input.setAttribute("data-case-index", window.additionalCaseCount);
-        }
-      });
-      clone.querySelectorAll(".case-index").forEach(el => el.textContent = window.additionalCaseCount);
-      container.appendChild(clone);
+      // Prevent more than 10 cases
+      if (window.additionalCaseCount >= 10) {
+        alert("You may not add more than 10 charges/cases.");
+        return;
+      }
+      // Fetch the next case index from the backend
+      fetch('/expungement/next_case_index')
+        .then(response => response.json())
+        .then(data => {
+          let nextIndex = data && data.next_index ? data.next_index : (window.additionalCaseCount + 1);
+          window.additionalCaseCount = nextIndex;
+          const container = document.getElementById("additionalCasesContainer");
+          const template = document.getElementById("additional-case-template");
+          if (!template) return;
+          const clone = template.content.cloneNode(true);
+          // Update input names and ids to match the new index
+          clone.querySelectorAll("input").forEach(input => {
+            const name = input.getAttribute("name");
+            if (name && name.startsWith("case_2_")) {
+              input.setAttribute("name", name.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+            const id = input.getAttribute("id");
+            if (id && id.startsWith("case_2_")) {
+              input.setAttribute("id", id.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+            if (input.classList.contains("case-upload-input")) {
+              input.setAttribute("data-case-index", nextIndex);
+              input.setAttribute("name", `file_case_${nextIndex}`);
+            }
+          });
+          // Also update any label "for" attributes if present
+          clone.querySelectorAll("label").forEach(label => {
+            const htmlFor = label.getAttribute("for");
+            if (htmlFor && htmlFor.startsWith("case_2_")) {
+              label.setAttribute("for", htmlFor.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+          });
+          clone.querySelectorAll(".case-index").forEach(el => el.textContent = nextIndex);
+          container.appendChild(clone);
+        })
+        .catch(err => {
+          // Fallback: increment locally if fetch fails
+          window.additionalCaseCount++;
+          const nextIndex = window.additionalCaseCount;
+          const container = document.getElementById("additionalCasesContainer");
+          const template = document.getElementById("additional-case-template");
+          if (!template) return;
+          const clone = template.content.cloneNode(true);
+          clone.querySelectorAll("input").forEach(input => {
+            const name = input.getAttribute("name");
+            if (name && name.startsWith("case_2_")) {
+              input.setAttribute("name", name.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+            const id = input.getAttribute("id");
+            if (id && id.startsWith("case_2_")) {
+              input.setAttribute("id", id.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+            if (input.classList.contains("case-upload-input")) {
+              input.setAttribute("data-case-index", nextIndex);
+              input.setAttribute("name", `file_case_${nextIndex}`);
+            }
+          });
+          clone.querySelectorAll("label").forEach(label => {
+            const htmlFor = label.getAttribute("for");
+            if (htmlFor && htmlFor.startsWith("case_2_")) {
+              label.setAttribute("for", htmlFor.replace(/^case_2_/, `case_${nextIndex}_`));
+            }
+          });
+          clone.querySelectorAll(".case-index").forEach(el => el.textContent = nextIndex);
+          container.appendChild(clone);
+        });
     };
   });
 </script>
@@ -336,14 +494,106 @@
     return parser.parseFromString(value, "text/html").body.textContent || value;
   }
   function fillFormFields(data, scope = document) {
+    // For dynamic case fields, handle only the expected keys
+    const caseFieldNames = [
+      'arrest_date',
+      'charge_name',
+      'officer_name',
+      'police_department',
+      'code_section',
+      'vcc_code',
+      'otn',
+      'court_dispo',
+      'case_no',
+      'dispo_date',
+      'final_dispo',
+      'full_legal_name',
+      'dob',
+      'name_arrest'
+    ];
+    // Ensure no duplicate/conflicting name attributes exist for main fields
+    // (handled in HTML, but double-check here for autofill)
     Object.entries(data).forEach(([key, value]) => {
+      console.log("Autofill key/value:", key, value);
       if (typeof value === 'string') {
         const decoded = decodeHTML(value);
-        let field = scope.querySelector(`[name="${key}"]`) || scope.querySelector(`#${key}`);
+        // Enhanced handling for "name" key: maps to full_legal_name field
+        if (key === 'name') {
+          let nameField = document.getElementById('name');
+          if (nameField) nameField.value = decoded;
+          let fullNameField = scope.querySelector('[name="full_legal_name"]');
+          if (fullNameField && fullNameField !== nameField) fullNameField.value = decoded;
+          return;
+        }
+        // Explicitly handle 'full_legal_name', 'dob', 'name_arrest'
+        if (key === 'full_legal_name' || key === 'dob' || key === 'name_arrest') {
+          let idField = key === 'full_legal_name' ? document.getElementById('name') : document.getElementById(key);
+          if (idField) idField.value = decoded;
+          // Only fill by name if it's not the same as the idField (avoid duplicate/conflict)
+          let nameField = scope.querySelector(`[name="${key}"]`);
+          if (nameField && nameField !== idField) nameField.value = decoded;
+          return;
+        }
+        // Explicitly handle 'final_dispo'
+        if (key === 'final_dispo') {
+          let idField = document.getElementById('final_dispo');
+          if (idField) idField.value = decoded;
+          let nameField = scope.querySelector(`[name="final_dispo"]`);
+          if (nameField && nameField !== idField) nameField.value = decoded;
+          // Also handle dynamic case fields (case_X_final_dispo)
+          if (!idField && !nameField) {
+            // Try to find a field with name ending in _final_dispo
+            let dynamicField = null;
+            for (const el of scope.querySelectorAll('input, select, textarea')) {
+              if (el.name && el.name.endsWith('_final_dispo')) {
+                dynamicField = el;
+                break;
+              }
+            }
+            if (dynamicField) dynamicField.value = decoded;
+          }
+          return;
+        }
+        // Try to find by name first, then by id
+        let field = scope.querySelector(`[name="${key}"]`);
+        if (!field) {
+          field = scope.querySelector(`#${key}`);
+        }
+        // If not found, try matching with expected case_X_ pattern
+        if (!field && /^case_(\d+)_(.+)$/.test(key)) {
+          field = scope.querySelector(`[name="${key}"]`);
+        }
+        // If not found, try to match case fields by ending, but do not skip any of the explicit fields
+        if (!field) {
+          for (const fname of caseFieldNames) {
+            if (key.endsWith('_' + fname)) {
+              field = scope.querySelector(`[name="${key}"]`);
+              if (field) break;
+            }
+          }
+        }
         if (field) {
           field.value = decoded;
         } else {
-          console.warn(`Autofill: No form field found for key "${key}"`);
+          // Try to match with just the field name (for first case)
+          let fallback = scope.querySelector(`[name="${key.replace(/^case_\d+_/, '')}"]`);
+          // Additionally, if key is exactly full_legal_name, dob, or name_arrest, also try id selector
+          if (!fallback && ['full_legal_name', 'dob', 'name_arrest'].includes(key)) {
+            if (key === 'full_legal_name') {
+              fallback = scope.querySelector('#name');
+            } else {
+              fallback = scope.querySelector(`#${key}`);
+            }
+          }
+          // Additionally, for final_dispo, try id or name
+          if (!fallback && key === 'final_dispo') {
+            fallback = scope.querySelector(`#final_dispo`) || scope.querySelector(`[name="final_dispo"]`);
+          }
+          if (fallback) {
+            fallback.value = decoded;
+          } else {
+            console.warn(`Autofill: No form field found for key "${key}"`);
+          }
         }
       }
     });
@@ -351,66 +601,90 @@
   document.addEventListener('click', function (event) {
     if (event.target.classList.contains('upload-case-btn')) {
       event.preventDefault();
-      let parent = event.target.closest('.card-body');
-      if (!parent) {
-        parent = event.target.closest('.card') || event.target.closest('.col-12');
-        if (!parent) {
-          alert('Could not find parent container for autofill.');
-          return;
-        }
-      }
-      const fileInput = parent.querySelector('.case-upload-input');
-      if (!fileInput) {
-        alert('Could not find file input for this case.');
+
+      const fileInput = event.target.closest('.card-body')?.querySelector('.case-upload-input');
+      const caseIndex = fileInput?.dataset.caseIndex;
+
+      if (!fileInput || !caseIndex) {
+        alert('File input or case index not found for this upload.');
         return;
       }
-      const caseIndex = fileInput.dataset.caseIndex;
+
       const file = fileInput.files[0];
-      if (!file) return alert('Please select a PDF to upload.');
+      if (!file) {
+        alert('Please select a PDF to upload.');
+        return;
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('case_index', caseIndex);
       formData.append('additional_case_upload', 'true');
-      fetch('/expungement/upload', {
-        method: 'POST',
-        body: formData
-      })
-      .then(async res => {
-        const contentType = res.headers.get("content-type");
-        if (res.ok && contentType && contentType.includes("application/json")) {
-          return res.json();
-        } else {
-          const text = await res.text();
-          console.error("Upload-case-btn: Received non-JSON response:", text);
-          throw new Error(`Unexpected response (not JSON):\n${text}`);
-        }
-      })
-      .then(data => {
-        if (!data) {
-          console.warn('No autofill data returned in additional case upload', data);
-          return;
-        }
-        fillFormFields(data, parent);
-      })
-      .catch(err => {
-        console.error('Upload failed', err);
-        alert(`Upload failed: ${err.message}`);
-      });
+
+      // Ensure the section exists before autofilling
+      const container = document.getElementById("additionalCasesContainer");
+      const existingSection = container.querySelector(`[name="case_${caseIndex}_charge_name"]`);
+      if (!existingSection) {
+        addAdditionalCaseSection();
+        setTimeout(() => uploadAndFill(formData, caseIndex), 300); // slight delay to allow DOM to update
+      } else {
+        uploadAndFill(formData, caseIndex);
+      }
+
+      function uploadAndFill(formData, caseIndex) {
+        console.log("Autofill Debug - Uploading formData for case index:", caseIndex);
+        fetch('/expungement/upload', {
+          method: 'POST',
+          body: formData
+        })
+        .then(async res => {
+          const contentType = res.headers.get("content-type");
+          if (res.ok && contentType && contentType.includes("application/json")) {
+            return res.json();
+          } else {
+            const text = await res.text();
+            throw new Error(`Unexpected response (not JSON):\n${text}`);
+          }
+        })
+        .then(data => {
+          if (!data) return;
+          console.log("Autofill Debug - Response data for case index", caseIndex, data);
+          const parent = container.querySelector(`input[name="case_${caseIndex}_charge_name"]`)?.closest('.card-body');
+          if (parent) {
+            fillFormFields(data, parent);
+          } else {
+            console.warn('Autofill parent container not found for case index:', caseIndex);
+          }
+        })
+        .catch(err => {
+          console.error('Upload failed', err);
+          alert(`Upload failed: ${err.message}`);
+        });
+      }
     }
   });
 </script>
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const mainForm = document.getElementById('main-upload-form');
-    if (!mainForm) return;
-    mainForm.addEventListener('submit', function (e) {
+    const multiForm = document.getElementById('multi-upload-form');
+    if (!multiForm) return;
+    multiForm.addEventListener('submit', function (e) {
       e.preventDefault();
-      const fileInput = document.getElementById('file');
-      const file = fileInput.files[0];
-      if (!file) return alert('Please select a PDF to upload.');
       const formData = new FormData();
-      formData.append('file', file);
-      fetch('/expungement/upload', {
+      let filePresent = false;
+      // Get all file inputs dynamically (support up to 20)
+      const fileInputs = multiForm.querySelectorAll('input[type="file"]');
+      fileInputs.forEach(input => {
+        if (input.files.length > 0) {
+          formData.append(input.name, input.files[0]);
+          filePresent = true;
+        }
+      });
+      if (!filePresent) {
+        alert('Please select at least one PDF to upload.');
+        return;
+      }
+      fetch('/expungement/upload_batch', {
         method: 'POST',
         body: formData
       })
@@ -420,16 +694,44 @@
           return res.json();
         } else {
           const text = await res.text();
-          console.error("Main upload: Unexpected non-JSON response:", text);
+          console.error("Batch upload: Unexpected non-JSON response:", text);
           throw new Error("Upload failed: Server returned non-JSON. Check backend processing or route handler.");
         }
       })
       .then(data => {
         if (!data) {
-          console.warn('No autofill data returned in main upload', data);
+          console.warn('No autofill data returned in batch upload', data);
           return;
         }
-        fillFormFields(data);
+        // Autofill for each case, if present (support up to 20)
+        for (let i = 1; i <= 20; i++) {
+          const caseKey = 'case_' + i;
+          if (data[caseKey]) {
+            if (i === 1) {
+              // main form, Charge #1
+              fillFormFields(data[caseKey]);
+            } else {
+              // Try to find the parent card for this case; if not present, add it
+              let parent = document.querySelector(`[name="case_${i}_charge_name"]`);
+              if (!parent) {
+                // Add section
+                if (typeof addAdditionalCaseSection === 'function') {
+                  // Try to ensure the section exists before autofill
+                  addAdditionalCaseSection();
+                  // Wait for DOM to update
+                  setTimeout(() => {
+                    const parent2 = document.querySelector(`[name="case_${i}_charge_name"]`);
+                    if (parent2) {
+                      fillFormFields(data[caseKey], parent2.closest('.card-body'));
+                    }
+                  }, 200);
+                }
+              } else {
+                fillFormFields(data[caseKey], parent.closest('.card-body'));
+              }
+            }
+          }
+        }
       })
       .catch(err => {
         console.error('Upload failed', err);

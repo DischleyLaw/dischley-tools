@@ -81,6 +81,10 @@
         <label class="form-check-label" for="lvm">Left Voicemail</label>
       </div>
       <div class="mb-3 form-check">
+        <input type="checkbox" name="calling_back" class="form-check-input" id="calling_back" {% if lead.calling_back %}checked{% endif %}>
+        <label class="form-check-label" for="calling_back">PC Calling Back</label>
+      </div>
+      <div class="mb-3 form-check">
         <input type="checkbox" name="not_pc" class="form-check-input" id="notPC" {% if lead.not_pc %}checked{% endif %}>
         <label class="form-check-label" for="notPC">Not a Potential Client</label>
       </div>
@@ -248,6 +252,7 @@
     const exclusiveStatusBoxes = [
       "calling",
       "lvm",
+      "calling_back",
       "notPC",
       "toggleQuote"
     ];

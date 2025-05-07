@@ -1,4 +1,14 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+
+# --- Expungement Data Extraction Import ---
+from Expungement.expungement_utils import extract_expungement_data
+
+# Ensure app is defined only once and before any @app.route decorators
+app = Flask(__name__)
+
+import subprocess
+import os
+from datetime import datetime, timedelta
 import subprocess
 import os
 from datetime import datetime, timedelta
@@ -22,7 +32,6 @@ from flask.logging import default_handler
 def login_required(f):
     return f
 
-app = Flask(__name__)
 app.logger.removeHandler(default_handler)
 logging.basicConfig(level=logging.DEBUG)
 app.logger.setLevel(logging.DEBUG)
@@ -38,44 +47,31 @@ def generate_expungement():
         if autofill_data:
             app.logger.debug(f"Autofill data from session: {autofill_data}")
             form_data.update(autofill_data)
+            form_data["name"] = form_data.get("name", autofill_data.get("name", ""))
+            form_data["full_legal_name"] = form_data["name"]
+            form_data["dob"] = form_data.get("dob", autofill_data.get("dob", ""))
+            form_data["name_arrest"] = form_data.get("name_arrest", autofill_data.get("name_arrest", form_data.get("name", "")))
+            raw_dispo = form_data.get("final_dispo", autofill_data.get("final_dispo", ""))
+            form_data["final_dispo"] = raw_dispo.split("Sentence")[0].strip() if "Sentence" in raw_dispo else raw_dispo
 
-        # --- PDF Upload Handling for Expungement ---
-        uploaded_file = request.files.get("file")
-        if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" not in request.form:
-            temp_path = os.path.join("temp", uploaded_file.filename)
+        # --- PDF Upload Handling for Expungement (multiple files) ---
+        uploaded_files = request.files.getlist("file")
+        if uploaded_files and any(f.filename.endswith(".pdf") and f.filename for f in uploaded_files):
             os.makedirs("temp", exist_ok=True)
-            uploaded_file.save(temp_path)
-            try:
-                form_data.update(extract_expungement_data(temp_path))
-            except Exception as e:
-                flash("Failed to extract data from PDF.", "danger")
-                return redirect(url_for("expungement_form"))
-        # --- Handle AJAX-style additional case upload ---
-        if uploaded_file and uploaded_file.filename.endswith(".pdf") and "additional_case_upload" in request.form:
-            import re
-            temp_path = os.path.join("temp", uploaded_file.filename)
-            os.makedirs("temp", exist_ok=True)
-            uploaded_file.save(temp_path)
-            try:
-                case_data = extract_expungement_data(temp_path)
-                # Clean up officer name
-                officer_match = re.search(r"([A-Z]+,\s?[A-Z])", case_data.get("officer_name", "").upper())
-                if officer_match:
-                    case_data["officer_name"] = officer_match.group(1).title()
-                # Apply proper field prefixes
-                index = request.form.get("case_index", "").strip() or "1"
-                prefixed_data = {}
-                for field in ["arrest_date", "officer_name", "police_department", "charge_name", "code_section", "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"]:
-                    key = f"case_{index}_{field}"
-                    prefixed_data[key] = case_data.get(field, "")
-                # Ensure only prefixed fields are returned
-                if index and index not in ("0", "main"):
-                    return jsonify(prefixed_data), 200
+            extracted_cases = extract_multiple_cases_data(uploaded_files[:10])
+            for idx, extracted in enumerate(extracted_cases):
+                if idx == 0:
+                    for key, value in extracted.items():
+                        form_data[key] = value
+                    form_data["name"] = form_data.get("name", "")
+                    form_data["full_legal_name"] = form_data["name"]
+                    form_data["dob"] = form_data.get("dob", "")
+                    form_data["name_arrest"] = form_data.get("name_arrest", form_data.get("name", ""))
+                    raw_dispo = form_data.get("final_dispo", "")
+                    form_data["final_dispo"] = raw_dispo.split("Sentence")[0].strip() if "Sentence" in raw_dispo else raw_dispo
                 else:
-                    # If index is empty or "0", return nothing or a warning
-                    return jsonify({"error": "Missing or invalid case_index"}), 400
-            except Exception as e:
-                return jsonify({"error": "Failed to extract data from PDF"}), 500
+                    for field in ["arrest_date", "officer_name", "police_department", "charge_name", "code_section", "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"]:
+                        form_data[f"case_{idx}_{field}"] = extracted.get(field, "")
 
         # --- Collect all case fields (support multiple) ---
         from collections import defaultdict
@@ -140,6 +136,7 @@ def generate_expungement():
 
         data = {
             "{NAME}": form_data.get("name", "").upper(),
+            "{Full Legal Name}": form_data.get("name", "").upper(),
             "{DOB}": format_date_long(form_data.get("dob", "")),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
@@ -172,9 +169,12 @@ def generate_expungement():
             "{Court of Final Dispo}": form_data.get("court_dispo", ""),
             "{Case No}": form_data.get("case_no", ""),
         }
-        # Add {additional Cases} field for Word template
+        data["{NAME}"] = form_data.get("name", "").upper()
+        data["{DOB}"] = format_date_long(form_data.get("dob", ""))
+        data["{Name at Time of Arrest}"] = form_data.get("name_arrest", form_data.get("name", "")).upper()
+        data["{Name at Arrest}"] = form_data.get("name_arrest", form_data.get("name", "")).upper()
+        data["{Final Disposition}"] = form_data.get("final_dispo", "")
         data["{additional Cases}"] = ""
-        # Use the cases list built above
         if len(cases) > 1:
             for i, case in enumerate(cases[1:], 1):
                 data["{additional Cases}"] += (
@@ -199,14 +199,13 @@ def generate_expungement():
         template_path = 'static/docs/Exp_Petition_Template.docx'
         populate_document(template_path, output_path, data)
 
-        # Instead of sending the file directly, save file path to session and redirect to success page
         session["generated_file_path"] = output_path
         app.logger.debug(f"Final form data used for document generation: {form_data}")
-        return redirect(url_for("expungement_success", name=data["{NAME}"]))
+        return redirect(url_for("expungement_success"))
     # For GET request, render the expungement form template
     return render_template('expungement.html')
 
-from Expungement.expungement_utils import extract_expungement_data, populate_document, prosecutor_info
+from Expungement.expungement_utils import extract_expungement_data, extract_multiple_cases_data, populate_document, prosecutor_info
 from flask_mail import Mail, Message
 import requests
 from dotenv import load_dotenv
@@ -218,7 +217,7 @@ from itsdangerous import URLSafeTimedSerializer
 
 load_dotenv()
 
-app = Flask(__name__)
+# Only define app once; already defined at the top
 app.secret_key = "supersecretkey"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leads.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -327,6 +326,7 @@ class Lead(db.Model):
     homework_substance_abuse_counseling = db.Column(db.Boolean, default=False)
     homework_transcripts = db.Column(db.Boolean, default=False)
     calling = db.Column(db.Boolean, default=False)
+    calling_back = db.Column(db.Boolean, default=False)
     homework_additional = db.Column(db.Boolean, default=False)
     homework_additional_notes = db.Column(db.String(200))
     # New field: NO HW
@@ -488,6 +488,7 @@ def intake():
             charges=data.get("charges"),
             staff_member=staff_member,
             homework=data.get("homework"),
+            calling_back=False,
         )
         db.session.add(new_lead)
         db.session.commit()
@@ -704,6 +705,7 @@ def update_lead(lead_id):
         lead.calling = True
     else:
         lead.calling = False
+    lead.calling_back = 'calling_back' in request.form
 
     # --- New logic for homework_additional and notes ---
     lead.homework_additional = 'homework_additional' in request.form
@@ -735,6 +737,8 @@ def update_lead(lead_id):
             status_parts.append(f"Quote: ${lead.quote.strip()}")
     if lead.calling:
         status_parts.append("Calling")
+    if lead.calling_back:
+        status_parts.append("PC Calling Back")
     status_str = " | ".join(status_parts)
     first_name, last_name = (lead.name.split(maxsplit=1) + [""])[:2]
     subject_line = f"Lead Updated - {first_name} {last_name}".strip()
@@ -790,6 +794,8 @@ def update_lead(lead_id):
         email_html += "<li style='font-size:16pt;'><strong>LVM:</strong> ✅</li>"
     if lead.calling:
         email_html += "<li style='font-size:16pt;'><strong>Calling:</strong> ✅</li>"
+    if lead.calling_back:
+        email_html += "<li style='font-size:16pt;'><strong>PC Calling Back:</strong> ✅</li>"
     if lead.not_pc:
         email_html += "<li style='font-size:16pt;'><strong>Not a PC:</strong> ✅</li>"
     # Quote (if present and not "none")
@@ -961,6 +967,7 @@ def case_result():
         # Handle matter search
         if "search_matter" in request.args:
             try:
+                pass
                 access_token = get_valid_token()
                 headers = {'Authorization': f'Bearer {access_token}'}
                 query = request.args.get("search_matter")
@@ -1254,7 +1261,7 @@ def reset_db():
 
 
 # --- Expungement Generator Integration ---
-from Expungement.expungement_utils import populate_document, prosecutor_info
+# (already imported above)
 
 @app.route("/expungement", methods=["GET", "POST"])
 def expungement_form():
@@ -1283,6 +1290,20 @@ def expungement_form():
 
     if request.method == "POST":
         form_data = request.form.to_dict()
+
+        # Check for PDF file upload for extraction (AJAX or direct POST)
+        file = request.files.get("file")
+        if file and file.filename.endswith(".pdf"):
+            from Expungement.expungement_utils import extract_expungement_data
+            file_path = os.path.join("temp", file.filename)
+            os.makedirs("temp", exist_ok=True)
+            file.save(file_path)
+            extracted_data = extract_expungement_data(file_path)
+            # Explicitly map required keys into form_data for form population
+            form_data['name'] = extracted_data.get('name', '')
+            form_data['name_arrest'] = extracted_data.get('name_arrest', '')
+            form_data['dob'] = extracted_data.get('dob', '')
+            form_data['final_dispo'] = extracted_data.get('final_dispo', '')
 
         # Add attorney dropdown value
         attorney = form_data.get("attorney", "")
@@ -1427,19 +1448,26 @@ def expungement_form():
 
         # Instead of sending the file directly, save file path to session and redirect to success page
         session["generated_file_path"] = output_path
-        return redirect(url_for("expungement_success", name=data["{NAME}"]))
+        return redirect(url_for("expungement_success"))
 
-    if request.method == "GET":
-        autofill_data = session.get("expungement_autofill_data", {})
-        return render_template(
-            'expungement.html',
-            counties=prosecutor_info.keys(),
-            current_month=current_month,
-            current_year=current_year,
-            messages=messages,
-            download_url=download_url,
-            autofill_data=autofill_data
-        )
+    # Default response for GET requests or if no redirect has occurred
+    autofill_data = session.pop("expungement_autofill_data", {})
+    return render_template(
+        'expungement.html',
+        counties=prosecutor_info.keys(),
+        current_month=current_month,
+        current_year=current_year,
+        messages=messages,
+        download_url=download_url,
+        autofill_data=autofill_data
+    )
+
+
+# --- Expungement Success Route ---
+@app.route("/expungement/success")
+def expungement_success():
+    return render_template("success.html")
+
 
 
 # --- API endpoint used by JS "Add Additional Case" button ---
@@ -1526,174 +1554,29 @@ def expungement_upload():
         file.save(temp_path)
         try:
             extracted_data = extract_expungement_data(temp_path)
+            # Store the extracted data in session for autofill in UI
+            session["expungement_autofill_data"] = extracted_data
             return jsonify(extracted_data), 200
         except Exception as e:
-            return jsonify({'error': f'Failed to extract data: {str(e)}'}), 500
+            app.logger.exception(f"Expungement upload failed during extraction: {str(e)}")
+            return jsonify({'error': f'Failed to extract data from PDF: {str(e)}'}), 500
     return jsonify({'error': 'Invalid file type'}), 400
-
-
-# Run the Flask app
-
-# --- Clio OAuth Integration ---
-client_id = os.getenv('CLIO_CLIENT_ID')
-client_secret = os.getenv('CLIO_CLIENT_SECRET')
-redirect_uri = os.getenv('CLIO_REDIRECT_URI')
-
-authorization_base_url = 'https://app.clio.com/oauth/authorize'
-token_url = 'https://app.clio.com/oauth/token'
-
-@app.route('/clio/authorize')
-def clio_authorize():
-    clio = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=['read:matters'])
-    authorization_url, state = clio.authorization_url(authorization_base_url)
-    return redirect(authorization_url)
-
-@app.route('/callback')
-def clio_callback():
-    clio = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    token = clio.fetch_token(token_url, client_secret=client_secret,
-                             authorization_response=request.url)
-
-    expires_in = token.get('expires_in')
-    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-
-    existing_token = ClioToken.query.first()
-    if existing_token:
-        db.session.delete(existing_token)
-        db.session.commit()
-
-    new_token = ClioToken(
-        access_token=token['access_token'],
-        refresh_token=token['refresh_token'],
-        expires_at=expires_at
-    )
-    db.session.add(new_token)
-    db.session.commit()
-
-    return "Clio Authorization Successful!"
-
-def get_valid_token():
-    token_entry = ClioToken.query.first()
-    if not token_entry:
-        raise Exception("Clio not authorized. Visit /clio/authorize first.")
-
-    if token_entry.is_expired():
-        extra = {'client_id': client_id, 'client_secret': client_secret}
-        clio = OAuth2Session(client_id, token={
-            'refresh_token': token_entry.refresh_token,
-            'token_type': 'Bearer',
-            'access_token': token_entry.access_token,
-            'expires_in': -30
-        })
-        new_token = clio.refresh_token(token_url, **extra)
-
-        expires_in = new_token.get('expires_in')
-        token_entry.access_token = new_token['access_token']
-        token_entry.refresh_token = new_token['refresh_token']
-        token_entry.expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-        db.session.commit()
-
-    return token_entry.access_token
-
-
-@app.route('/clio/matters')
-def get_matters():
+# --- Batch Upload Route for Expungement ---
+# Place this after app is defined
+@app.route('/expungement/upload_batch', methods=['POST'])
+def upload_batch():
     try:
-        access_token = get_valid_token()
+        # Ensure JSON content-type check for valid response
+        if not request.files:
+            return jsonify({"status": "error", "message": "No files provided"}), 400
+        files = request.files.getlist('files')
+        results = []
+        for file in files:
+            if file:
+                extracted_data = extract_expungement_data(file)
+                results.append(extracted_data)
+        return jsonify({"status": "success", "cases": results}), 200
     except Exception as e:
-        return {"error": f"Token Error: {str(e)}"}, 500
-
-    headers = {'Authorization': f'Bearer {access_token}'}
-    # Filter only open matters
-    base_url = 'https://app.clio.com/api/v4/matters?status=open'
-    all_matters = []
-    url = base_url
-
-    while url:
-        response = requests.get(url, headers=headers)
-        if response.status_code != 200:
-            return {
-                "error": "Failed to fetch matters",
-                "status_code": response.status_code,
-                "details": response.text
-            }, response.status_code
-
-        data = response.json()
-        all_matters.extend(data.get('data', []))
-        url = data.get('links', {}).get('next')  # Get the next page URL
-
-    return {"matters": all_matters}
-
-
-# --- Clio Contact Search Route ---
-@app.route('/clio/contact-search')
-def clio_contact_search():
-    query = request.args.get('query', '').strip().lower()
-    try:
-        access_token = get_valid_token()
-        headers = {'Authorization': f'Bearer {access_token}'}
-        response = requests.get(f'https://app.clio.com/api/v4/contacts?query={query}', headers=headers)
-        if response.status_code != 200:
-            return {"data": []}
-
-        contacts = response.json().get("data", [])
-        people = []
-        # Only return results if query is non-empty
-        if query:
-            for contact in contacts:
-                if contact.get("type", "").lower() == "person":
-                    first = contact.get("first_name", "") or ""
-                    last = contact.get("last_name", "") or ""
-                    name_fallback = contact.get("name", "").strip()
-                    full_name = f"{first} {last}".strip() or name_fallback
-
-                    # Skip contacts with empty names
-                    if not full_name:
-                        continue
-
-                    if query in full_name.lower():
-                        people.append({
-                            "id": contact.get("id"),
-                            "type": "Person",
-                            "name": full_name,
-                            "email": contact.get("email", "")
-                        })
-        return {"data": people}
-    except Exception as e:
-        return {"data": [], "error": str(e)}, 500
-
-
-
-# --- Clio Test Contacts Route ---
-@app.route("/clio/test-contacts")
-def test_clio_contacts():
-    try:
-        access_token = get_valid_token()
-        headers = {"Authorization": f"Bearer {access_token}"}
-        response = requests.get("https://app.clio.com/api/v4/contacts", headers=headers)
-        return response.json()  # Show raw Clio contact data
-    except Exception as e:
-        return {"error": str(e)}, 500
-@app.route("/expungement/success")
-def expungement_success():
-    name = request.args.get("name", "Client")
-    from flask import get_flashed_messages
-    messages = get_flashed_messages(with_categories=True)
-    download_url = None
-    generated_path = session.get("generated_file_path")
-    if generated_path and os.path.isfile(generated_path):
-        filename = os.path.basename(generated_path)
-        # Append query string to trigger automatic download after page loads
-        download_url = url_for("download_generated_file", filename=filename) + "?autodownload=true"
-    return render_template("Expungement_Success.html", name=name, messages=messages, download_url=download_url)
-
-if __name__ == "__main__":
-    from post_deploy import run_post_deploy
-    run_post_deploy()
-    app.run(debug=True)
-
-
-# --- Admin Tools Page ---
-@app.route("/admin_tools")
-def admin_tools():
-    return render_template("admin_tools.html")
+        # Add print/log statement for debugging
+        app.logger.exception("Batch upload failed")
+        return jsonify({"status": "error", "message": str(e)}), 500

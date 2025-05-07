@@ -49,20 +49,20 @@ def safe_search(pattern, text, flags=0):
     try:
         return re.search(pattern, text, flags)
     except re.error as e:
-        current_app.logger.warning(f"Regex error for pattern '{pattern}': {e}")
+        logger.warning(f"Regex error for pattern '{pattern}': {e}")
         return None
 
-# Function to extract expungement data from a PDF file
 def extract_expungement_data(filepath, case_index=None):
     text = ""
-    current_app.logger.debug(f"Extracting data from PDF: {filepath}")
+    logger.debug(f"Extracting data from PDF: {filepath}")
 
+    # Assumes filepath is directly accessible (absolute or temp file path from upload)
     with pdfplumber.open(filepath) as pdf:
         for page in pdf.pages:
             page_text = page.extract_text()
             if page_text:
                 text += page_text
-                current_app.logger.debug(f"Extracted text from page: {page.page_number}")
+                logger.debug(f"Extracted text from page: {page.page_number}")
 
     field_patterns = [
         ("name", [
@@ -111,6 +111,10 @@ def extract_expungement_data(filepath, case_index=None):
             r"(\w+\s+Juvenile and Domestic Relations District Court)",
             r"(Fairfax County Juvenile and Domestic Relations District Court)"
         ]),
+        ("police_department", [
+            r"Arresting Agency\s*:\s*([^\n\r]+)",
+            r"Police Department\s*:\s*([^\n\r]+)"
+        ]),
     ]
 
     result = {}
@@ -141,8 +145,7 @@ def extract_expungement_data(filepath, case_index=None):
 
         if match:
             if key == "name":
-                if case_index is not None:
-                    # skip assigning name for additional cases
+                if case_index is not None and case_index != 1:
                     continue
                 # Handle names in format: Last, First Middle
                 if "," in val:
@@ -156,8 +159,7 @@ def extract_expungement_data(filepath, case_index=None):
                 assign_value(key, formatted_name)
                 assign_value("name_arrest", formatted_name)
             elif key == "dob":
-                if case_index is not None:
-                    # skip assigning dob for additional cases
+                if case_index is not None and case_index != 1:
                     continue
                 try:
                     val = datetime.strptime(val, "%m/%d/%Y").strftime("%Y-%m-%d")
@@ -180,15 +182,23 @@ def extract_expungement_data(filepath, case_index=None):
                 val = re.split(r"Case", val)[0].strip()
                 assign_value(key, val)
             elif key == "final_dispo":
-                val = re.split(r"Sentence|Time|Probation|Fine|Costs", val)[0].strip()
+                val = re.split(r"Sentence", val)[0].strip()
                 val = " ".join(word.capitalize() for word in val.split())
-                assign_value(key, val)
+                # Remove trailing solitary 'S' or 'S.' if it's an unintended character
+                if val.strip().upper() in ["", "."]:
+                    assign_value(key, "")
+                else:
+                    # Only remove trailing S if "Nolle Pro" is in value, to handle "Nolle ProS"
+                    val = val.rstrip("S").strip() if val.upper().endswith("S") and "Nolle Pro" in val.title() else val
+                    assign_value(key, val)
             elif key == "code_section":
                 val = re.split(r"Charge", val)[0].strip()
                 if not val.startswith("Va. Code"):
                     val = f"Va. Code § {val}"
                 assign_value(key, val)
             elif key == "dispo_date":
+                assign_value(key, val)
+            elif key == "police_department":
                 assign_value(key, val)
             else:
                 assign_value(key, val)
@@ -202,9 +212,8 @@ def extract_expungement_data(filepath, case_index=None):
                 assign_value(key, val)
             elif key != "arrest_date":  # already handled separately
                 if case_index is not None:
-                    if key in ["name", "name_arrest", "dob"]:
-                        # Skip assigning these keys for additional cases
-                        pass
+                    if case_index != 1 and key in ["name", "name_arrest", "dob"]:
+                        continue
                     else:
                         assign_value(key, "")
                 else:
@@ -236,7 +245,7 @@ def extract_expungement_data(filepath, case_index=None):
                                     result[court_key] = court_name.replace("&", "&amp;")
                                 break
             except Exception as e:
-                current_app.logger.exception(f"Fallback court_dispo scan failed: {e}")
+                logger.exception(f"Fallback court_dispo scan failed: {e}")
 
     # Fallback logic for dispo_date if empty: collect all hearing dates in Hearing Information section
     dispo_key = f"case_{case_index}_dispo_date" if case_index is not None else "dispo_date"
@@ -245,8 +254,8 @@ def extract_expungement_data(filepath, case_index=None):
         if hearing_section:
             dates = re.findall(r"\b(\d{2}/\d{2}/\d{4})\b", hearing_section.group(1))
             if dates:
-                val_dates = ", ".join(dates)
-                result[dispo_key] = val_dates.replace("&", "&amp;")
+                first_date = dates[0]
+                result[dispo_key] = first_date.replace("&", "&amp;")
 
     # If case_index is set, filter keys to only those with the case_{case_index}_ prefix
     if case_index is not None:
@@ -254,18 +263,48 @@ def extract_expungement_data(filepath, case_index=None):
         for k, v in result.items():
             if k.startswith(f"case_{case_index}_"):
                 filtered_result[k] = v
-        current_app.logger.debug(f"Extraction result: {filtered_result}")
+        logger.debug(f"Extraction result: {filtered_result}")
         return filtered_result
 
-    current_app.logger.debug(f"Extraction result: {result}")
+    if case_index is None:
+        for required_key in ["name", "name_arrest", "dob", "final_dispo"]:
+            if required_key not in result:
+                result[required_key] = ""
+
+    logger.debug(f"Extraction result: {result}")
     return result
 
+if __name__ == "__main__":
+    import json
+    import sys
+
+    if len(sys.argv) < 2:
+        print("Usage: python expungement_utils.py <PDF_FILE_1> <PDF_FILE_2> ...")
+        sys.exit(1)
+
+    pdf_paths = sys.argv[1:]
+    all_results = []
+
+    for idx, path in enumerate(pdf_paths, start=1):
+        case_data = extract_expungement_data(path, case_index=idx)
+        all_results.append(case_data)
+
+    print(json.dumps(all_results, indent=2))
 
 
 # Function to register after_request handler for JSON Content-Type
+
 def register_after_request(app):
     @app.after_request
     def ensure_json_content_type(response):
         if response.is_json or response.mimetype == "application/json":
             response.headers["Content-Type"] = "application/json"
         return response
+
+
+def extract_multiple_cases_data(filepaths):
+    all_data = []
+    for idx, path in enumerate(filepaths, start=1):
+        case_data = extract_expungement_data(path, case_index=idx)
+        all_data.append(case_data)
+    return all_data
