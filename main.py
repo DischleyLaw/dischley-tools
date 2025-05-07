@@ -231,7 +231,6 @@ from itsdangerous import URLSafeTimedSerializer
 
 load_dotenv()
 
-# Only define app once; already defined at the top
 app.secret_key = "supersecretkey"
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///leads.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
@@ -258,6 +257,18 @@ db = SQLAlchemy(app)
 migrate = Migrate(app, db)
 # with app.app_context():
 #     db.create_all()
+
+# --- OAuth2 Integration (Clio) ---
+import os
+from requests_oauthlib import OAuth2Session
+
+# Example usage: Initialize OAuth2Session for Clio with redirect_uri
+client_id = os.getenv("CLIO_CLIENT_ID")
+client_secret = os.getenv("CLIO_CLIENT_SECRET")
+redirect_uri = "https://tools.dischleylaw.com/callback"
+token_url = "https://app.clio.com/oauth/token"
+# When using OAuth2Session for Clio, always pass redirect_uri:
+# oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, ...)
 
 # --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
@@ -1671,3 +1682,37 @@ def get_valid_token():
     token.expires_at = datetime.utcnow() + timedelta(seconds=new_token.get("expires_in"))
     db.session.commit()
     return token.access_token
+# --- OAuth2 Callback Route for Clio ---
+# Place this near other route definitions
+from flask import request
+@app.route("/callback")
+def callback():
+    from urllib.parse import urlparse, parse_qs
+    from requests_oauthlib import OAuth2Session
+    import os
+
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    client_secret = os.getenv("CLIO_CLIENT_SECRET")
+    redirect_uri = "https://tools.dischleylaw.com/callback"
+    token_url = "https://app.clio.com/oauth/token"
+
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    authorization_response = request.url
+
+    try:
+        token = oauth.fetch_token(
+            token_url,
+            authorization_response=authorization_response,
+            client_secret=client_secret
+        )
+        # Store token in the database (optional)
+        clio_token = ClioToken(
+            access_token=token.get("access_token"),
+            refresh_token=token.get("refresh_token"),
+            expires_at=datetime.utcnow() + timedelta(seconds=token.get("expires_in", 3600))
+        )
+        db.session.add(clio_token)
+        db.session.commit()
+        return "Authorization successful! You may close this window."
+    except Exception as e:
+        return f"Authorization failed: {str(e)}"
