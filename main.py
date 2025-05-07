@@ -1,3 +1,32 @@
+@app.route("/clio/contact-search")
+def clio_contact_search():
+    query = request.args.get("query", "").strip()
+    if not query:
+        return jsonify({"data": []})
+
+    try:
+        access_token = get_valid_token()
+        headers = {"Authorization": f"Bearer {access_token}"}
+        url = f"https://app.clio.com/api/v4/contacts?query={query}"
+        response = requests.get(url, headers=headers)
+
+        if response.status_code == 200:
+            contacts = []
+            for contact in response.json().get("data", []):
+                if contact.get("type", "").lower() == "person":
+                    first = contact.get("first_name", "").strip()
+                    last = contact.get("last_name", "").strip()
+                    full_name = f"{first} {last}".strip()
+                    if query.lower() in full_name.lower():
+                        contacts.append({
+                            "id": contact.get("id"),
+                            "name": full_name
+                        })
+            return jsonify({"data": contacts})
+        else:
+            return jsonify({"error": "Failed to fetch contacts", "status": response.status_code}), 500
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
 from flask_cors import CORS
 
