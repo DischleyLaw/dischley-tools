@@ -405,7 +405,6 @@ def lead_links():
 
 
 
-# --- Clio Token Model ---
 class ClioToken(db.Model):
     __tablename__ = 'clio_tokens'
     id = db.Column(db.Integer, primary_key=True)
@@ -417,23 +416,42 @@ class ClioToken(db.Model):
         return datetime.utcnow() >= self.expires_at
 
 
+# --- Clio OAuth2 Authorization ---
+@app.route("/clio/authorize")
+def clio_authorize():
+    authorization_base_url = "https://app.clio.com/oauth/authorize"
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    redirect_uri = url_for("clio_callback", _external=True)
+    scope = ["all"]
+    clio = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
+    authorization_url, state = clio.authorization_url(authorization_base_url)
+    session["oauth_state"] = state
+    return redirect(authorization_url)
 
 
-# --- Clio OAuth2 Callback Route (restored original working logic) ---
+# --- Clio OAuth2 Callback ---
 @app.route("/clio/callback")
 def clio_callback():
-    clio = OAuth2Session(
-        os.getenv("CLIO_CLIENT_ID"),
-        state=session.get("oauth_state"),
-        redirect_uri="https://tools.dischleylaw.com/clio/callback"
+    token_url = "https://app.clio.com/oauth/token"
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    client_secret = os.getenv("CLIO_CLIENT_SECRET")
+    redirect_uri = url_for("clio_callback", _external=True)
+    clio = OAuth2Session(client_id, redirect_uri=redirect_uri, state=session.get("oauth_state"))
+    token = clio.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
+    
+    # Save the token in the database
+    expires_in = token.get("expires_in")
+    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+    clio_token = ClioToken(
+        access_token=token.get("access_token"),
+        refresh_token=token.get("refresh_token"),
+        expires_at=expires_at
     )
-    token = clio.fetch_token(
-        "https://app.clio.com/oauth/token",
-        client_secret=os.getenv("CLIO_CLIENT_SECRET"),
-        authorization_response=request.url
-    )
-    session["clio_token"] = token
+    db.session.add(clio_token)
+    db.session.commit()
     return redirect(url_for("dashboard"))
+
+
 
 @app.route("/")
 def dashboard():
@@ -1625,7 +1643,7 @@ def upload_batch():
     except Exception as e:
         app.logger.exception("Unhandled error in batch upload")
         return jsonify({"status": "error", "message": str(e)}), 500
-# --- Clio OAuth2 Integration Routes ---
+
 @app.route("/clio/authorize")
 def clio_authorize():
     client_id = os.getenv("CLIO_CLIENT_ID")
@@ -1636,6 +1654,8 @@ def clio_authorize():
     session["oauth_state"] = state
     return redirect(authorization_url)
 
+
+# Only one /clio/callback route definition should exist.
 @app.route("/clio/callback")
 def clio_callback():
     client_id = os.getenv("CLIO_CLIENT_ID")
@@ -1644,25 +1664,27 @@ def clio_callback():
     oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, state=session.get("oauth_state"))
     token = oauth.fetch_token(
         "https://app.clio.com/oauth/token",
-        authorization_response=request.url,
         client_secret=client_secret,
+        authorization_response=request.url
     )
+    # Store token in database
     access_token = token.get("access_token")
     refresh_token = token.get("refresh_token")
     expires_in = token.get("expires_in")
     expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-    # Save the token to DB
-    existing = ClioToken.query.first()
-    if existing:
-        existing.access_token = access_token
-        existing.refresh_token = refresh_token
-        existing.expires_at = expires_at
-    else:
-        new_token = ClioToken(access_token=access_token, refresh_token=refresh_token, expires_at=expires_at)
-        db.session.add(new_token)
+    # Remove any existing token (assume singleton for this app)
+    ClioToken.query.delete()
+    db.session.commit()
+    clio_token = ClioToken(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        expires_at=expires_at
+    )
+    db.session.add(clio_token)
     db.session.commit()
     flash("Clio authorization successful.", "success")
-    return redirect(url_for("admin_tools"))
+    return redirect(url_for("dashboard"))
+
 
 def get_valid_token():
     token = ClioToken.query.first()
