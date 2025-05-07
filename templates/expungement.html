@@ -755,11 +755,9 @@
 </script>
 {% if autofill_data %}
 <script>
-  const autofill_data = {{ autofill_data|tojson|safe }};
   document.addEventListener("DOMContentLoaded", function () {
-    if (autofill_data) {
-      fillFormFields(autofill_data);
-    }
+    const autofill_data = {{ autofill_data|tojson|safe }};
+    fillFormFields(autofill_data);
   });
 </script>
 {% endif %}
