@@ -1582,15 +1582,12 @@ def expungement_upload():
 def admin_tools():
     return render_template("admin_tools.html")
 
-# --- Batch Upload Route for Expungement ---
-# Place this after app is defined
 @app.route('/expungement/upload_batch', methods=['POST'])
 def upload_batch():
     try:
         if not request.files:
             return jsonify({"status": "error", "message": "No files provided"}), 400
-        else:
-            files = request.files.getlist('files')
+        files = request.files.getlist('files')
         results = []
         from Expungement.expungement_utils import extract_expungement_data
         for file in files:
@@ -1608,38 +1605,3 @@ def upload_batch():
     except Exception as e:
         app.logger.exception("Unhandled error in batch upload")
         return jsonify({"status": "error", "message": str(e)}), 500
-# --- Clio OAuth2 Authorization and Callback Routes ---
-
-# Add the following at the end of the file:
-
-@app.route("/clio/authorize")
-def clio_authorize():
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    redirect_uri = url_for("clio_callback", _external=True)
-    authorization_base_url = "https://app.clio.com/oauth/authorize"
-
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    authorization_url, state = oauth.authorization_url(authorization_base_url)
-
-    session["oauth_state"] = state
-    return redirect(authorization_url)
-
-@app.route("/clio/callback")
-def clio_callback():
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    client_secret = os.getenv("CLIO_CLIENT_SECRET")
-    redirect_uri = url_for("clio_callback", _external=True)
-    token_url = "https://app.clio.com/oauth/token"
-
-    oauth = OAuth2Session(client_id, state=session["oauth_state"], redirect_uri=redirect_uri)
-    token = oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
-
-    # Save token to DB
-    new_token = ClioToken(
-        access_token=token["access_token"],
-        refresh_token=token["refresh_token"],
-        expires_at=datetime.utcnow() + timedelta(seconds=token["expires_in"])
-    )
-    db.session.add(new_token)
-    db.session.commit()
-    return redirect(url_for("dashboard"))
