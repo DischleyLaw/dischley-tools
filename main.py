@@ -203,7 +203,21 @@ def generate_expungement():
         app.logger.debug(f"Final form data used for document generation: {form_data}")
         return redirect(url_for("expungement_success"))
     # For GET request, render the expungement form template
-    return render_template('expungement.html')
+    current_month = datetime.now().strftime("%B")
+    current_year = datetime.now().year
+    from flask import get_flashed_messages
+    messages = get_flashed_messages(with_categories=True)
+    download_url = None
+    autofill_data = session.pop("expungement_autofill_data", {})
+    return render_template(
+        'expungement.html',
+        counties=prosecutor_info.keys(),
+        current_month=current_month,
+        current_year=current_year,
+        messages=messages,
+        download_url=download_url,
+        autofill_data=autofill_data
+    )
 
 from Expungement.expungement_utils import extract_expungement_data, extract_multiple_cases_data, populate_document, prosecutor_info
 from flask_mail import Mail, Message
@@ -404,8 +418,8 @@ class ClioToken(db.Model):
 @app.route("/")
 def dashboard():
     case_results = CaseResult.query.order_by(CaseResult.created_at.desc()).all()
-    # Show admin_tools button for all logged-in users (or restrict to admin if needed)
-    show_admin_tools = True
+    # Show admin_tools button only for logged-in admin user
+    show_admin_tools = "user" in session and session.get("user") == "admin"
     return render_template("dashboard.html", case_results=case_results, show_admin_tools=show_admin_tools)
 
 @app.route("/leads")
@@ -1561,6 +1575,13 @@ def expungement_upload():
             app.logger.exception(f"Expungement upload failed during extraction: {str(e)}")
             return jsonify({'error': f'Failed to extract data from PDF: {str(e)}'}), 500
     return jsonify({'error': 'Invalid file type'}), 400
+
+
+# --- Admin Tools Route ---
+@app.route("/admin_tools")
+def admin_tools():
+    return render_template("admin_tools.html")
+
 # --- Batch Upload Route for Expungement ---
 # Place this after app is defined
 @app.route('/expungement/upload_batch', methods=['POST'])
@@ -1573,14 +1594,43 @@ def upload_batch():
         results = []
         for file in files:
             if file:
-                extracted_data = extract_expungement_data(file)
-                results.append(extracted_data)
-        return jsonify({"status": "success", "cases": results}), 200
-    except Exception as e:
-        # Add print/log statement for debugging
-        app.logger.exception("Batch upload failed")
-        return jsonify({"status": "error", "message": str(e)}), 500
-# --- Utility function to get a valid Clio token ---
+        # (rest of function omitted for brevity)
+# --- Clio OAuth2 Authorization and Callback Routes ---
+
+# Add the following at the end of the file:
+
+@app.route("/clio/authorize")
+def clio_authorize():
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    redirect_uri = url_for("clio_callback", _external=True)
+    authorization_base_url = "https://app.clio.com/oauth/authorize"
+
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    authorization_url, state = oauth.authorization_url(authorization_base_url)
+
+    session["oauth_state"] = state
+    return redirect(authorization_url)
+
+@app.route("/clio/callback")
+def clio_callback():
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    client_secret = os.getenv("CLIO_CLIENT_SECRET")
+    redirect_uri = url_for("clio_callback", _external=True)
+    token_url = "https://app.clio.com/oauth/token"
+
+    oauth = OAuth2Session(client_id, state=session["oauth_state"], redirect_uri=redirect_uri)
+    token = oauth.fetch_token(token_url, client_secret=client_secret, authorization_response=request.url)
+
+    # Save token to DB
+    new_token = ClioToken(
+        access_token=token["access_token"],
+        refresh_token=token["refresh_token"],
+        expires_at=datetime.utcnow() + timedelta(seconds=token["expires_in"])
+    )
+    db.session.add(new_token)
+    db.session.commit()
+    return redirect(url_for("dashboard"))
+# --- Utility: Get valid Clio token ---
 def get_valid_token():
     token = ClioToken.query.first()
     if token and not token.is_expired():

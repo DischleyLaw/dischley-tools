@@ -755,4 +755,12 @@
     window.additionalCaseCount = 1;
   }
 </script>
+<script>
+  const autofill_data = {{ autofill_data|tojson }};
+  document.addEventListener("DOMContentLoaded", function () {
+    if (autofill_data) {
+      fillFormFields(autofill_data);
+    }
+  });
+</script>
 {% endblock %}
