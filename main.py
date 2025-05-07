@@ -1,3 +1,14 @@
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from flask_cors import CORS
+
+# --- Expungement Data Extraction Import ---
+from Expungement.expungement_utils import extract_expungement_data
+
+# Ensure app is defined only once and before any @app.route decorators
+app = Flask(__name__)
+CORS(app)
+
+# --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
 def expungement_upload_batch():
     files = request.files.getlist("file")
@@ -25,15 +36,6 @@ def expungement_upload_batch():
         response_data[f"case_{idx+1}"] = case_data
 
     return jsonify(response_data), 200
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
-from flask_cors import CORS
-
-# --- Expungement Data Extraction Import ---
-from Expungement.expungement_utils import extract_expungement_data
-
-# Ensure app is defined only once and before any @app.route decorators
-app = Flask(__name__)
-CORS(app)
 
 import subprocess
 import os
