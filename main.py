@@ -11,7 +11,8 @@ CORS(app)
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
 def expungement_upload_batch():
-    files = request.files.getlist("file")
+    # Accept files with any key starting with "file", e.g., "file", "file_1", "file_2", etc.
+    files = [f for key, f in request.files.items() if key.startswith("file")]
     if not files:
         return jsonify({"error": "No files uploaded"}), 400
 
