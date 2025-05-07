@@ -333,7 +333,6 @@
     }
   }
 </script>
-</script>
 <script>
   const prosecutorData = {
     "Fairfax County": {
@@ -388,7 +387,6 @@
     document.getElementById('prosecutor_address1').value = data.address1 || '';
     document.getElementById('prosecutor_address2').value = data.address2 || '';
   }
-</script>
 </script>
 <script>
   function toggleManifestInjustice() {
@@ -755,6 +753,7 @@
     window.additionalCaseCount = 1;
   }
 </script>
+{% if autofill_data %}
 <script>
   const autofill_data = {{ autofill_data|tojson }};
   document.addEventListener("DOMContentLoaded", function () {
@@ -763,4 +762,5 @@
     }
   });
 </script>
+{% endif %}
 {% endblock %}

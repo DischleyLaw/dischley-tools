@@ -1587,14 +1587,27 @@ def admin_tools():
 @app.route('/expungement/upload_batch', methods=['POST'])
 def upload_batch():
     try:
-        # Ensure JSON content-type check for valid response
         if not request.files:
             return jsonify({"status": "error", "message": "No files provided"}), 400
-        files = request.files.getlist('files')
+        else:
+            files = request.files.getlist('files')
         results = []
+        from Expungement.expungement_utils import extract_expungement_data
         for file in files:
-            if file:
-        # (rest of function omitted for brevity)
+            if file and file.filename.endswith('.pdf'):
+                temp_path = os.path.join("temp", file.filename)
+                os.makedirs("temp", exist_ok=True)
+                file.save(temp_path)
+                try:
+                    data = extract_expungement_data(temp_path)
+                    results.append({"filename": file.filename, "data": data})
+                except Exception as e:
+                    app.logger.exception(f"Failed to process file {file.filename}")
+                    results.append({"filename": file.filename, "error": str(e)})
+        return jsonify({"status": "success", "results": results}), 200
+    except Exception as e:
+        app.logger.exception("Unhandled error in batch upload")
+        return jsonify({"status": "error", "message": str(e)}), 500
 # --- Clio OAuth2 Authorization and Callback Routes ---
 
 # Add the following at the end of the file:
@@ -1630,9 +1643,3 @@ def clio_callback():
     db.session.add(new_token)
     db.session.commit()
     return redirect(url_for("dashboard"))
-# --- Utility: Get valid Clio token ---
-def get_valid_token():
-    token = ClioToken.query.first()
-    if token and not token.is_expired():
-        return token.access_token
-    raise Exception("No valid Clio token found.")
