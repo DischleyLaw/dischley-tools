@@ -1614,9 +1614,9 @@ def upload_batch():
 @app.route("/clio/authorize")
 def clio_authorize():
     client_id = os.getenv("CLIO_CLIENT_ID")
-    redirect_uri = url_for("clio_callback", _external=True)
+    # Hardcode the redirect_uri to match the registered Clio callback
     scope = "read:contacts read:matters"
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
+    oauth = OAuth2Session(client_id, redirect_uri="https://tools.dischleylaw.com/callback", scope=scope)
     authorization_url, state = oauth.authorization_url("https://app.clio.com/oauth/authorize")
     session["oauth_state"] = state
     return redirect(authorization_url)
@@ -1627,8 +1627,8 @@ def clio_authorize():
 def clio_callback():
     client_id = os.getenv("CLIO_CLIENT_ID")
     client_secret = os.getenv("CLIO_CLIENT_SECRET")
-    redirect_uri = url_for("clio_callback", _external=True)
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, state=session.get("oauth_state"))
+    # Hardcode the redirect_uri to match the registered Clio callback
+    oauth = OAuth2Session(client_id, redirect_uri="https://tools.dischleylaw.com/callback", state=session.get("oauth_state"))
     token = oauth.fetch_token(
         "https://app.clio.com/oauth/token",
         client_secret=client_secret,
