@@ -1605,3 +1605,60 @@ def upload_batch():
     except Exception as e:
         app.logger.exception("Unhandled error in batch upload")
         return jsonify({"status": "error", "message": str(e)}), 500
+# --- Clio OAuth2 Integration Routes ---
+@app.route("/clio/authorize")
+def clio_authorize():
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    redirect_uri = url_for("clio_callback", _external=True)
+    scope = "read:contacts read:matters"
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=scope)
+    authorization_url, state = oauth.authorization_url("https://app.clio.com/oauth/authorize")
+    session["oauth_state"] = state
+    return redirect(authorization_url)
+
+@app.route("/clio/callback")
+def clio_callback():
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    client_secret = os.getenv("CLIO_CLIENT_SECRET")
+    redirect_uri = url_for("clio_callback", _external=True)
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, state=session.get("oauth_state"))
+    token = oauth.fetch_token(
+        "https://app.clio.com/oauth/token",
+        authorization_response=request.url,
+        client_secret=client_secret,
+    )
+    access_token = token.get("access_token")
+    refresh_token = token.get("refresh_token")
+    expires_in = token.get("expires_in")
+    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
+    # Save the token to DB
+    existing = ClioToken.query.first()
+    if existing:
+        existing.access_token = access_token
+        existing.refresh_token = refresh_token
+        existing.expires_at = expires_at
+    else:
+        new_token = ClioToken(access_token=access_token, refresh_token=refresh_token, expires_at=expires_at)
+        db.session.add(new_token)
+    db.session.commit()
+    flash("Clio authorization successful.", "success")
+    return redirect(url_for("admin_tools"))
+
+def get_valid_token():
+    token = ClioToken.query.first()
+    if token and not token.is_expired():
+        return token.access_token
+    # Refresh the token
+    client_id = os.getenv("CLIO_CLIENT_ID")
+    client_secret = os.getenv("CLIO_CLIENT_SECRET")
+    refresh_token = token.refresh_token if token else None
+    if not refresh_token:
+        raise Exception("No refresh token available.")
+    extra = {"client_id": client_id, "client_secret": client_secret}
+    oauth = OAuth2Session(client_id, token={"refresh_token": refresh_token, "token_type": "Bearer", "expires_in": -30})
+    new_token = oauth.refresh_token("https://app.clio.com/oauth/token", **extra)
+    token.access_token = new_token.get("access_token")
+    token.refresh_token = new_token.get("refresh_token")
+    token.expires_at = datetime.utcnow() + timedelta(seconds=new_token.get("expires_in"))
+    db.session.commit()
+    return token.access_token
