@@ -404,6 +404,7 @@ def lead_links():
     return render_template("lead-links.html", links=links)
 
 
+
 # --- Clio Token Model ---
 class ClioToken(db.Model):
     __tablename__ = 'clio_tokens'
@@ -414,6 +415,36 @@ class ClioToken(db.Model):
 
     def is_expired(self):
         return datetime.utcnow() >= self.expires_at
+
+
+# --- Clio OAuth2 Authorization Route (restored original working logic) ---
+@app.route("/clio/authorize")
+def clio_authorize():
+    clio = OAuth2Session(
+        os.getenv("CLIO_CLIENT_ID"),
+        redirect_uri="https://tools.dischleylaw.com/clio/callback",
+        scope=["all"]
+    )
+    authorization_url, state = clio.authorization_url("https://app.clio.com/oauth/authorize")
+    session["oauth_state"] = state
+    return redirect(authorization_url)
+
+
+# --- Clio OAuth2 Callback Route (restored original working logic) ---
+@app.route("/clio/callback")
+def clio_callback():
+    clio = OAuth2Session(
+        os.getenv("CLIO_CLIENT_ID"),
+        state=session.get("oauth_state"),
+        redirect_uri="https://tools.dischleylaw.com/clio/callback"
+    )
+    token = clio.fetch_token(
+        "https://app.clio.com/oauth/token",
+        client_secret=os.getenv("CLIO_CLIENT_SECRET"),
+        authorization_response=request.url
+    )
+    session["clio_token"] = token
+    return redirect(url_for("dashboard"))
 
 @app.route("/")
 def dashboard():
