@@ -1,10 +1,39 @@
+@app.route('/expungement/upload_batch', methods=['POST'])
+def expungement_upload_batch():
+    files = request.files.getlist("file")
+    if not files:
+        return jsonify({"error": "No files uploaded"}), 400
+
+    from Expungement.expungement_utils import extract_multiple_cases_data
+    os.makedirs("temp", exist_ok=True)
+    extracted_cases = extract_multiple_cases_data(files[:20])
+    
+    response_data = {}
+    for idx, extracted in enumerate(extracted_cases):
+        case_data = {
+            "arrest_date": extracted.get("arrest_date", ""),
+            "officer_name": extracted.get("officer_name", ""),
+            "police_department": extracted.get("police_department", ""),
+            "charge_name": extracted.get("charge_name", ""),
+            "code_section": extracted.get("code_section", ""),
+            "vcc_code": extracted.get("vcc_code", ""),
+            "otn": extracted.get("otn", ""),
+            "court_dispo": extracted.get("court_dispo", ""),
+            "case_no": extracted.get("case_no", ""),
+            "dispo_date": extracted.get("dispo_date", "")
+        }
+        response_data[f"case_{idx+1}"] = case_data
+
+    return jsonify(response_data), 200
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from flask_cors import CORS
 
 # --- Expungement Data Extraction Import ---
 from Expungement.expungement_utils import extract_expungement_data
 
 # Ensure app is defined only once and before any @app.route decorators
 app = Flask(__name__)
+CORS(app)
 
 import subprocess
 import os
@@ -237,6 +266,8 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # Set session expiration to 24 hours of inactivity
 from datetime import timedelta
 app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(hours=24)
+# Limit uploads to 16MB
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # Limit uploads to 16MB
 
 # Register after-request no-cache headers
 register_after_request(app)
@@ -1069,8 +1100,14 @@ def case_result():
                 if response.status_code == 200:
                     for contact in response.json().get("data", []):
                         if contact.get("type", "").lower() == "person":
-                            full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
-                            if contact_name_input.lower() in full_name.lower():
+                            first = contact.get("first_name", "").strip()
+                            last = contact.get("last_name", "").strip()
+                            full_name = f"{first} {last}".strip()
+                            if (
+                                contact_name_input.lower() == full_name.lower()
+                                or contact_name_input.lower() == first.lower()
+                                or contact_name_input.lower() == last.lower()
+                            ):
                                 clio_contact_id = contact.get("id")
                                 defendant_name = full_name
                                 break

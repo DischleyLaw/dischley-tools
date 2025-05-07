@@ -701,35 +701,29 @@
           console.warn('No autofill data returned in batch upload', data);
           return;
         }
-        // Autofill for each case, if present (support up to 20)
-        for (let i = 1; i <= 20; i++) {
-          const caseKey = 'case_' + i;
-          if (data[caseKey]) {
-            if (i === 1) {
-              // main form, Charge #1
-              fillFormFields(data[caseKey]);
-            } else {
-              // Try to find the parent card for this case; if not present, add it
-              let parent = document.querySelector(`[name="case_${i}_charge_name"]`);
-              if (!parent) {
-                // Add section
-                if (typeof addAdditionalCaseSection === 'function') {
-                  // Try to ensure the section exists before autofill
-                  addAdditionalCaseSection();
-                  // Wait for DOM to update
-                  setTimeout(() => {
-                    const parent2 = document.querySelector(`[name="case_${i}_charge_name"]`);
-                    if (parent2) {
-                      fillFormFields(data[caseKey], parent2.closest('.card-body'));
-                    }
-                  }, 200);
+        // Loop through keys dynamically instead of assuming up to 20
+        Object.entries(data).forEach(([caseKey, caseData]) => {
+          const match = caseKey.match(/^case_(\d+)$/);
+          if (!match) return;
+          const i = parseInt(match[1], 10);
+          if (i === 1) {
+            // main form, Charge #1
+            fillFormFields(caseData);
+          } else {
+            let parent = document.querySelector(`[name="case_${i}_charge_name"]`);
+            if (!parent && typeof addAdditionalCaseSection === 'function') {
+              addAdditionalCaseSection();
+              setTimeout(() => {
+                const newParent = document.querySelector(`[name="case_${i}_charge_name"]`);
+                if (newParent) {
+                  fillFormFields(caseData, newParent.closest('.card-body'));
                 }
-              } else {
-                fillFormFields(data[caseKey], parent.closest('.card-body'));
-              }
+              }, 200);
+            } else if (parent) {
+              fillFormFields(caseData, parent.closest('.card-body'));
             }
           }
-        }
+        });
       })
       .catch(err => {
         console.error('Upload failed', err);
@@ -753,5 +747,4 @@
     window.additionalCaseCount = 1;
   }
 
-{% endif %}
 {% endblock %}
