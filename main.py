@@ -1,3 +1,15 @@
+from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from flask_cors import CORS
+
+# --- Expungement Data Extraction Import ---
+from Expungement.expungement_utils import extract_expungement_data
+
+# Ensure app is defined only once and before any @app.route decorators
+app = Flask(__name__)
+CORS(app)
+
+
+# --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
 def clio_contact_search():
     query = request.args.get("query", "").strip()
@@ -27,15 +39,6 @@ def clio_contact_search():
             return jsonify({"error": "Failed to fetch contacts", "status": response.status_code}), 500
     except Exception as e:
         return jsonify({"error": str(e)}), 500
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
-from flask_cors import CORS
-
-# --- Expungement Data Extraction Import ---
-from Expungement.expungement_utils import extract_expungement_data
-
-# Ensure app is defined only once and before any @app.route decorators
-app = Flask(__name__)
-CORS(app)
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
