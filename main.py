@@ -416,6 +416,7 @@ class ClioToken(db.Model):
         return datetime.utcnow() >= self.expires_at
 
 
+
 # --- Clio OAuth2 Authorization ---
 @app.route("/clio/authorize")
 def clio_authorize():
