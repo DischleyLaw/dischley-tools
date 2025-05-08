@@ -332,6 +332,12 @@ contactInput.addEventListener("input", function () {
       .then(data => {
         console.log("Clio contact search response:", data);
         contactList.innerHTML = "";
+        if (data.data && data.data.length === 0) {
+          const option = document.createElement("option");
+          option.value = "";
+          option.textContent = "No contacts found";
+          contactList.appendChild(option);
+        }
         if (data.data) {
           data.data.forEach(contact => {
             if (!contact.name) return;
@@ -342,6 +348,9 @@ contactInput.addEventListener("input", function () {
             contactList.appendChild(option);
           });
         }
+      })
+      .catch(err => {
+        console.error("Error fetching Clio contacts:", err);
       });
   }, 300); // 300ms debounce delay
 });
