@@ -1185,7 +1185,7 @@ def case_result():
         send_review_links = 'send_review_links' in request.form
 
         subject = f"Case Result - {defendant_name}"
-        email_html = "<h2 style='font-size:16pt;'>Case Result</h2>"
+        email_html = f"<h2 style='font-size:16pt;'>Case Result – {defendant_name}</h2>"
         court_value = request.form.get("court", "").strip()
         prosecutor_judge_value = request.form.get("prosecutor_judge", "").strip()
         if court_value:
