@@ -1196,7 +1196,6 @@ def case_result():
         plea_offer = request.form.get("plea_offer", "").strip()
         if plea_offer:
             email_html += f"<p style='font-size:16pt;'><strong>Plea Offer:</strong> {plea_offer}</p>"
-        email_html += f"<p style='font-size:16pt;'><strong>Client:</strong> {defendant_name}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
             jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
@@ -1248,8 +1247,7 @@ def case_result():
                         else:
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]}<br></span>"
                     # License Suspension: Only show check if "Yes"
-                    if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
-                        email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
+                    # (Moved after restricted license block below)
                     # Compose restricted license info: include type and term if granted
                     if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
@@ -1261,10 +1259,12 @@ def case_result():
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
                         email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
-                    # END restricted license block before ASAP section
+                    # License Suspension: Only show check if "Yes" (now after restricted license)
+                    if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # ASAP Ordered: Only show if "Yes"
-                    # if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                    #     email_html += "<span style='font-size:16pt;'><strong>ASAP:</strong> ✅<br></span>"
+                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
                     # Probation
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
