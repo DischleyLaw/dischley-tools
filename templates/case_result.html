@@ -291,6 +291,14 @@
             <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="yes" placeholder="BIP/ADAPT (DV Class)">
             <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
           </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="yes" placeholder="Substance Abuse Evaluation">
+            <label class="form-check-label" for="sa_eval">SA Eval</label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="yes" placeholder="Mental Health Evaluation">
+            <label class="form-check-label" for="mh_eval">MH Eval</label>
+          </div>
         </div>
       </div>
       <div class="mb-3 form-floating">
@@ -403,8 +411,9 @@ function updateChargeLabels() {
 
 // License suspension, restricted license toggle logic
 document.addEventListener('change', function(e) {
+  const chargeBlock = e.target.closest('.charge-block');
+
   if (e.target.classList.contains('license-suspension-checkbox')) {
-    const chargeBlock = e.target.closest('.charge-block');
     const termInput = chargeBlock.querySelector('.license-suspension-term');
     const restrictedToggle = chargeBlock.querySelector('.restricted-license-toggle');
     if (e.target.checked) {
@@ -421,51 +430,27 @@ document.addEventListener('change', function(e) {
   }
 
   if (e.target.classList.contains('restricted-license-checkbox')) {
-    const chargeBlock = e.target.closest('.charge-block');
     const restrictionType = chargeBlock.querySelector('.restricted-license-type');
-    if (e.target.checked) {
-      if (restrictionType) restrictionType.style.display = 'block';
-    } else {
-      if (restrictionType) restrictionType.style.display = 'none';
-    }
+    restrictionType.style.display = e.target.checked ? 'block' : 'none';
   }
 
   if (e.target.name === 'disposition[]') {
-    const block = e.target.closest('.charge-block');
-    const textAreaBlock = block.querySelector('.disposition-paragraph');
-    const val = e.target.value;
-    if (["Deferred", "298.02", "General Continuance"].includes(val)) {
+    const textAreaBlock = chargeBlock.querySelector('.disposition-paragraph');
+    const sentencingBlock = chargeBlock.querySelector('.sentencing-and-probation');
+    if (["Deferred", "298.02", "General Continuance"].includes(e.target.value)) {
       if (textAreaBlock) textAreaBlock.style.display = 'block';
-      const sentencingBlock = block.querySelector('.sentencing-and-probation');
       if (sentencingBlock) sentencingBlock.style.display = 'none';
     } else {
       if (textAreaBlock) textAreaBlock.style.display = 'none';
-      const sentencingBlock = block.querySelector('.sentencing-and-probation');
       if (sentencingBlock) sentencingBlock.style.display = 'block';
     }
   }
 
-  // Community Service checkbox logic for showing/hiding hours dropdown
   if (e.target.name === "community_service[]") {
-    const chargeBlock = e.target.closest('.charge-block');
     const hoursDropdown = chargeBlock.querySelector('.community-service-hours');
     if (hoursDropdown) {
       hoursDropdown.style.display = e.target.checked ? 'block' : 'none';
     }
-  }
-
-  // Ensure VIP, community service, ASAP, and anger management checkboxes only affect their own block (no bleed)
-  if (
-    e.target.name === "vip[]" ||
-    e.target.name === "community_service[]" ||
-    e.target.name === "vasap[]" ||
-    e.target.name === "anger_management[]"
-  ) {
-    // No additional logic needed, but this ensures the event is block-local
-    // and can be extended in future if conditional elements are added
-    // (currently, these are just checkboxes per charge-block)
-    // Optionally, you could ensure no bleed by confirming the change is per-block only
-    // but since they are in separate blocks, this is already the case
   }
 });
 

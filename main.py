@@ -481,6 +481,9 @@ class Charge(db.Model):
     charge_notes = db.Column(db.Text)
     # New field for BIP/ADAPT (DV Class)
     bip_adapt = db.Column(db.String(10))
+    # New fields for SA Eval and MH Eval
+    sa_eval = db.Column(db.String(10))
+    mh_eval = db.Column(db.String(10))
 
 
 # --- Lead Links Route ---
@@ -1197,6 +1200,9 @@ def case_result():
         anger_management = request.form.getlist('anger_management[]')
         # New: Retrieve bip_adapt[] for BIP/ADAPT (DV Class)
         bip_adapt = request.form.getlist('bip_adapt[]')
+        # Retrieve SA Eval and MH Eval checkboxes
+        sa_eval = request.form.getlist('sa_eval[]')
+        mh_eval = request.form.getlist('mh_eval[]')
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
         continuation_time = request.form.get('continuation_time', '').strip()
@@ -1221,7 +1227,7 @@ def case_result():
             jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
             license_suspension, restricted_license, asap_ordered,
             probation_type, probation_term, vasap, vip,
-            community_service, anger_management
+            community_service, anger_management, bip_adapt
         ]
         num_charges = max(len(field) for field in all_charge_fields)
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
@@ -1271,7 +1277,7 @@ def case_result():
                     # License Suspension: Only show check if "Yes"
                     # (Moved after restricted license block below)
                     # Compose restricted license info: include type and term if granted
-                    if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
+                    if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
                         if i < len(restricted_license_type) and restricted_license_type[i]:
@@ -1281,12 +1287,12 @@ def case_result():
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
                         email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
+                    # ASAP Ordered: Only show if "Yes"
+                    if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
                     # License Suspension: Only show check if "Yes" (now after restricted license)
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
-                    # ASAP Ordered: Only show if "Yes"
-                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
                     # Probation
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
@@ -1304,6 +1310,11 @@ def case_result():
                     # Add BIP/ADAPT (DV Class) if checked
                     if i < len(bip_adapt) and bip_adapt[i] and bip_adapt[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>BIP/ADAPT (DV Class):</strong> ✅")
+                    # Add SA Eval and MH Eval if checked
+                    if i < len(sa_eval) and sa_eval[i] and sa_eval[i].strip().lower() == "yes":
+                        probation_lines.append(f"<strong>SA Eval:</strong> ✅")
+                    if i < len(mh_eval) and mh_eval[i] and mh_eval[i].strip().lower() == "yes":
+                        probation_lines.append(f"<strong>MH Eval:</strong> ✅")
                     if probation_lines:
                         email_html += "<span style='font-size:16pt;'><strong>Conditions of Probation:</strong><br>"
                         for line in probation_lines:
