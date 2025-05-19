@@ -1236,11 +1236,15 @@ def case_result():
                     ):
                         email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
                     # Jail and Fine output per new requirements
+                    jail_label = "days"
+                    if i < len(jail_time_imposed) and jail_time_imposed[i]:
+                        if "year" in jail_time_imposed[i].lower():
+                            jail_label = ""
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} days in jail with {jail_time_suspended[i]} days suspended<br></span>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {jail_label} in jail with {jail_time_suspended[i]} {jail_label} suspended<br></span>"
                         else:
-                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} days in jail<br></span>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {jail_label} in jail<br></span>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br></span>"
@@ -1260,7 +1264,7 @@ def case_result():
                             restricted_info += f" ({'; '.join(details)})"
                         email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
                     # License Suspension: Only show check if "Yes" (now after restricted license)
-                    if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
+                    if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # ASAP Ordered: Only show if "Yes"
                     if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
@@ -1271,7 +1275,7 @@ def case_result():
                         probation_lines.append(f"<strong>Probation Type:</strong> {probation_type[i]}")
                     if i < len(probation_term) and probation_term[i]:
                         probation_lines.append(f"<strong>Probation Term:</strong> {probation_term[i]}")
-                    if i < len(vasap) and vasap[i].strip().lower() == "yes":
+                    if i < len(vasap) and vasap[i] and vasap[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>VASAP:</strong> ✅")
                     if i < len(vip) and vip[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>VIP:</strong> ✅")

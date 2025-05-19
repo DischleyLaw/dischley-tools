@@ -214,13 +214,33 @@
 
       <div class="sentencing-and-probation">
         <h4 class="h6 mt-4">Sentencing</h4>
-        <div class="mb-3 form-floating">
-          <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Jail Time Imposed (days)">
-          <label for="jail_time_imposed">Jail Time Imposed (days):</label>
+        <div class="mb-3">
+          <label class="form-label">Jail Time Imposed:</label>
+          <div class="row g-2">
+            <div class="col-8">
+              <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Amount">
+            </div>
+            <div class="col-4">
+              <select class="form-select" name="jail_time_imposed_unit[]">
+                <option value="days">Days</option>
+                <option value="years">Years</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="mb-3 form-floating">
-          <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Jail Time Suspended (days)">
-          <label for="jail_time_suspended">Jail Time Suspended (days):</label>
+        <div class="mb-3">
+          <label class="form-label">Jail Time Suspended:</label>
+          <div class="row g-2">
+            <div class="col-8">
+              <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Amount">
+            </div>
+            <div class="col-4">
+              <select class="form-select" name="jail_time_suspended_unit[]">
+                <option value="days">Days</option>
+                <option value="years">Years</option>
+              </select>
+            </div>
+          </div>
         </div>
         <div class="mb-3 form-floating">
           <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed ($)">
