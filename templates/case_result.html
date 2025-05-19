@@ -58,6 +58,95 @@
     <label for="defendant_name">Defendant Name:</label>
   </div>
 
+  <h2 class="h5 mt-4 mb-3">Court Information</h2>
+  <div class="mb-3 form-floating">
+    <select name="court" class="form-select court-select" id="courtSelect">
+      <option value="">-- Select Court --</option>
+    </select>
+    <label for="courtSelect">Court</label>
+  </div>
+<script>
+  const courtSelect = document.getElementById("courtSelect");
+  const courts = [
+    "Alexandria City Circuit Court",
+    "Alexandria City General District Court",
+    "Alexandria Juvenile and Domestic Relations District Court",
+    "Amherst General District Court",
+    "Arlington County Circuit Court",
+    "Arlington County General District Court",
+    "Arlington County Juvenile and Domestic Relations Court",
+    "Caroline County General District Court",
+    "Clarke County General District Court",
+    "Culpeper Circuit Court",
+    "Culpeper General District Court",
+    "Culpeper County Juvenile and Domestic Relations District Court",
+    "Essex County General District Court",
+    "Fairfax City General District Court",
+    "Fairfax County Circuit Court",
+    "Fairfax County General District Court",
+    "Fairfax County Juvenile and Domestic Relations Court",
+    "Falls Church General District Court",
+    "Falls Church Juvenile and Domestic Relations Court",
+    "Fauquier County Circuit Court",
+    "Fauquier County General District Court",
+    "Fauquier County Juvenile and Domestic Relations Court",
+    "Frederick County General District Court",
+    "Fredricksburg City General District Court",
+    "Hanover General District Court",
+    "Henrico County General District Court",
+    "King George County Circuit Court",
+    "King George County Juvenile and Domestic Relations Court",
+    "King George General District Court",
+    "King George Juvenile and Domestic Relations Court",
+    "Loudoun County Circuit Court",
+    "Loudoun County General District Court",
+    "Loudoun County Juvenile and Domestic Relations Court",
+    "Orange County General District Court",
+    "Orange County Juvenile and Domestic Relations Court",
+    "Page County Circuit Court",
+    "Page County General District Court",
+    "Prince William County Circuit Court",
+    "Prince William County General District Court",
+    "Prince William County Juvenile and Domestic Relations Court",
+    "Rappahannock Circuit Court",
+    "Rappahannock General District Court",
+    "Rappahannock Juvenile and Domestic Relations Court",
+    "Rockbridge County General District Court",
+    "Rockingham County General District Court",
+    "Shenandoah County Circuit Court",
+    "Shenandoah General District Court",
+    "Spotsylvania Circuit Court",
+    "Spotsylvania General District Court",
+    "Spotsylvania Juvenile and Domestic Relations District Court",
+    "Stafford County Circuit Court",
+    "Stafford County General District Court",
+    "Stafford Juvenile and Domestic Relations Court",
+    "Town of Herndon General District Court",
+    "Town of Vienna General District Court",
+    "United States District Court - District of Columbia",
+    "United States District Court - Eastern District of Virginia",
+    "United States District Court - Western District of Virginia",
+    "United States District Court for the District of Nevada",
+    "Warren County Circuit Court",
+    "Warren County General District Court",
+    "Warren County Juvenile and Domestic Relations Court",
+    "Winchester Circuit Court",
+    "Winchester General District Court",
+    "Winchester Juvenile and Domestic Relations Court"
+  ];
+  courts.forEach(court => {
+    const option = document.createElement("option");
+    option.value = court;
+    option.textContent = court;
+    courtSelect.appendChild(option);
+  });
+</script>
+
+  <div class="mb-3 form-floating">
+    <textarea class="form-control" name="prosecutor_judge" placeholder="Prosecutor and Judge Information" style="height: 100px;"></textarea>
+    <label for="prosecutor_judge">Prosecutor/Judge Notes</label>
+  </div>
+
   <div id="charges-section">
     <h2 class="h5 mt-4 mb-3">Charge Details</h2>
     <div class="charge-block border rounded p-3 mb-3">
@@ -185,6 +274,7 @@
     <button type="button" class="btn btn-primary" onclick="addCharge()">Add Additional Charge</button>
   </div>
 
+
   <h2 class="h5 mt-4 mb-3">Case Status</h2>
   <div class="mb-3">
     <div class="form-check">
@@ -207,6 +297,10 @@
   <div class="mb-3 form-floating">
     <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
     <label for="notes">Notes</label>
+  </div>
+  <div class="mb-3 form-floating">
+    <textarea class="form-control" name="plea_offer" placeholder="Plea Offer" style="height: 100px;"></textarea>
+    <label for="plea_offer">Plea Offer</label>
   </div>
 
   <div class="mb-3 form-check">
@@ -363,5 +457,17 @@ contactInput.addEventListener("change", function () {
     defendantNameInput.value = selectedName;
   }
 });
+// select2 for court select
+</script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    $('.court-select').select2({
+      placeholder: "-- Select Court --",
+      allowClear: true,
+      width: '100%'
+    });
+  });
 </script>
 {% endblock %}

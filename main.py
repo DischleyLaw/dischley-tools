@@ -418,6 +418,8 @@ class Lead(db.Model):
     homework_additional_notes = db.Column(db.String(200))
     # New field: NO HW
     homework_no_hw = db.Column(db.Boolean, default=False)
+    # New field for plea offer
+    plea_offer = db.Column(db.Text)
 
 class CaseResult(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -448,6 +450,8 @@ class CaseResult(db.Model):
     clio_matter_id = db.Column(db.String(100))
     # New field for Clio contact ID
     clio_contact_id = db.Column(db.String(100))
+    # New field for plea offer
+    plea_offer = db.Column(db.Text)
 
 # --- Charge Model ---
 class Charge(db.Model):
@@ -739,6 +743,9 @@ def update_lead(lead_id):
     lead.court_time = request.form.get("court_time") if request.form.get("court_time") else lead.court_time
     lead.court = request.form.get("court") if request.form.get("court") else lead.court
     lead.notes = request.form.get("notes") if request.form.get("notes") else lead.notes
+    # Update plea_offer only if provided and non-empty
+    if "plea_offer" in request.form and request.form["plea_offer"].strip():
+        lead.plea_offer = request.form["plea_offer"].strip()
     lead.facts = request.form.get("facts") if request.form.get("facts") else lead.facts
     lead.send_retainer = 'send_retainer' in request.form
     if lead.send_retainer:
@@ -1179,6 +1186,16 @@ def case_result():
 
         subject = f"Case Result - {defendant_name}"
         email_html = "<h2 style='font-size:16pt;'>Case Result</h2>"
+        court_value = request.form.get("court", "").strip()
+        prosecutor_judge_value = request.form.get("prosecutor_judge", "").strip()
+        if court_value:
+            email_html += f"<p style='font-size:16pt;'><strong>Court:</strong> {court_value}</p>"
+        if prosecutor_judge_value:
+            email_html += f"<p style='font-size:16pt;'><strong>Prosecutor/Judge:</strong> {prosecutor_judge_value}</p>"
+        # --- Add Plea Offer if present ---
+        plea_offer = request.form.get("plea_offer", "").strip()
+        if plea_offer:
+            email_html += f"<p style='font-size:16pt;'><strong>Plea Offer:</strong> {plea_offer}</p>"
         email_html += f"<p style='font-size:16pt;'><strong>Client:</strong> {defendant_name}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
@@ -1327,6 +1344,7 @@ def case_result():
             other_disposition=disposition_narrative,
             clio_matter_id=clio_matter_id,
             clio_contact_id=clio_contact_id,
+            plea_offer=plea_offer,
         )
         db.session.add(case_result_obj)
         db.session.commit()
