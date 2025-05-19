@@ -479,6 +479,8 @@ class Charge(db.Model):
     anger_management = db.Column(db.String(10))
     asap_ordered = db.Column(db.String(10))
     charge_notes = db.Column(db.Text)
+    # New field for BIP/ADAPT (DV Class)
+    bip_adapt = db.Column(db.String(10))
 
 
 # --- Lead Links Route ---
@@ -1193,6 +1195,8 @@ def case_result():
         vip = request.form.getlist('vip[]')
         community_service = request.form.getlist('community_service[]')
         anger_management = request.form.getlist('anger_management[]')
+        # New: Retrieve bip_adapt[] for BIP/ADAPT (DV Class)
+        bip_adapt = request.form.getlist('bip_adapt[]')
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
         continuation_time = request.form.get('continuation_time', '').strip()
@@ -1267,7 +1271,7 @@ def case_result():
                     # License Suspension: Only show check if "Yes"
                     # (Moved after restricted license block below)
                     # Compose restricted license info: include type and term if granted
-                    if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
+                    if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
                         if i < len(restricted_license_type) and restricted_license_type[i]:
@@ -1281,7 +1285,7 @@ def case_result():
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # ASAP Ordered: Only show if "Yes"
-                    if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
+                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
                     # Probation
                     probation_lines = []
@@ -1291,12 +1295,15 @@ def case_result():
                         probation_lines.append(f"<strong>Probation Term:</strong> {probation_term[i]}")
                     if i < len(vasap) and vasap[i] and vasap[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>VASAP:</strong> ✅")
-                    if i < len(vip) and vip[i].strip().lower() == "yes":
+                    if i < len(vip) and vip[i] and vip[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>VIP:</strong> ✅")
-                    if i < len(community_service) and community_service[i].strip().lower() == "yes":
+                    if i < len(community_service) and community_service[i] and community_service[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>Community Service:</strong> ✅")
-                    if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
+                    if i < len(anger_management) and anger_management[i] and anger_management[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>Anger Management:</strong> ✅")
+                    # Add BIP/ADAPT (DV Class) if checked
+                    if i < len(bip_adapt) and bip_adapt[i] and bip_adapt[i].strip().lower() == "yes":
+                        probation_lines.append(f"<strong>BIP/ADAPT (DV Class):</strong> ✅")
                     if probation_lines:
                         email_html += "<span style='font-size:16pt;'><strong>Conditions of Probation:</strong><br>"
                         for line in probation_lines:
