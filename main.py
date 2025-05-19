@@ -460,12 +460,25 @@ class Charge(db.Model):
     original_charge = db.Column(db.String(200))
     amended_charge = db.Column(db.String(200))
     disposition = db.Column(db.String(100))
-    jail_time_imposed = db.Column(db.String(50))
-    jail_time_suspended = db.Column(db.String(50))
+    # --- Begin full per-charge data fields ---
+    plea = db.Column(db.String(100))
+    disposition_paragraph = db.Column(db.Text)
     fine_imposed = db.Column(db.String(50))
     fine_suspended = db.Column(db.String(50))
+    jail_time_imposed = db.Column(db.String(50))
+    jail_time_suspended = db.Column(db.String(50))
     license_suspension = db.Column(db.String(100))
+    license_suspension_term = db.Column(db.String(100))
     restricted_license = db.Column(db.String(100))
+    restricted_license_type = db.Column(db.String(100))
+    probation_type = db.Column(db.String(100))
+    probation_term = db.Column(db.String(100))
+    vasap = db.Column(db.String(10))
+    vip = db.Column(db.String(10))
+    community_service = db.Column(db.String(10))
+    anger_management = db.Column(db.String(10))
+    asap_ordered = db.Column(db.String(10))
+    charge_notes = db.Column(db.Text)
 
 
 # --- Lead Links Route ---
@@ -1163,6 +1176,8 @@ def case_result():
 
         jail_time_imposed = request.form.getlist('jail_time_imposed[]')
         jail_time_suspended = request.form.getlist('jail_time_suspended[]')
+        jail_time_imposed_unit = request.form.getlist('jail_time_imposed_unit[]')
+        jail_time_suspended_unit = request.form.getlist('jail_time_suspended_unit[]')
         fine_imposed = request.form.getlist('fine_imposed[]')
         fine_suspended = request.form.getlist('fine_suspended[]')
         license_suspension = request.form.getlist('license_suspension[]')
@@ -1237,15 +1252,13 @@ def case_result():
                     ):
                         email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
                     # Jail and Fine output per new requirements
-                    jail_label = "days"
-                    if i < len(jail_time_imposed) and jail_time_imposed[i]:
-                        if "year" in jail_time_imposed[i].lower():
-                            jail_label = ""
+                    imposed_unit = jail_time_imposed_unit[i] if i < len(jail_time_imposed_unit) else "days"
+                    suspended_unit = jail_time_suspended_unit[i] if i < len(jail_time_suspended_unit) else "days"
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
                         if i < len(jail_time_suspended) and jail_time_suspended[i]:
-                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {jail_label} in jail with {jail_time_suspended[i]} {jail_label} suspended<br></span>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {imposed_unit} in jail with {jail_time_suspended[i]} {suspended_unit} suspended<br></span>"
                         else:
-                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {jail_label} in jail<br></span>"
+                            email_html += f"<span style='font-size:16pt; font-weight:bold;'>• {jail_time_imposed[i]} {imposed_unit} in jail<br></span>"
                     if i < len(fine_imposed) and fine_imposed[i]:
                         if i < len(fine_suspended) and fine_suspended[i]:
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br></span>"
