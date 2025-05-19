@@ -1171,6 +1171,7 @@ def case_result():
         license_suspension_term = request.form.getlist('license_suspension_term[]')
         restricted_license_type = request.form.getlist('restricted_license_type[]')
         asap_ordered = request.form.getlist('asap_ordered[]')
+        charge_notes = request.form.getlist('charge_notes[]')
         probation_type = request.form.getlist('probation_type[]')
         probation_term = request.form.getlist('probation_term[]')
         vasap = request.form.getlist('vasap[]')
@@ -1253,7 +1254,7 @@ def case_result():
                     # License Suspension: Only show check if "Yes"
                     # (Moved after restricted license block below)
                     # Compose restricted license info: include type and term if granted
-                    if i < len(restricted_license) and restricted_license[i].strip().lower() == "yes":
+                    if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
                         if i < len(restricted_license_type) and restricted_license_type[i]:
@@ -1267,7 +1268,7 @@ def case_result():
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # ASAP Ordered: Only show if "Yes"
-                    if i < len(asap_ordered) and asap_ordered[i].strip().lower() == "yes":
+                    if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
                     # Probation
                     probation_lines = []
@@ -1288,6 +1289,9 @@ def case_result():
                         for line in probation_lines:
                             email_html += f"&nbsp;&nbsp;{line}<br>"
                         email_html += "</span>"
+                # Add charge notes if present
+                if i < len(charge_notes) and charge_notes[i].strip():
+                    email_html += f"<span style='font-size:16pt;'><strong>Charge Notes:</strong> {charge_notes[i].strip()}<br></span>"
                 email_html += "</p>"
 
         # Extra fields

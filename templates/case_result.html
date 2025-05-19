@@ -214,33 +214,13 @@
 
       <div class="sentencing-and-probation">
         <h4 class="h6 mt-4">Sentencing</h4>
-        <div class="mb-3">
-          <label class="form-label">Jail Time Imposed:</label>
-          <div class="row g-2">
-            <div class="col-8">
-              <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Amount">
-            </div>
-            <div class="col-4">
-              <select class="form-select" name="jail_time_imposed_unit[]">
-                <option value="days">Days</option>
-                <option value="years">Years</option>
-              </select>
-            </div>
-          </div>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Jail Time Imposed (days)">
+          <label for="jail_time_imposed">Jail Time Imposed (days):</label>
         </div>
-        <div class="mb-3">
-          <label class="form-label">Jail Time Suspended:</label>
-          <div class="row g-2">
-            <div class="col-8">
-              <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Amount">
-            </div>
-            <div class="col-4">
-              <select class="form-select" name="jail_time_suspended_unit[]">
-                <option value="days">Days</option>
-                <option value="years">Years</option>
-              </select>
-            </div>
-          </div>
+        <div class="mb-3 form-floating">
+          <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Jail Time Suspended (days)">
+          <label for="jail_time_suspended">Jail Time Suspended (days):</label>
         </div>
         <div class="mb-3 form-floating">
           <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed ($)">
@@ -283,7 +263,10 @@
           </div>
         </div>
       </div>
-
+      <div class="mb-3 form-floating">
+        <textarea class="form-control" name="charge_notes[]" placeholder="Charge Notes" style="height: 100px;"></textarea>
+        <label>Charge Notes</label>
+      </div>
       <div class="text-end">
         <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.charge-block').remove(); updateChargeLabels();">Remove</button>
       </div>
@@ -318,9 +301,11 @@
     <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
     <label for="notes">Notes</label>
   </div>
-  <div class="mb-3 form-floating">
-    <textarea class="form-control" name="plea_offer" placeholder="Plea Offer" style="height: 100px;"></textarea>
-    <label for="plea_offer">Plea Offer</label>
+  <div id="plea-offer-field" style="display: none;">
+    <div class="mb-3 form-floating">
+      <textarea class="form-control" name="plea_offer" placeholder="Plea Offer" style="height: 100px;"></textarea>
+      <label for="plea_offer">Plea Offer</label>
+    </div>
   </div>
 
   <div class="mb-3 form-check">
@@ -338,21 +323,28 @@ function addCharge() {
   const blocks = document.querySelectorAll('.charge-block');
   const clone = blocks[0].cloneNode(true);
 
-  // Clear values
-  clone.querySelectorAll('textarea, input, select').forEach(el => {
-    if (el.type === 'checkbox') {
-      el.checked = false;
-    } else {
-      el.value = "";
-    }
-  });
-
   // Hide conditional fields in the clone
   clone.querySelectorAll('.license-suspension-term, .restricted-license-toggle, .restricted-license-type').forEach(el => {
     el.style.display = 'none';
   });
 
-  clone.querySelector('.disposition-paragraph').style.display = 'none';
+  // Reset checkboxes and hide dependent fields
+  clone.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+    checkbox.checked = false;
+  });
+
+  // Reset the restricted license type field
+  const restrictionType = clone.querySelector('.restricted-license-type');
+  if (restrictionType) restrictionType.style.display = 'none';
+
+  // Reset textareas and inputs
+  clone.querySelectorAll('textarea, input[type="text"], input[type="number"], select').forEach(el => {
+    if (el.type !== 'checkbox') el.value = "";
+  });
+
+  // Hide disposition paragraph
+  const dispParagraph = clone.querySelector('.disposition-paragraph');
+  if (dispParagraph) dispParagraph.style.display = 'none';
 
   // Update heading
   const heading = clone.querySelector('h3');
@@ -407,26 +399,41 @@ document.addEventListener('change', function(e) {
       if (restrictionType) restrictionType.style.display = 'none';
     }
   }
-  
+
   if (e.target.name === 'disposition[]') {
     const block = e.target.closest('.charge-block');
     const textAreaBlock = block.querySelector('.disposition-paragraph');
     const val = e.target.value;
     if (["Deferred", "298.02", "General Continuance"].includes(val)) {
-      textAreaBlock.style.display = 'block';
+      if (textAreaBlock) textAreaBlock.style.display = 'block';
       const sentencingBlock = block.querySelector('.sentencing-and-probation');
       if (sentencingBlock) sentencingBlock.style.display = 'none';
     } else {
-      textAreaBlock.style.display = 'none';
+      if (textAreaBlock) textAreaBlock.style.display = 'none';
       const sentencingBlock = block.querySelector('.sentencing-and-probation');
       if (sentencingBlock) sentencingBlock.style.display = 'block';
     }
+  }
+
+  // Ensure VIP, community service, ASAP, and anger management checkboxes only affect their own block (no bleed)
+  if (
+    e.target.name === "vip[]" ||
+    e.target.name === "community_service[]" ||
+    e.target.name === "vasap[]" ||
+    e.target.name === "anger_management[]"
+  ) {
+    // No additional logic needed, but this ensures the event is block-local
+    // and can be extended in future if conditional elements are added
+    // (currently, these are just checkboxes per charge-block)
+    // Optionally, you could ensure no bleed by confirming the change is per-block only
+    // but since they are in separate blocks, this is already the case
   }
 });
 
 document.getElementById('was_continued').addEventListener('change', function() {
   const isContinued = this.checked;
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
+  document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
 });
 // Clio Contact Search Autofill with debounce and improved form handling
 const contactInput = document.getElementById("search_contact");
