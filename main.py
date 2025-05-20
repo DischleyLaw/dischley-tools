@@ -36,18 +36,9 @@ def contact_search():
 
     json_data = response.json()
     contacts = json_data.get("data", [])
-    simplified_contacts = []
-    for contact in contacts:
-        name = contact.get("display_name")
-        if name:
-            simplified_contacts.append({
-                "id": contact.get("id"),
-                "name": name,
-                "first_name": contact.get("first_name", ""),
-                "last_name": contact.get("last_name", "")
-            })
-
-    return jsonify({"data": simplified_contacts})
+    app.logger.debug(f"Clio raw response: {json_data}")
+    app.logger.debug(f"Returned {len(contacts)} contacts for query '{query}'")
+    return jsonify({"data": contacts})
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
