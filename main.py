@@ -1110,21 +1110,14 @@ def case_result():
                 url = f"https://app.clio.com/api/v4/contacts?query={query}"
                 response = requests.get(url, headers=headers)
                 if response.status_code == 200:
-                    people = []
-                    for contact in response.json().get("data", []):
-                        if contact.get("type", "").lower() == "person":
-                            full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
-                            display_name = contact.get("display_name", "")
-                            # Match query against display_name (case-insensitive)
-                            if query.lower() in display_name.lower():
-                                people.append({
-                                    "id": contact.get("id"),
-                                    "type": "Person",
-                                    "name": display_name if display_name else full_name
-                                })
-                    return {"data": people}
+                    contacts = response.json().get("data", [])
+                    results = []
+                    for contact in contacts:
+                        name = contact.get("display_name") or f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip()
+                        results.append({"id": contact.get("id"), "name": name})
+                    return jsonify(results)
                 else:
-                    return {"error": "Failed to fetch contact search results"}, response.status_code
+                    return {"error": "Failed to fetch contacts"}, response.status_code
             except Exception as e:
                 return {"error": f"Contact Search Error: {str(e)}"}, 500
     submitted = False
