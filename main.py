@@ -19,7 +19,6 @@ def contact_search():
     if not query:
         return jsonify({"data": []})
 
-    from main import ClioToken
     access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
     if not access_token_record or access_token_record.is_expired():
         return jsonify({"error": "Access token missing or expired"}), 401
@@ -30,18 +29,24 @@ def contact_search():
         "Accept": "application/json"
     }
 
-    clio_url = f"https://app.clio.com/api/v4/contacts?query={query}&limit=200"
-    all_contacts = []
+    clio_url = f"https://app.clio.com/api/v4/contacts?query={query}&limit=50"
+    response = requests.get(clio_url, headers=headers)
+    if response.status_code != 200:
+        return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
 
-    while clio_url:
-        response = requests.get(clio_url, headers=headers)
-        if response.status_code != 200:
-            return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
-        json_data = response.json()
-        all_contacts.extend(json_data.get("data", []))
-        clio_url = json_data.get("meta", {}).get("paging", {}).get("next")
+    json_data = response.json()
+    contacts = json_data.get("data", [])
+    simplified_contacts = []
+    for contact in contacts:
+        name = contact.get("display_name")
+        if name:
+            simplified_contacts.append({
+                "id": contact.get("id"),
+                "name": name,
+                "first_name": contact.get("first_name", ""),
+                "last_name": contact.get("last_name", "")
+            })
 
-    simplified_contacts = [{"id": c.get("id"), "name": c.get("display_name", "")} for c in all_contacts if c.get("display_name")]
     return jsonify({"data": simplified_contacts})
 
 # --- Expungement Upload Batch Route ---
