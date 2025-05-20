@@ -47,7 +47,7 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
-    <select id="search_contact" name="search_contact" class="form-select searchable-contact" style="width: 100%;"></select>
+    <input type="text" id="search_contact" name="search_contact" class="form-control" placeholder="Search Contact" style="width: 100%;">
     <label for="search_contact">Search Contact</label>
   </div>
   <div class="mb-3 form-floating">
@@ -503,53 +503,8 @@ document.getElementById('was_continued').addEventListener('change', function() {
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
   document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
 });
-<script>
-let currentRequest = null;
-
-document.addEventListener("DOMContentLoaded", function () {
-  $('#search_contact').select2({
-    placeholder: "Search Contact",
-    minimumInputLength: 2,
-    width: '100%',
-    ajax: {
-      delay: 400,
-      transport: function (params, success, failure) {
-        if (currentRequest) {
-          currentRequest.abort();
-        }
-        currentRequest = $.ajax(params);
-        currentRequest.then(success).fail(failure);
-        return currentRequest;
-      },
-      url: '/clio/contact-search',
-      dataType: 'json',
-      data: function (params) {
-        return { query: params.term };
-      },
-      processResults: function (data) {
-        return {
-          results: data.data
-            .filter(c => c.name)
-            .slice(0, 10)
-            .map(c => ({
-              id: c.name,
-              text: c.name
-            }))
-        };
-      }
-    }
-  });
-
-  $('#search_contact').on('select2:select', function (e) {
-    const selected = e.params.data;
-    document.getElementById('defendant_name').value = selected.text;
-  });
-});
-</script>
 // select2 for court select
 </script>
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function() {
