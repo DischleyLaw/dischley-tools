@@ -47,7 +47,7 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
-    <input type="text" id="search_contact" name="search_contact" class="form-control" placeholder="Search Contact" style="width: 100%;">
+    <select id="search_contact" name="search_contact" class="form-select searchable-contact" style="width: 100%;"></select>
     <label for="search_contact">Search Contact</label>
   </div>
   <div class="mb-3 form-floating">
@@ -506,7 +506,46 @@ document.getElementById('was_continued').addEventListener('change', function() {
 // select2 for court select
 </script>
 <script>
+  // Enable select2 for searchable-contact with AJAX
   document.addEventListener("DOMContentLoaded", function () {
+    $('.searchable-contact').select2({
+      placeholder: "Search Contact",
+      minimumInputLength: 2,
+      width: '100%',
+      ajax: {
+        delay: 400,
+        transport: function (params, success, failure) {
+          if (window.currentContactRequest) {
+            window.currentContactRequest.abort();
+          }
+          window.currentContactRequest = $.ajax(params);
+          window.currentContactRequest.then(success).fail(failure);
+          return window.currentContactRequest;
+        },
+        url: '/clio/contact-search',
+        dataType: 'json',
+        data: function (params) {
+          return { query: params.term };
+        },
+        processResults: function (data) {
+          return {
+            results: data.data
+              .filter(c => c.name)
+              .slice(0, 10)
+              .map(c => ({
+                id: c.name,
+                text: c.name
+              }))
+          };
+        }
+      }
+    });
+
+    $('.searchable-contact').on('select2:select', function (e) {
+      const selected = e.params.data;
+      document.getElementById('defendant_name').value = selected.text;
+    });
+
     setTimeout(function() {
       $('#courtSelect').select2({
         placeholder: "-- Select Court --",
