@@ -13,9 +13,14 @@ CORS(app)
 @app.route('/clio/contact-search')
 def clio_contact_search():
     query = request.args.get('query', '')
+
+    # Check if token exists in session
+    if 'clio_token' not in session or 'access_token' not in session['clio_token']:
+        return jsonify({"error": "Not authorized with Clio"}), 401
+
     clio_headers = {'Authorization': f'Bearer {session["clio_token"]["access_token"]}'}
     response = requests.get('https://app.clio.com/api/v4/contacts', params={'query': query}, headers=clio_headers)
-    
+
     data = response.json().get('data', [])
 
     contacts = []
