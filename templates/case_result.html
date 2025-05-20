@@ -47,6 +47,10 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
+    <input type="text" id="search_contact" class="form-control" placeholder="Search Contact">
+    <label for="search_contact">Search Clio Contact</label>
+  </div>
+  <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
     <label for="defendant_name">Defendant Name:</label>
   </div>
@@ -512,3 +516,23 @@ document.getElementById('was_continued').addEventListener('change', function() {
   });
 </script>
 {% endblock %}
+<script>
+  $(function () {
+    $('#search_contact').autocomplete({
+      source: function (request, response) {
+        $.ajax({
+          url: '/clio/contact-search',
+          dataType: 'json',
+          data: { query: request.term },
+          success: function (data) {
+            response(data.data.filter(c => c.name).map(c => c.name));
+          }
+        });
+      },
+      minLength: 2,
+      select: function (event, ui) {
+        $('#defendant_name').val(ui.item.value);
+      }
+    });
+  });
+</script>
