@@ -15,8 +15,10 @@ import requests
 
 @app.route("/clio/contact-search")
 def contact_search():
-    query = request.args.get("query", "")
-    from datetime import datetime
+    query = request.args.get("query", "").strip()
+    if not query:
+        return jsonify({"data": []})
+
     from main import ClioToken
     access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
     if not access_token_record or access_token_record.is_expired():
@@ -28,18 +30,16 @@ def contact_search():
         "Accept": "application/json"
     }
 
-    clio_url = "https://app.clio.com/api/v4/contacts"
+    clio_url = f"https://app.clio.com/api/v4/contacts?query={query}&limit=200"
     all_contacts = []
-    params = {"query": query, "limit": 200}
-    
+
     while clio_url:
-        response = requests.get(clio_url, headers=headers, params=params)
+        response = requests.get(clio_url, headers=headers)
         if response.status_code != 200:
             return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
         json_data = response.json()
         all_contacts.extend(json_data.get("data", []))
         clio_url = json_data.get("meta", {}).get("paging", {}).get("next")
-        params = None  # Don't re-send params after first page (Clio encodes them in next URL)
 
     simplified_contacts = [{"id": c.get("id"), "name": c.get("display_name", "")} for c in all_contacts if c.get("display_name")]
     return jsonify({"data": simplified_contacts})
