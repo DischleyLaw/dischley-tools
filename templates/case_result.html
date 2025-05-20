@@ -503,11 +503,12 @@ document.getElementById('was_continued').addEventListener('change', function() {
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
   document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
 });
-// Improved Clio Contact Search with Select2
+// Select2 AJAX integration for #search_contact
+<script>
 let currentRequest = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-  $('.searchable-contact').select2({
+  $('#search_contact').select2({
     placeholder: "Search Contact",
     minimumInputLength: 2,
     width: '100%',
@@ -540,11 +541,12 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  $('.searchable-contact').on('select2:select', function (e) {
+  $('#search_contact').on('select2:select', function (e) {
     const selected = e.params.data;
     document.getElementById('defendant_name').value = selected.text;
   });
 });
+</script>
 // select2 for court select
 </script>
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
