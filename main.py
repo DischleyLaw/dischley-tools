@@ -10,32 +10,35 @@ CORS(app)
 
 
 # --- CLIO CONTACT SEARCH ROUTE ---
-@app.route('/clio/contact-search')
-def clio_contact_search():
-    query = request.args.get('query', '')
+from flask import request, jsonify
+import requests
 
-    # Check if token exists in session
-    if 'clio_token' not in session or 'access_token' not in session['clio_token']:
-        return jsonify({"error": "Not authorized with Clio"}), 401
+@app.route("/clio/contact-search")
+def contact_search():
+    query = request.args.get("query", "")
+    access_token = session.get("clio_access_token")
+    if not access_token:
+        return jsonify({"error": "Access token missing"}), 401
 
-    clio_headers = {'Authorization': f'Bearer {session["clio_token"]["access_token"]}'}
-    response = requests.get('https://app.clio.com/api/v4/contacts', params={'query': query}, headers=clio_headers)
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json"
+    }
 
-    data = response.json().get('data', [])
+    clio_url = "https://app.clio.com/api/v4/contacts"
+    all_contacts = []
+    params = {"query": query, "limit": 200}
+    
+    while clio_url:
+        response = requests.get(clio_url, headers=headers, params=params)
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
+        json_data = response.json()
+        all_contacts.extend(json_data.get("data", []))
+        clio_url = json_data.get("meta", {}).get("paging", {}).get("next")
+        params = None  # Don't re-send params after first page (Clio encodes them in next URL)
 
-    contacts = []
-    for contact in data:
-        first = contact.get('first_name', '').strip()
-        last = contact.get('last_name', '').strip()
-        full_name = f"{first} {last}".strip()
-
-        if full_name:  # Only include contacts with at least one name
-            contacts.append({
-                'id': full_name,
-                'text': full_name
-            })
-
-    return jsonify({'data': contacts})
+    return jsonify({"data": all_contacts})
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
