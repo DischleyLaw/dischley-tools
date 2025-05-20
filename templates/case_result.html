@@ -47,11 +47,8 @@
 {% endif %}
 <form method="POST" autocomplete="off">
   <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="search_contact" name="search_contact" list="contactResults" placeholder="Search Contact by Name">
+    <select id="search_contact" name="search_contact" class="form-select searchable-contact" style="width: 100%;"></select>
     <label for="search_contact">Search Contact</label>
-    <datalist id="contactResults">
-      <!-- Options will be dynamically added here, showing name and type for clarity -->
-    </datalist>
   </div>
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
@@ -517,54 +514,47 @@ document.getElementById('was_continued').addEventListener('change', function() {
   document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
   document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
 });
-// Clio Contact Search Autofill with debounce and improved form handling
-const contactInput = document.getElementById("search_contact");
-const contactList = document.getElementById("contactResults");
-const defendantNameInput = document.getElementById("defendant_name");
+// Improved Clio Contact Search with Select2
+let currentRequest = null;
 
-let debounceTimeout;
-contactInput.addEventListener("input", function () {
-  const query = this.value.trim();
-  clearTimeout(debounceTimeout);
-  if (query.length < 2) return;
-
-  debounceTimeout = setTimeout(() => {
-    console.log("Searching Clio contacts for:", query);
-    fetch(`/clio/contact-search?query=${encodeURIComponent(query)}`)
-      .then(res => res.json())
-      .then(data => {
-        console.log("Clio contact search response:", data);
-        contactList.innerHTML = "";
-        if (data.data && data.data.length === 0) {
-          const option = document.createElement("option");
-          option.value = "";
-          option.textContent = "No contacts found";
-          contactList.appendChild(option);
+document.addEventListener("DOMContentLoaded", function () {
+  $('.searchable-contact').select2({
+    placeholder: "Search Contact",
+    minimumInputLength: 2,
+    width: '100%',
+    ajax: {
+      delay: 400,
+      transport: function (params, success, failure) {
+        if (currentRequest) {
+          currentRequest.abort();
         }
-        if (data.data) {
-          data.data.forEach(contact => {
-            if (!contact.name) return;
+        currentRequest = $.ajax(params);
+        currentRequest.then(success).fail(failure);
+        return currentRequest;
+      },
+      url: '/clio/contact-search',
+      dataType: 'json',
+      data: function (params) {
+        return { query: params.term };
+      },
+      processResults: function (data) {
+        return {
+          results: data.data
+            .filter(c => c.name)
+            .slice(0, 10)
+            .map(c => ({
+              id: c.name,
+              text: c.name
+            }))
+        };
+      }
+    }
+  });
 
-            const option = document.createElement("option");
-            option.value = contact.name;
-            option.textContent = contact.name;
-            contactList.appendChild(option);
-          });
-        }
-      })
-      .catch(err => {
-        console.error("Error fetching Clio contacts:", err);
-      });
-  }, 300); // 300ms debounce delay
-});
-
-
-
-contactInput.addEventListener("change", function () {
-  const selectedName = this.value.trim();
-  if (selectedName) {
-    defendantNameInput.value = selectedName;
-  }
+  $('.searchable-contact').on('select2:select', function (e) {
+    const selected = e.params.data;
+    document.getElementById('defendant_name').value = selected.text;
+  });
 });
 // select2 for court select
 </script>
@@ -577,9 +567,7 @@ contactInput.addEventListener("change", function () {
         placeholder: "-- Select Court --",
         allowClear: true,
         width: '100%',
-        minimumInputLength: 1,
-        dropdownAutoWidth: true,
-        mobile: true
+        minimumInputLength: 1
       });
     }, 0);
   });
