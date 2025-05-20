@@ -41,7 +41,8 @@ def contact_search():
         clio_url = json_data.get("meta", {}).get("paging", {}).get("next")
         params = None  # Don't re-send params after first page (Clio encodes them in next URL)
 
-    return jsonify({"data": all_contacts})
+    simplified_contacts = [{"id": c.get("id"), "name": c.get("display_name", "")} for c in all_contacts if c.get("display_name")]
+    return jsonify({"data": simplified_contacts})
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])

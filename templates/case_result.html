@@ -532,7 +532,11 @@ document.getElementById('was_continued').addEventListener('change', function() {
           dataType: 'json',
           data: { query: request.term },
           success: function (data) {
+            console.log("Clio contacts response:", data);  // 👈 add this
             response(data.data.filter(c => c.name).map(c => c.name));
+          },
+          error: function (xhr, status, error) {
+            console.error("Autocomplete AJAX error:", error);  // 👈 add this
           }
         });
       },
