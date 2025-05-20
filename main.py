@@ -1113,14 +1113,14 @@ def case_result():
                     people = []
                     for contact in response.json().get("data", []):
                         if contact.get("type", "").lower() == "person":
-                            first = contact.get("first_name", "").strip()
-                            last = contact.get("last_name", "").strip()
-                            full_name = f"{first} {last}".strip()
-                            if query.lower() in first.lower() or query.lower() in last.lower() or query.lower() in full_name.lower():
+                            full_name = f"{contact.get('first_name', '').strip()} {contact.get('last_name', '').strip()}".strip()
+                            display_name = contact.get("display_name", "")
+                            # Match query against display_name (case-insensitive)
+                            if query.lower() in display_name.lower():
                                 people.append({
                                     "id": contact.get("id"),
                                     "type": "Person",
-                                    "name": full_name
+                                    "name": display_name if display_name else full_name
                                 })
                     return {"data": people}
                 else:
