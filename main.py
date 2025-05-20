@@ -17,7 +17,7 @@ import requests
 def contact_search():
     query = request.args.get("query", "")
     from datetime import datetime
-    from dischley_tools.main import ClioToken
+    from main import ClioToken
     access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
     if not access_token_record or access_token_record.is_expired():
         return jsonify({"error": "Access token missing or expired"}), 401
