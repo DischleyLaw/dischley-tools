@@ -1114,12 +1114,17 @@ def case_result():
                     results = []
                     for contact in contacts:
                         name = contact.get("display_name") or f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip()
-                        results.append({"id": contact.get("id"), "name": name})
+                        results.append({
+                            "id": contact.get("id"),
+                            "name": name,
+                            "first_name": contact.get("first_name", ""),
+                            "last_name": contact.get("last_name", "")
+                        })
                     return jsonify(results)
                 else:
-                    return {"error": "Failed to fetch contacts"}, response.status_code
+                    return jsonify({"error": "Failed to fetch contacts"}), response.status_code
             except Exception as e:
-                return {"error": f"Contact Search Error: {str(e)}"}, 500
+                return jsonify({"error": f"Contact Search Error: {str(e)}"}), 500
     submitted = False
     if request.method == "POST":
         defendant_name = request.form.get('defendant_name', '').strip()
