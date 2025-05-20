@@ -366,9 +366,15 @@ function addCharge() {
     el.style.display = 'none';
   });
 
-  // Reset checkboxes and hide dependent fields
-  clone.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+  // Reset checkboxes and ensure unique IDs and labels
+  clone.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
     checkbox.checked = false;
+    // ensure unique IDs and labels
+    const label = clone.querySelector(`label[for="${checkbox.id}"]`);
+    if (checkbox.id) {
+      checkbox.id = checkbox.name.replace('[]', '') + '_' + (blocks.length + 1) + '_' + index;
+      if (label) label.setAttribute('for', checkbox.id);
+    }
   });
 
   // Reset the restricted license type field

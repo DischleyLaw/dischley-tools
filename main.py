@@ -1170,15 +1170,12 @@ def case_result():
             except Exception as e:
                 print("Failed to search Clio contacts:", e)
 
-        # Accept original_charge[] as free-text paragraph input(s) from the frontend.
+        # --- Retrieve all per-charge fields ---
         original_charges = request.form.getlist('original_charge[]')
         amended_charges = request.form.getlist('amended_charge[]')
         pleas = request.form.getlist('plea[]')
         dispositions = request.form.getlist('disposition[]')
-
-        # NEW: get disposition_paragraphs for custom narrative per charge
         disposition_paragraphs = request.form.getlist('disposition_paragraph[]')
-
         jail_time_imposed = request.form.getlist('jail_time_imposed[]')
         jail_time_suspended = request.form.getlist('jail_time_suspended[]')
         jail_time_imposed_unit = request.form.getlist('jail_time_imposed_unit[]')
@@ -1187,22 +1184,19 @@ def case_result():
         fine_suspended = request.form.getlist('fine_suspended[]')
         license_suspension = request.form.getlist('license_suspension[]')
         restricted_license = request.form.getlist('restricted_license[]')
-        # New: Retrieve restricted_license_type and license_suspension_term
         license_suspension_term = request.form.getlist('license_suspension_term[]')
         restricted_license_type = request.form.getlist('restricted_license_type[]')
-        asap_ordered = request.form.getlist('asap_ordered[]')
-        charge_notes = request.form.getlist('charge_notes[]')
         probation_type = request.form.getlist('probation_type[]')
         probation_term = request.form.getlist('probation_term[]')
+        asap_ordered = request.form.getlist('asap_ordered[]')
         vasap = request.form.getlist('vasap[]')
         vip = request.form.getlist('vip[]')
         community_service = request.form.getlist('community_service[]')
         anger_management = request.form.getlist('anger_management[]')
-        # New: Retrieve bip_adapt[] for BIP/ADAPT (DV Class)
         bip_adapt = request.form.getlist('bip_adapt[]')
-        # Retrieve SA Eval and MH Eval checkboxes
         sa_eval = request.form.getlist('sa_eval[]')
         mh_eval = request.form.getlist('mh_eval[]')
+        charge_notes = request.form.getlist('charge_notes[]')
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
         continuation_time = request.form.get('continuation_time', '').strip()
@@ -1224,36 +1218,38 @@ def case_result():
             email_html += f"<p style='font-size:16pt;'><strong>Plea Offer:</strong> {plea_offer}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
-            jail_time_imposed, jail_time_suspended, fine_imposed, fine_suspended,
-            license_suspension, restricted_license, asap_ordered,
-            probation_type, probation_term, vasap, vip,
-            community_service, anger_management, bip_adapt
+            disposition_paragraphs,
+            jail_time_imposed, jail_time_suspended, jail_time_imposed_unit, jail_time_suspended_unit,
+            fine_imposed, fine_suspended,
+            license_suspension, restricted_license, license_suspension_term, restricted_license_type,
+            probation_type, probation_term,
+            asap_ordered, vasap, vip, community_service, anger_management,
+            bip_adapt, sa_eval, mh_eval, charge_notes
         ]
         num_charges = max(len(field) for field in all_charge_fields)
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
             for i in range(num_charges):
-                # Instead of "Charge {i+1}", bold and underline the original charge name.
+                # Display original charge name as heading
                 if i < len(original_charges) and original_charges[i]:
                     email_html += f"<p style='font-size:16pt; font-weight:bold; text-decoration:underline;'>{original_charges[i]}</p>"
-                # Ensure all charge detail paragraphs use 16pt
                 email_html += "<p style='font-size:16pt; margin-left:20px;'>"
-                # The rest of the charge details still display under the bolded original charge.
+                # Amended charge
                 if i < len(amended_charges) and amended_charges[i]:
                     email_html += f"<span style='font-size:16pt;'><strong>Amended Charge:</strong> {amended_charges[i]}<br></span>"
-                # Insert plea and disposition bullets after amended charge
+                # Plea
                 if i < len(pleas) and pleas[i]:
                     email_html += f"<span style='font-size:16pt;'>• <strong>Plea:</strong> {pleas[i]}<br></span>"
-                # Change "Finding" back to "Disposition" and ensure 16pt font
+                # Disposition
                 if i < len(dispositions) and dispositions[i]:
                     email_html += f"<span style='font-size:16pt;'>• <strong>Disposition:</strong> {dispositions[i]}<br></span>"
-                # NEW: If disposition in skip_dispositions, include disposition paragraph
+                # Disposition paragraph for special dispositions
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
                         email_html += f"<span style='font-size:16pt;'><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br></span>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
-                    # Show the "Sentence" heading only if at least one jail or fine value exists (not all are empty or missing)
+                    # Sentence heading if any jail/fine present
                     if (
                         (i < len(jail_time_imposed) and jail_time_imposed[i]) or
                         (i < len(jail_time_suspended) and jail_time_suspended[i]) or
@@ -1261,7 +1257,6 @@ def case_result():
                         (i < len(fine_suspended) and fine_suspended[i])
                     ):
                         email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
-                    # Jail and Fine output per new requirements
                     imposed_unit = jail_time_imposed_unit[i] if i < len(jail_time_imposed_unit) else "days"
                     suspended_unit = jail_time_suspended_unit[i] if i < len(jail_time_suspended_unit) else "days"
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
@@ -1274,9 +1269,7 @@ def case_result():
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br></span>"
                         else:
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]}<br></span>"
-                    # License Suspension: Only show check if "Yes"
-                    # (Moved after restricted license block below)
-                    # Compose restricted license info: include type and term if granted
+                    # Restricted license info
                     if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
@@ -1287,10 +1280,10 @@ def case_result():
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
                         email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
-                    # ASAP Ordered: Only show if "Yes"
+                    # ASAP Ordered
                     if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
-                    # License Suspension: Only show check if "Yes" (now after restricted license)
+                    # License Suspension
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
                     # Probation
@@ -1307,10 +1300,8 @@ def case_result():
                         probation_lines.append(f"<strong>Community Service:</strong> ✅")
                     if i < len(anger_management) and anger_management[i] and anger_management[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>Anger Management:</strong> ✅")
-                    # Add BIP/ADAPT (DV Class) if checked
                     if i < len(bip_adapt) and bip_adapt[i] and bip_adapt[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>BIP/ADAPT (DV Class):</strong> ✅")
-                    # Add SA Eval and MH Eval if checked
                     if i < len(sa_eval) and sa_eval[i] and sa_eval[i].strip().lower() == "yes":
                         probation_lines.append(f"<strong>SA Eval:</strong> ✅")
                     if i < len(mh_eval) and mh_eval[i] and mh_eval[i].strip().lower() == "yes":
@@ -1320,7 +1311,7 @@ def case_result():
                         for line in probation_lines:
                             email_html += f"&nbsp;&nbsp;{line}<br>"
                         email_html += "</span>"
-                # Add charge notes if present
+                # Charge notes
                 if i < len(charge_notes) and charge_notes[i].strip():
                     email_html += f"<span style='font-size:16pt;'><strong>Charge Notes:</strong> {charge_notes[i].strip()}<br></span>"
                 email_html += "</p>"
@@ -1386,6 +1377,41 @@ def case_result():
             plea_offer=plea_offer,
         )
         db.session.add(case_result_obj)
+        db.session.commit()
+
+        # --- Store Charge objects, ensuring all fields per charge are included ---
+        for i in range(num_charges):
+            db.session.add(
+                Charge(
+                    case_result_id=case_result_obj.id,
+                    original_charge=original_charges[i] if i < len(original_charges) else None,
+                    amended_charge=amended_charges[i] if i < len(amended_charges) else None,
+                    plea=pleas[i] if i < len(pleas) else None,
+                    disposition=dispositions[i] if i < len(dispositions) else None,
+                    disposition_paragraph=disposition_paragraphs[i] if i < len(disposition_paragraphs) else None,
+                    jail_time_imposed=jail_time_imposed[i] if i < len(jail_time_imposed) else None,
+                    jail_time_suspended=jail_time_suspended[i] if i < len(jail_time_suspended) else None,
+                    jail_time_imposed_unit=jail_time_imposed_unit[i] if i < len(jail_time_imposed_unit) else None,
+                    jail_time_suspended_unit=jail_time_suspended_unit[i] if i < len(jail_time_suspended_unit) else None,
+                    fine_imposed=fine_imposed[i] if i < len(fine_imposed) else None,
+                    fine_suspended=fine_suspended[i] if i < len(fine_suspended) else None,
+                    license_suspension=license_suspension[i] if i < len(license_suspension) else None,
+                    restricted_license=restricted_license[i] if i < len(restricted_license) else None,
+                    license_suspension_term=license_suspension_term[i] if i < len(license_suspension_term) else None,
+                    restricted_license_type=restricted_license_type[i] if i < len(restricted_license_type) else None,
+                    probation_type=probation_type[i] if i < len(probation_type) else None,
+                    probation_term=probation_term[i] if i < len(probation_term) else None,
+                    asap_ordered=asap_ordered[i] if i < len(asap_ordered) else None,
+                    vasap=vasap[i] if i < len(vasap) else None,
+                    vip=vip[i] if i < len(vip) else None,
+                    community_service=community_service[i] if i < len(community_service) else None,
+                    anger_management=anger_management[i] if i < len(anger_management) else None,
+                    bip_adapt=bip_adapt[i] if i < len(bip_adapt) else None,
+                    sa_eval=sa_eval[i] if i < len(sa_eval) else None,
+                    mh_eval=mh_eval[i] if i < len(mh_eval) else None,
+                    charge_notes=charge_notes[i] if i < len(charge_notes) else None,
+                )
+            )
         db.session.commit()
 
         submitted = True
