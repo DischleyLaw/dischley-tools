@@ -467,6 +467,9 @@ class Charge(db.Model):
     fine_suspended = db.Column(db.String(50))
     jail_time_imposed = db.Column(db.String(50))
     jail_time_suspended = db.Column(db.String(50))
+    # --- New jail time unit fields ---
+    jail_time_imposed_unit = db.Column(db.String(20))
+    jail_time_suspended_unit = db.Column(db.String(20))
     license_suspension = db.Column(db.String(100))
     license_suspension_term = db.Column(db.String(100))
     restricted_license = db.Column(db.String(100))
