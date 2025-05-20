@@ -59,85 +59,74 @@
   <div class="mb-3 form-floating">
     <select name="court" class="form-select court-select" id="courtSelect">
       <option value="">-- Select Court --</option>
+      <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
+      <option value="Alexandria City General District Court">Alexandria City General District Court</option>
+      <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
+      <option value="Amherst General District Court">Amherst General District Court</option>
+      <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
+      <option value="Arlington County General District Court">Arlington County General District Court</option>
+      <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
+      <option value="Caroline County General District Court">Caroline County General District Court</option>
+      <option value="Clarke County General District Court">Clarke County General District Court</option>
+      <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
+      <option value="Culpeper General District Court">Culpeper General District Court</option>
+      <option value="Culpeper County Juvenile and Domestic Relations District Court">Culpeper County Juvenile and Domestic Relations District Court</option>
+      <option value="Essex County General District Court">Essex County General District Court</option>
+      <option value="Fairfax City General District Court">Fairfax City General District Court</option>
+      <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
+      <option value="Fairfax County General District Court">Fairfax County General District Court</option>
+      <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
+      <option value="Falls Church General District Court">Falls Church General District Court</option>
+      <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
+      <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
+      <option value="Fauquier County General District Court">Fauquier County General District Court</option>
+      <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
+      <option value="Frederick County General District Court">Frederick County General District Court</option>
+      <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
+      <option value="Hanover General District Court">Hanover General District Court</option>
+      <option value="Henrico County General District Court">Henrico County General District Court</option>
+      <option value="King George County Circuit Court">King George County Circuit Court</option>
+      <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
+      <option value="King George General District Court">King George General District Court</option>
+      <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
+      <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
+      <option value="Loudoun County General District Court">Loudoun County General District Court</option>
+      <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
+      <option value="Orange County General District Court">Orange County General District Court</option>
+      <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
+      <option value="Page County Circuit Court">Page County Circuit Court</option>
+      <option value="Page County General District Court">Page County General District Court</option>
+      <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
+      <option value="Prince William County General District Court">Prince William County General District Court</option>
+      <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
+      <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
+      <option value="Rappahannock General District Court">Rappahannock General District Court</option>
+      <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
+      <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
+      <option value="Rockingham County General District Court">Rockingham County General District Court</option>
+      <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
+      <option value="Shenandoah General District Court">Shenandoah General District Court</option>
+      <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
+      <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
+      <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
+      <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
+      <option value="Stafford County General District Court">Stafford County General District Court</option>
+      <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
+      <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
+      <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
+      <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
+      <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
+      <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
+      <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
+      <option value="Warren County Circuit Court">Warren County Circuit Court</option>
+      <option value="Warren County General District Court">Warren County General District Court</option>
+      <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
+      <option value="Winchester Circuit Court">Winchester Circuit Court</option>
+      <option value="Winchester General District Court">Winchester General District Court</option>
+      <option value="Winchester Juvenile and Domestic Relations Court">Winchester Juvenile and Domestic Relations Court</option>
     </select>
     <label for="courtSelect">Court</label>
   </div>
-<script>
-  const courtSelect = document.getElementById("courtSelect");
-  const courts = [
-    "Alexandria City Circuit Court",
-    "Alexandria City General District Court",
-    "Alexandria Juvenile and Domestic Relations District Court",
-    "Amherst General District Court",
-    "Arlington County Circuit Court",
-    "Arlington County General District Court",
-    "Arlington County Juvenile and Domestic Relations Court",
-    "Caroline County General District Court",
-    "Clarke County General District Court",
-    "Culpeper Circuit Court",
-    "Culpeper General District Court",
-    "Culpeper County Juvenile and Domestic Relations District Court",
-    "Essex County General District Court",
-    "Fairfax City General District Court",
-    "Fairfax County Circuit Court",
-    "Fairfax County General District Court",
-    "Fairfax County Juvenile and Domestic Relations Court",
-    "Falls Church General District Court",
-    "Falls Church Juvenile and Domestic Relations Court",
-    "Fauquier County Circuit Court",
-    "Fauquier County General District Court",
-    "Fauquier County Juvenile and Domestic Relations Court",
-    "Frederick County General District Court",
-    "Fredricksburg City General District Court",
-    "Hanover General District Court",
-    "Henrico County General District Court",
-    "King George County Circuit Court",
-    "King George County Juvenile and Domestic Relations Court",
-    "King George General District Court",
-    "King George Juvenile and Domestic Relations Court",
-    "Loudoun County Circuit Court",
-    "Loudoun County General District Court",
-    "Loudoun County Juvenile and Domestic Relations Court",
-    "Orange County General District Court",
-    "Orange County Juvenile and Domestic Relations Court",
-    "Page County Circuit Court",
-    "Page County General District Court",
-    "Prince William County Circuit Court",
-    "Prince William County General District Court",
-    "Prince William County Juvenile and Domestic Relations Court",
-    "Rappahannock Circuit Court",
-    "Rappahannock General District Court",
-    "Rappahannock Juvenile and Domestic Relations Court",
-    "Rockbridge County General District Court",
-    "Rockingham County General District Court",
-    "Shenandoah County Circuit Court",
-    "Shenandoah General District Court",
-    "Spotsylvania Circuit Court",
-    "Spotsylvania General District Court",
-    "Spotsylvania Juvenile and Domestic Relations District Court",
-    "Stafford County Circuit Court",
-    "Stafford County General District Court",
-    "Stafford Juvenile and Domestic Relations Court",
-    "Town of Herndon General District Court",
-    "Town of Vienna General District Court",
-    "United States District Court - District of Columbia",
-    "United States District Court - Eastern District of Virginia",
-    "United States District Court - Western District of Virginia",
-    "United States District Court for the District of Nevada",
-    "Warren County Circuit Court",
-    "Warren County General District Court",
-    "Warren County Juvenile and Domestic Relations Court",
-    "Winchester Circuit Court",
-    "Winchester General District Court",
-    "Winchester Juvenile and Domestic Relations Court"
-  ];
-  courts.forEach(court => {
-    const option = document.createElement("option");
-    option.value = court;
-    option.textContent = court;
-    courtSelect.appendChild(option);
-  });
-</script>
 
   <div class="mb-3 form-floating">
     <textarea class="form-control" name="prosecutor_judge" placeholder="Prosecutor and Judge Information" style="height: 100px;"></textarea>
@@ -518,7 +507,8 @@ document.getElementById('was_continued').addEventListener('change', function() {
 let currentRequest = null;
 
 document.addEventListener("DOMContentLoaded", function () {
-  $('.searchable-contact').select2({
+  // Ensure #search_contact uses .select2() and references /clio/contact-search
+  $('#search_contact').select2({
     placeholder: "Search Contact",
     minimumInputLength: 2,
     width: '100%',
@@ -530,6 +520,10 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         currentRequest = $.ajax(params);
         currentRequest.then(success).fail(failure);
+        // Add fallback console logger for debugging network errors
+        currentRequest.catch(function (err) {
+          console.error("Error fetching Clio contacts:", err);
+        });
         return currentRequest;
       },
       url: '/clio/contact-search',
@@ -551,7 +545,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
-  $('.searchable-contact').on('select2:select', function (e) {
+  $('#search_contact').on('select2:select', function (e) {
     const selected = e.params.data;
     document.getElementById('defendant_name').value = selected.text;
   });
@@ -563,7 +557,7 @@ document.addEventListener("DOMContentLoaded", function () {
 <script>
   document.addEventListener("DOMContentLoaded", function () {
     setTimeout(function() {
-      $('.court-select').select2({
+      $('#courtSelect').select2({
         placeholder: "-- Select Court --",
         allowClear: true,
         width: '100%',

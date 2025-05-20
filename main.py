@@ -1239,6 +1239,14 @@ def case_result():
             restricted_license += [""] * (num_charges - len(restricted_license))
         if len(restricted_license_type) < num_charges:
             restricted_license_type += [""] * (num_charges - len(restricted_license_type))
+        # --- Normalize all per-charge checkbox arrays to ensure proper display in all charges ---
+        vasap += ["No"] * (num_charges - len(vasap))
+        vip += ["No"] * (num_charges - len(vip))
+        community_service += ["No"] * (num_charges - len(community_service))
+        anger_management += ["No"] * (num_charges - len(anger_management))
+        bip_adapt += ["No"] * (num_charges - len(bip_adapt))
+        sa_eval += ["No"] * (num_charges - len(sa_eval))
+        mh_eval += ["No"] * (num_charges - len(mh_eval))
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
             community_service_hours_list = request.form.getlist('community_service_hours[]')
@@ -1270,6 +1278,9 @@ def case_result():
                         (i < len(fine_suspended) and fine_suspended[i])
                     ):
                         email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
+                    # --- Restricted License Type ---
+                    if i < len(restricted_license_type) and restricted_license_type[i].strip():
+                        email_html += f"<span style='font-size:16pt;'><strong>Restricted License Type:</strong> {restricted_license_type[i].strip()}<br></span>"
                     imposed_unit = jail_time_imposed_unit[i] if i < len(jail_time_imposed_unit) else "days"
                     suspended_unit = jail_time_suspended_unit[i] if i < len(jail_time_suspended_unit) else "days"
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
@@ -1301,6 +1312,26 @@ def case_result():
                     # License Suspension Term (if present, show as a line)
                     if i < len(license_suspension_term) and license_suspension_term[i].strip():
                         email_html += f"<span style='font-size:16pt;'><strong>License Suspension Term:</strong> {license_suspension_term[i].strip()}<br></span>"
+
+                    # Render VASAP, VIP, Community Service, etc.
+                    if i < len(vasap) and vasap[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>VASAP:</strong> ✅<br></span>"
+                    if i < len(vip) and vip[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>VIP:</strong> ✅<br></span>"
+                    if i < len(community_service) and community_service[i].strip().lower() == "yes":
+                        hours = community_service_hours_list[i] if len(community_service_hours_list) > i else ""
+                        label = "<strong>Community Service:</strong> ✅"
+                        if hours:
+                            label += f" ({hours} hours)"
+                        email_html += f"<span style='font-size:16pt;'>{label}<br></span>"
+                    if i < len(anger_management) and anger_management[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>Anger Management:</strong> ✅<br></span>"
+                    if i < len(bip_adapt) and bip_adapt[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>BIP/ADAPT (DV Class):</strong> ✅<br></span>"
+                    if i < len(sa_eval) and sa_eval[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>SA Eval:</strong> ✅<br></span>"
+                    if i < len(mh_eval) and mh_eval[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>MH Eval:</strong> ✅<br></span>"
 
                     # License Suspension (checkbox, for this charge)
                     if i < len(license_suspension) and license_suspension[i].strip().lower() == "yes":
