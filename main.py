@@ -10,30 +10,27 @@ CORS(app)
 
 
 # --- CLIO CONTACT SEARCH ROUTE ---
-@app.route("/clio/contact-search")
+@app.route('/clio/contact-search')
 def clio_contact_search():
-    query = request.args.get("query", "").strip()
-    if not query:
-        return jsonify({"data": []})
+    query = request.args.get('query', '')
+    clio_headers = {'Authorization': f'Bearer {session["clio_token"]["access_token"]}'}
+    response = requests.get('https://app.clio.com/api/v4/contacts', params={'query': query}, headers=clio_headers)
+    
+    data = response.json().get('data', [])
 
-    try:
-        access_token = get_valid_token()
-        headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://app.clio.com/api/v4/contacts?query={query}"
-        response = requests.get(url, headers=headers)
+    contacts = []
+    for contact in data:
+        first = contact.get('first_name', '').strip()
+        last = contact.get('last_name', '').strip()
+        full_name = f"{first} {last}".strip()
 
-        if response.status_code == 200:
-            # --- LOG CONTACT NAMES TO RENDER LOGS ---
-            import logging
-            for contact in response.json().get('data', []):
-                logging.warning(f"Clio Contact: {contact.get('first_name', '')} {contact.get('last_name', '')}")
-            # --- RETURN NAMES IN API RESPONSE FOR TESTING ---
-            names = [{"id": f"{c.get('first_name', '')} {c.get('last_name', '')}", "text": f"{c.get('first_name', '')} {c.get('last_name', '')}"} for c in response.json().get('data', [])]
-            return jsonify({"data": names})
-        else:
-            return jsonify({"error": "Failed to fetch contacts", "status": response.status_code}), 500
-    except Exception as e:
-        return jsonify({"error": str(e)}), 500
+        if full_name:  # Only include contacts with at least one name
+            contacts.append({
+                'id': full_name,
+                'text': full_name
+            })
+
+    return jsonify({'data': contacts})
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
