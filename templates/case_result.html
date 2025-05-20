@@ -188,6 +188,7 @@
       </div>
       <div class="mb-3">
         <div class="form-check form-check-inline">
+          <input type="hidden" name="license_suspension[]" value="No">
           <input class="form-check-input license-suspension-checkbox" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
           <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
         </div>
@@ -198,6 +199,7 @@
       </div>
 
       <div class="mb-3 form-check restricted-license-toggle" style="display: none;">
+        <input type="hidden" name="restricted_license[]" value="No">
         <input class="form-check-input restricted-license-checkbox" type="checkbox" name="restricted_license[]" value="Yes" id="restricted_license_1">
         <label class="form-check-label" for="restricted_license_1">Restricted License Granted?</label>
       </div>
@@ -269,15 +271,18 @@
         <div class="per-charge-conditions-container">
           <div class="mb-3">
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" value="yes" placeholder="VASAP">
+              <input type="hidden" name="vasap[]" value="No">
+              <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" value="Yes" placeholder="VASAP">
               <label class="form-check-label" for="vasap">VASAP</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="vip[]" id="vip" value="yes" placeholder="VIP">
+              <input type="hidden" name="vip[]" value="No">
+              <input class="form-check-input" type="checkbox" name="vip[]" id="vip" value="Yes" placeholder="VIP">
               <label class="form-check-label" for="vip">VIP</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" value="yes" placeholder="Community Service">
+              <input type="hidden" name="community_service[]" value="No">
+              <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" value="Yes" placeholder="Community Service">
               <label class="form-check-label" for="community_service">Community Service</label>
             </div>
             <div class="form-floating community-service-hours" style="display: none; max-width: 200px;">
@@ -285,19 +290,23 @@
               <label>Community Service Hours</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" value="yes" placeholder="Anger Management">
+              <input type="hidden" name="anger_management[]" value="No">
+              <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" value="Yes" placeholder="Anger Management">
               <label class="form-check-label" for="anger_management">Anger Management</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="yes" placeholder="BIP/ADAPT (DV Class)">
+              <input type="hidden" name="bip_adapt[]" value="No">
+              <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="Yes" placeholder="BIP/ADAPT (DV Class)">
               <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="yes" placeholder="Substance Abuse Evaluation">
+              <input type="hidden" name="sa_eval[]" value="No">
+              <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="Yes" placeholder="Substance Abuse Evaluation">
               <label class="form-check-label" for="sa_eval">SA Eval</label>
             </div>
             <div class="form-check form-check-inline">
-              <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="yes" placeholder="Mental Health Evaluation">
+              <input type="hidden" name="mh_eval[]" value="No">
+              <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="Yes" placeholder="Mental Health Evaluation">
               <label class="form-check-label" for="mh_eval">MH Eval</label>
             </div>
           </div>
@@ -563,11 +572,16 @@ contactInput.addEventListener("change", function () {
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    $('.court-select').select2({
-      placeholder: "-- Select Court --",
-      allowClear: true,
-      width: '100%'
-    });
+    setTimeout(function() {
+      $('.court-select').select2({
+        placeholder: "-- Select Court --",
+        allowClear: true,
+        width: '100%',
+        minimumInputLength: 1,
+        dropdownAutoWidth: true,
+        mobile: true
+      });
+    }, 0);
   });
 </script>
 {% endblock %}
