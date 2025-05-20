@@ -537,7 +537,7 @@ document.addEventListener("DOMContentLoaded", function () {
             .filter(c => c.name)
             .slice(0, 10)
             .map(c => ({
-              id: c.name,
+              id: (typeof c.id !== "undefined" && c.id !== null) ? c.id : (c.name + Math.random()),
               text: c.name
             }))
         };
@@ -547,7 +547,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   $('#search_contact').on('select2:select', function (e) {
     const selected = e.params.data;
-    document.getElementById('defendant_name').value = selected.text;
+    if (selected && selected.text) {
+      document.getElementById('defendant_name').value = selected.text;
+    }
   });
 });
 // select2 for court select
