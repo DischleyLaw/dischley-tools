@@ -1202,6 +1202,8 @@ def case_result():
         sa_eval = request.form.getlist('sa_eval[]')
         mh_eval = request.form.getlist('mh_eval[]')
         charge_notes = request.form.getlist('charge_notes[]')
+        # Ensure restricted_license and restricted_license_type are always lists with length == num_charges
+        # (If missing, fill with empty strings)
         was_continued = request.form.get('was_continued', '').strip()
         continuation_date = request.form.get('continuation_date', '').strip()
         continuation_time = request.form.get('continuation_time', '').strip()
@@ -1232,8 +1234,14 @@ def case_result():
             bip_adapt, sa_eval, mh_eval, charge_notes
         ]
         num_charges = max(len(field) for field in all_charge_fields)
+        # Normalize restricted_license and restricted_license_type
+        if len(restricted_license) < num_charges:
+            restricted_license += [""] * (num_charges - len(restricted_license))
+        if len(restricted_license_type) < num_charges:
+            restricted_license_type += [""] * (num_charges - len(restricted_license_type))
         skip_dispositions = ["Deferred", "298.02", "General Continuance"]
         if num_charges > 0:
+            community_service_hours_list = request.form.getlist('community_service_hours[]')
             for i in range(num_charges):
                 # Display original charge name as heading
                 if i < len(original_charges) and original_charges[i]:
@@ -1278,15 +1286,17 @@ def case_result():
                     # --- Restricted License, License Suspension, Probation/Conditions, VASAP, VIP, etc. ---
                     # Restricted license info (only for this charge)
                     if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
-                        restricted_info = "<strong>Restricted License:</strong> Yes"
+                        rl_type = restricted_license_type[i] if i < len(restricted_license_type) else ""
+                        rl_term = license_suspension_term[i] if i < len(license_suspension_term) else ""
                         details = []
-                        if i < len(restricted_license_type) and restricted_license_type[i]:
-                            details.append(f"Type: {restricted_license_type[i]}")
-                        if i < len(license_suspension_term) and license_suspension_term[i]:
-                            details.append(f"Term: {license_suspension_term[i]}")
+                        if rl_type:
+                            details.append(f"Type: {rl_type}")
+                        if rl_term:
+                            details.append(f"Term: {rl_term}")
                         if details:
-                            restricted_info += f" ({'; '.join(details)})"
-                        email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
+                            email_html += f"<span style='font-size:16pt;'><strong>Restricted License:</strong> Yes ({', '.join(details)})<br></span>"
+                        else:
+                            email_html += f"<span style='font-size:16pt;'><strong>Restricted License:</strong> Yes<br></span>"
 
                     # License Suspension (checkbox, for this charge)
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
@@ -1307,7 +1317,7 @@ def case_result():
                     if i < len(vip) and vip[i] and vip[i].strip().lower() == "yes":
                         probation_lines.append("<strong>VIP:</strong> ✅")
                     if i < len(community_service) and community_service[i] and community_service[i].strip().lower() == "yes":
-                        hours = request.form.getlist('community_service_hours[]')[i] if len(request.form.getlist('community_service_hours[]')) > i else ""
+                        hours = community_service_hours_list[i] if len(community_service_hours_list) > i else ""
                         label = "<strong>Community Service:</strong> ✅"
                         if hours:
                             label += f" ({hours} hours)"
@@ -1395,6 +1405,7 @@ def case_result():
         db.session.commit()
 
         # --- Store Charge objects, ensuring all fields per charge are included ---
+        community_service_hours_list = request.form.getlist('community_service_hours[]')
         for i in range(num_charges):
             db.session.add(
                 Charge(
@@ -1425,6 +1436,8 @@ def case_result():
                     sa_eval=sa_eval[i] if i < len(sa_eval) else None,
                     mh_eval=mh_eval[i] if i < len(mh_eval) else None,
                     charge_notes=charge_notes[i] if i < len(charge_notes) else None,
+                    # Ensure community_service_hours is also per-charge
+                    community_service_hours=community_service_hours_list[i] if len(community_service_hours_list) > i else None,
                 )
             )
         db.session.commit()

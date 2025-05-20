@@ -266,38 +266,40 @@
           <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
           <label for="probation_term">Probation Term:</label>
         </div>
-        <div class="mb-3">
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" value="yes" placeholder="VASAP">
-            <label class="form-check-label" for="vasap">VASAP</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="vip[]" id="vip" value="yes" placeholder="VIP">
-            <label class="form-check-label" for="vip">VIP</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" value="yes" placeholder="Community Service">
-            <label class="form-check-label" for="community_service">Community Service</label>
-          </div>
-          <div class="form-floating community-service-hours" style="display: none; max-width: 200px;">
-            <input type="number" class="form-control" name="community_service_hours[]" placeholder="Community Service Hours">
-            <label>Community Service Hours</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" value="yes" placeholder="Anger Management">
-            <label class="form-check-label" for="anger_management">Anger Management</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="yes" placeholder="BIP/ADAPT (DV Class)">
-            <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="yes" placeholder="Substance Abuse Evaluation">
-            <label class="form-check-label" for="sa_eval">SA Eval</label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="yes" placeholder="Mental Health Evaluation">
-            <label class="form-check-label" for="mh_eval">MH Eval</label>
+        <div class="per-charge-conditions-container">
+          <div class="mb-3">
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" value="yes" placeholder="VASAP">
+              <label class="form-check-label" for="vasap">VASAP</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="vip[]" id="vip" value="yes" placeholder="VIP">
+              <label class="form-check-label" for="vip">VIP</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" value="yes" placeholder="Community Service">
+              <label class="form-check-label" for="community_service">Community Service</label>
+            </div>
+            <div class="form-floating community-service-hours" style="display: none; max-width: 200px;">
+              <input type="number" class="form-control" name="community_service_hours[]" placeholder="Community Service Hours">
+              <label>Community Service Hours</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" value="yes" placeholder="Anger Management">
+              <label class="form-check-label" for="anger_management">Anger Management</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="yes" placeholder="BIP/ADAPT (DV Class)">
+              <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="yes" placeholder="Substance Abuse Evaluation">
+              <label class="form-check-label" for="sa_eval">SA Eval</label>
+            </div>
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="yes" placeholder="Mental Health Evaluation">
+              <label class="form-check-label" for="mh_eval">MH Eval</label>
+            </div>
           </div>
         </div>
       </div>
@@ -368,12 +370,30 @@ function addCharge() {
 
   // Reset checkboxes and ensure unique IDs and labels
   clone.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
+    // Reset checked state
     checkbox.checked = false;
-    // ensure unique IDs and labels
-    const label = clone.querySelector(`label[for="${checkbox.id}"]`);
-    if (checkbox.id) {
-      checkbox.id = checkbox.name.replace('[]', '') + '_' + (blocks.length + 1) + '_' + index;
-      if (label) label.setAttribute('for', checkbox.id);
+    // Make unique ID for restricted license checkbox
+    if (checkbox.classList.contains('restricted-license-checkbox')) {
+      const newId = 'restricted_license_' + (blocks.length + 1);
+      checkbox.id = newId;
+      const label = clone.querySelector(`label[for^="restricted_license_"]`);
+      if (label) label.setAttribute('for', newId);
+      // Hide the associated dropdown
+      const restrictionType = clone.querySelector('.restricted-license-type');
+      if (restrictionType) restrictionType.style.display = 'none';
+    } else if (checkbox.classList.contains('license-suspension-checkbox')) {
+      const newId = 'license_suspension_' + (blocks.length + 1);
+      checkbox.id = newId;
+      const label = clone.querySelector(`label[for^="license_suspension_"]`);
+      if (label) label.setAttribute('for', newId);
+    } else {
+      // For other checkboxes, ensure uniqueness if necessary (optional)
+      if (checkbox.name && checkbox.name.endsWith('[]')) {
+        const newId = checkbox.name.replace('[]', '') + '_' + (blocks.length + 1) + '_' + index;
+        checkbox.id = newId;
+        const label = clone.querySelector(`label[for="${checkbox.id}"]`);
+        if (label) label.setAttribute('for', newId);
+      }
     }
   });
 
@@ -389,6 +409,10 @@ function addCharge() {
   // Hide disposition paragraph
   const dispParagraph = clone.querySelector('.disposition-paragraph');
   if (dispParagraph) dispParagraph.style.display = 'none';
+
+  // Hide community service hours
+  const commServiceHours = clone.querySelector('.community-service-hours');
+  if (commServiceHours) commServiceHours.style.display = 'none';
 
   // Update heading
   const heading = clone.querySelector('h3');
@@ -411,6 +435,22 @@ function updateChargeLabels() {
       block.prepend(h3);
     } else {
       heading.textContent = `Charge ${index + 1}`;
+    }
+    // Update restricted license checkbox id and label in each block for uniqueness
+    const restrictedCheckbox = block.querySelector('.restricted-license-checkbox');
+    const restrictedLabel = block.querySelector('label[for^="restricted_license_"]');
+    if (restrictedCheckbox) {
+      const newId = 'restricted_license_' + (index + 1);
+      restrictedCheckbox.id = newId;
+      if (restrictedLabel) restrictedLabel.setAttribute('for', newId);
+    }
+    // Update license suspension checkbox id and label in each block for uniqueness
+    const licenseSuspCheckbox = block.querySelector('.license-suspension-checkbox');
+    const licenseSuspLabel = block.querySelector('label[for^="license_suspension_"]');
+    if (licenseSuspCheckbox) {
+      const newId = 'license_suspension_' + (index + 1);
+      licenseSuspCheckbox.id = newId;
+      if (licenseSuspLabel) licenseSuspLabel.setAttribute('for', newId);
     }
   });
 }
@@ -435,9 +475,12 @@ document.addEventListener('change', function(e) {
     }
   }
 
+  // Ensure correct event delegation for restricted-license-checkbox
   if (e.target.classList.contains('restricted-license-checkbox')) {
     const restrictionType = chargeBlock.querySelector('.restricted-license-type');
-    restrictionType.style.display = e.target.checked ? 'block' : 'none';
+    if (restrictionType) {
+      restrictionType.style.display = e.target.checked ? 'block' : 'none';
+    }
   }
 
   if (e.target.name === 'disposition[]') {
