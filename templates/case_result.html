@@ -508,25 +508,26 @@ document.getElementById('was_continued').addEventListener('change', function() {
 <script>
   $(function () {
     $('#search_contact').select2({
-  placeholder: "Search Contact",
-  width: '100%',
-  minimumInputLength: 2,
-  ajax: {
-    delay: 300,
-    url: '/clio/contact-search',
-    dataType: 'json',
-    data: function (params) {
-      return { query: params.term };
-    },
-    processResults: function (data) {
-      return {
-        results: data.data
-          .filter(c => c.name)
-          .map(c => ({ id: c.name, text: c.name }))
-      };
-    }
-  }
-});
+      placeholder: "Search Contact",
+      width: '100%',
+      minimumInputLength: 2,
+      allowClear: true,
+      ajax: {
+        delay: 300,
+        url: '/clio/contact-search',
+        dataType: 'json',
+        data: function (params) {
+          return { query: params.term };
+        },
+        processResults: function (data) {
+          return {
+            results: data.data
+              .filter(c => c.name)
+              .map(c => ({ id: c.name, text: c.name }))
+          };
+        }
+      }
+    });
 
 $('#search_contact').on('select2:select', function (e) {
   const selected = e.params.data;
