@@ -487,6 +487,8 @@ class Charge(db.Model):
     # New fields for SA Eval and MH Eval
     sa_eval = db.Column(db.String(10))
     mh_eval = db.Column(db.String(10))
+    # New field: Community Service Hours
+    community_service_hours = db.Column(db.String(20))
 
 
 # --- Lead Links Route ---
@@ -1272,7 +1274,9 @@ def case_result():
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]} with ${fine_suspended[i]} suspended<br></span>"
                         else:
                             email_html += f"<span style='font-size:16pt; font-weight:bold;'>• A fine of ${fine_imposed[i]}<br></span>"
-                    # Restricted license info
+
+                    # --- Restricted License, License Suspension, Probation/Conditions, VASAP, VIP, etc. ---
+                    # Restricted license info (only for this charge)
                     if i < len(restricted_license) and restricted_license[i] and restricted_license[i].strip().lower() == "yes":
                         restricted_info = "<strong>Restricted License:</strong> Yes"
                         details = []
@@ -1283,37 +1287,45 @@ def case_result():
                         if details:
                             restricted_info += f" ({'; '.join(details)})"
                         email_html += f"<span style='font-size:16pt;'>{restricted_info}<br></span>"
-                    # ASAP Ordered
-                    if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
-                        email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
-                    # License Suspension
+
+                    # License Suspension (checkbox, for this charge)
                     if i < len(license_suspension) and license_suspension[i] and license_suspension[i].strip().lower() == "yes":
                         email_html += "<span style='font-size:16pt;'><strong>License Suspension:</strong> ✅<br></span>"
-                    # Probation
+
+                    # ASAP Ordered (for this charge)
+                    if i < len(asap_ordered) and asap_ordered[i] and asap_ordered[i].strip().lower() == "yes":
+                        email_html += "<span style='font-size:16pt;'><strong>ASAP Ordered:</strong> ✅<br></span>"
+
+                    # Probation/conditions block (VASAP, VIP, Community Service, Anger Management, BIP/ADAPT, SA Eval, MH Eval)
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i]:
                         probation_lines.append(f"<strong>Probation Type:</strong> {probation_type[i]}")
                     if i < len(probation_term) and probation_term[i]:
                         probation_lines.append(f"<strong>Probation Term:</strong> {probation_term[i]}")
                     if i < len(vasap) and vasap[i] and vasap[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>VASAP:</strong> ✅")
+                        probation_lines.append("<strong>VASAP:</strong> ✅")
                     if i < len(vip) and vip[i] and vip[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>VIP:</strong> ✅")
+                        probation_lines.append("<strong>VIP:</strong> ✅")
                     if i < len(community_service) and community_service[i] and community_service[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>Community Service:</strong> ✅")
+                        hours = request.form.getlist('community_service_hours[]')[i] if len(request.form.getlist('community_service_hours[]')) > i else ""
+                        label = "<strong>Community Service:</strong> ✅"
+                        if hours:
+                            label += f" ({hours} hours)"
+                        probation_lines.append(label)
                     if i < len(anger_management) and anger_management[i] and anger_management[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>Anger Management:</strong> ✅")
+                        probation_lines.append("<strong>Anger Management:</strong> ✅")
                     if i < len(bip_adapt) and bip_adapt[i] and bip_adapt[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>BIP/ADAPT (DV Class):</strong> ✅")
+                        probation_lines.append("<strong>BIP/ADAPT (DV Class):</strong> ✅")
                     if i < len(sa_eval) and sa_eval[i] and sa_eval[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>SA Eval:</strong> ✅")
+                        probation_lines.append("<strong>SA Eval:</strong> ✅")
                     if i < len(mh_eval) and mh_eval[i] and mh_eval[i].strip().lower() == "yes":
-                        probation_lines.append(f"<strong>MH Eval:</strong> ✅")
+                        probation_lines.append("<strong>MH Eval:</strong> ✅")
                     if probation_lines:
                         email_html += "<span style='font-size:16pt;'><strong>Conditions of Probation:</strong><br>"
                         for line in probation_lines:
                             email_html += f"&nbsp;&nbsp;{line}<br>"
                         email_html += "</span>"
+
                 # Charge notes
                 if i < len(charge_notes) and charge_notes[i].strip():
                     email_html += f"<span style='font-size:16pt;'><strong>Charge Notes:</strong> {charge_notes[i].strip()}<br></span>"
