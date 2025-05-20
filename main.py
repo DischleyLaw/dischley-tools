@@ -28,9 +28,9 @@ def clio_contact_search():
                 if "name" in contact:
                     contacts.append({
                         "id": contact.get("id"),
-                        "name": contact.get("name")
+                        "text": contact.get("name")
                     })
-            return jsonify({"data": contacts})
+            return jsonify([{"id": c["id"], "text": c["text"]} for c in contacts])
         else:
             return jsonify({"error": "Failed to fetch contacts", "status": response.status_code}), 500
     except Exception as e:
