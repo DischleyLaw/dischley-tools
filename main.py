@@ -16,9 +16,12 @@ import requests
 @app.route("/clio/contact-search")
 def contact_search():
     query = request.args.get("query", "")
-    access_token = session.get("clio_access_token")
-    if not access_token:
-        return jsonify({"error": "Access token missing"}), 401
+    from datetime import datetime
+    from dischley_tools.main import ClioToken
+    access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
+    if not access_token_record or access_token_record.is_expired():
+        return jsonify({"error": "Access token missing or expired"}), 401
+    access_token = access_token_record.access_token
 
     headers = {
         "Authorization": f"Bearer {access_token}",
