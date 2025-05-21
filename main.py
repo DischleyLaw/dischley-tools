@@ -1,5 +1,4 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
-from models import ClioToken
 from flask_cors import CORS
 
 # --- Expungement Data Extraction Import ---

@@ -1,4 +1,4 @@
-from main import app, db
+from dischley_tools.main import app, db
 
 with app.app_context():
     print("🔄 Resetting database...")
