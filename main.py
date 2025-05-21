@@ -18,10 +18,27 @@ from datetime import datetime
 from requests.auth import HTTPBasicAuth
 
 def get_valid_token():
-    token_record = ClioToken.query.first()
-    if not token_record or not token_record.access_token:
-        raise Exception("ClioToken not found or invalid. Please authorize via /clio/authorize.")
-    return token_record.access_token
+    token = ClioToken.query.first()
+    if not token:
+        raise Exception("ClioToken not found. Please authorize via /clio/authorize.")
+    if not token.access_token or token.is_expired():
+        # Refresh the token
+        client_id = os.getenv("CLIO_CLIENT_ID")
+        client_secret = os.getenv("CLIO_CLIENT_SECRET")
+        refresh_token = token.refresh_token
+        if not refresh_token:
+            raise Exception("No refresh token available.")
+        extra = {"client_id": client_id, "client_secret": client_secret}
+        oauth = OAuth2Session(client_id, token={"refresh_token": refresh_token, "token_type": "Bearer", "expires_in": -30})
+        try:
+            new_token = oauth.refresh_token("https://app.clio.com/oauth/token", **extra)
+        except Exception as e:
+            raise Exception(f"Failed to refresh Clio token: {str(e)}")
+        token.access_token = new_token.get("access_token")
+        token.refresh_token = new_token.get("refresh_token")
+        token.expires_at = datetime.utcnow() + timedelta(seconds=new_token.get("expires_in", 3600))
+        db.session.commit()
+    return token.access_token
 
 # --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
@@ -521,6 +538,12 @@ class ClioToken(db.Model):
     refresh_token = db.Column(db.String(512))
     expires_at = db.Column(db.DateTime)
 
+    def is_expired(self):
+        """Return True if the token is expired or expires_at is missing."""
+        if not self.expires_at:
+            return True
+        return self.expires_at < datetime.utcnow()
+
 
 # --- Lead Links Route ---
 @app.route("/lead-links")
@@ -915,7 +938,7 @@ def update_lead(lead_id):
             email_html += f"<li style='font-size:16pt;'><strong>{label}:</strong> {value}</li>"
 
     # --- Insert Action/Status Section ---
-    email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Action/Status:</b></u></h3><ul style='list-style-type:none;padding-left:0;font-size:16pt;'>"
+    email_html += "<h3 style='margin-bottom:5px;font-size:16pt;'><u><b>Action/Status:</b></u></h3><ul style='list-style-type:none;padding-left=0;font-size:16pt;'>"
     if lead.send_retainer:
         email_html += "<li style='font-size:16pt;'><strong>Send Retainer:</strong> ✅</li>"
         if lead.retainer_amount:
@@ -937,7 +960,6 @@ def update_lead(lead_id):
             email_html += f"<li style='font-size:16pt;'><strong>Quote:</strong> ${float(lead.quote.strip()):.2f}</li>"
         except Exception:
             email_html += f"<li style='font-size:16pt;'><strong>Quote:</strong> {lead.quote.strip()}</li>"
-    # Absence Waiver
     if lead.absence_waiver:
         email_html += "<li style='font-size:16pt;'><strong>Absence Waiver:</strong> ✅</li>"
     email_html += "</ul>"
@@ -1082,6 +1104,7 @@ def edit_case_result(result_id):
         result.license_suspension = request.form.get("license_suspension", result.license_suspension)
         result.asap_ordered = request.form.get("asap_ordered", result.asap_ordered)
         result.probation_type = request.form.get("probation_type", result.probation_type)
+        result.probation_term = request.form.get("probation_term", result.probation_term)
         result.was_continued = request.form.get("was_continued", result.was_continued)
         result.continuation_date = request.form.get("continuation_date", result.continuation_date)
         result.notes = request.form.get("notes", result.notes)
@@ -1825,122 +1848,3 @@ def expungement_upload():
 @app.route("/admin_tools")
 def admin_tools():
     return render_template("admin_tools.html")
-
-@app.route('/expungement/upload_batch', methods=['POST'])
-def upload_batch():
-    try:
-        if not request.files:
-            return jsonify({"status": "error", "message": "No files provided"}), 400
-        files = request.files.getlist('files')
-        results = []
-        from Expungement.expungement_utils import extract_expungement_data
-        for file in files:
-            if file and file.filename.endswith('.pdf'):
-                temp_path = os.path.join("temp", file.filename)
-                os.makedirs("temp", exist_ok=True)
-                file.save(temp_path)
-                try:
-                    data = extract_expungement_data(temp_path)
-                    results.append({"filename": file.filename, "data": data})
-                except Exception as e:
-                    app.logger.exception(f"Failed to process file {file.filename}")
-                    results.append({"filename": file.filename, "error": str(e)})
-        return jsonify({"status": "success", "results": results}), 200
-    except Exception as e:
-        app.logger.exception("Unhandled error in batch upload")
-        return jsonify({"status": "error", "message": str(e)}), 500
-
-@app.route("/clio/authorize")
-def clio_authorize():
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    # Hardcode the redirect_uri to match the registered Clio callback
-    scope = "read:contacts read:matters"
-    oauth = OAuth2Session(client_id, redirect_uri="https://tools.dischleylaw.com/callback", scope=scope)
-    authorization_url, state = oauth.authorization_url("https://app.clio.com/oauth/authorize")
-    session["oauth_state"] = state
-    return redirect(authorization_url)
-
-
-# Only one /clio/callback route definition should exist.
-@app.route("/clio/callback")
-def clio_callback():
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    client_secret = os.getenv("CLIO_CLIENT_SECRET")
-    # Hardcode the redirect_uri to match the registered Clio callback
-    oauth = OAuth2Session(client_id, redirect_uri="https://tools.dischleylaw.com/callback", state=session.get("oauth_state"))
-    token = oauth.fetch_token(
-        "https://app.clio.com/oauth/token",
-        client_secret=client_secret,
-        authorization_response=request.url
-    )
-    # Store token in database
-    access_token = token.get("access_token")
-    refresh_token = token.get("refresh_token")
-    expires_in = token.get("expires_in")
-    expires_at = datetime.utcnow() + timedelta(seconds=expires_in)
-    # Remove any existing token (assume singleton for this app)
-    ClioToken.query.delete()
-    db.session.commit()
-    clio_token = ClioToken(
-        access_token=access_token,
-        refresh_token=refresh_token,
-        expires_at=expires_at
-    )
-    db.session.add(clio_token)
-    db.session.commit()
-    flash("Clio authorization successful.", "success")
-    return redirect(url_for("dashboard"))
-
-
-def get_valid_token():
-    token = ClioToken.query.first()
-    if token and not token.is_expired():
-        return token.access_token
-    # Refresh the token
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    client_secret = os.getenv("CLIO_CLIENT_SECRET")
-    refresh_token = token.refresh_token if token else None
-    if not refresh_token:
-        raise Exception("No refresh token available.")
-    extra = {"client_id": client_id, "client_secret": client_secret}
-    oauth = OAuth2Session(client_id, token={"refresh_token": refresh_token, "token_type": "Bearer", "expires_in": -30})
-    new_token = oauth.refresh_token("https://app.clio.com/oauth/token", **extra)
-    token.access_token = new_token.get("access_token")
-    token.refresh_token = new_token.get("refresh_token")
-    token.expires_at = datetime.utcnow() + timedelta(seconds=new_token.get("expires_in"))
-    db.session.commit()
-    return token.access_token
-# --- OAuth2 Callback Route for Clio ---
-# Place this near other route definitions
-from flask import request
-@app.route("/callback")
-def callback():
-    from urllib.parse import urlparse, parse_qs
-    from requests_oauthlib import OAuth2Session
-    import os
-
-    client_id = os.getenv("CLIO_CLIENT_ID")
-    client_secret = os.getenv("CLIO_CLIENT_SECRET")
-    redirect_uri = "https://tools.dischleylaw.com/callback"
-    token_url = "https://app.clio.com/oauth/token"
-
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    authorization_response = request.url
-
-    try:
-        token = oauth.fetch_token(
-            token_url,
-            authorization_response=authorization_response,
-            client_secret=client_secret
-        )
-        # Store token in the database (optional)
-        clio_token = ClioToken(
-            access_token=token.get("access_token"),
-            refresh_token=token.get("refresh_token"),
-            expires_at=datetime.utcnow() + timedelta(seconds=token.get("expires_in", 3600))
-        )
-        db.session.add(clio_token)
-        db.session.commit()
-        return "Authorization successful! You may close this window."
-    except Exception as e:
-        return f"Authorization failed: {str(e)}"

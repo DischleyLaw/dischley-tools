@@ -47,6 +47,11 @@
     .intake-card {
       padding: 1.25rem 1rem;
     }
+    /* Make select2 touch targets larger on mobile */
+    .select2-container--default .select2-selection--single {
+      min-height: 48px;
+      font-size: 1.1rem;
+    }
   }
 </style>
 <div class="intake-card">
@@ -55,6 +60,10 @@
 <div class="alert alert-success" role="alert">Form submitted successfully!</div>
 {% endif %}
 <form method="POST" autocomplete="off">
+  <div class="mb-3">
+    <label for="clio_contact_search" class="form-label">Search Clio Contacts:</label>
+    <select id="clio_contact_search" class="form-select"></select>
+  </div>
   <div class="mb-3 form-floating">
     <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
     <label for="defendant_name">Defendant Name:</label>
@@ -511,13 +520,51 @@ document.getElementById('was_continued').addEventListener('change', function() {
 // select2 for court select
 </script>
 <script>
-  $(document).ready(function () {
+$(document).ready(function () {
+  // Use native select on mobile for best compatibility, otherwise use Select2
+  if (window.innerWidth > 600) {
+    // Court select2
     $('#courtSelect').select2({
       placeholder: "-- Select Court --",
       allowClear: true,
       width: '100%',
-      minimumInputLength: 1
+      minimumInputLength: 0,
+      dropdownParent: $(document.body)
     });
-  });
+
+    // Clio contact search select2
+    $('#clio_contact_search').select2({
+      placeholder: "Type to search contacts...",
+      minimumInputLength: 2,
+      tags: true, // allow free text
+      ajax: {
+        url: "/clio/contact-search",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) {
+          return { query: params.term };
+        },
+        processResults: function (data) {
+          return {
+            results: data.contacts.map(function(contact) {
+              return {
+                id: contact.name,
+                text: contact.name
+              };
+            })
+          };
+        },
+        cache: true
+      },
+      dropdownParent: $(document.body)
+    });
+
+    // Autofill Defendant Name on contact select
+    $('#clio_contact_search').on('select2:select', function (e) {
+      var name = e.params.data.text;
+      $('#defendant_name').val(name);
+    });
+  }
+});
 </script>
 {% endblock %}
