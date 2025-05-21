@@ -523,34 +523,30 @@ document.getElementById('was_continued').addEventListener('change', function() {
       minimumInputLength: 1
     });
 
-    $('#search_contact').autocomplete({
-      delay: 500,
-      minLength: 2,
-      source: function (request, response) {
-        $.ajax({
-          url: '/clio/contact-search-db',
-          dataType: 'json',
-          data: { query: request.term },
-          success: function (data) {
-            console.log("Autocomplete response:", data);
-            if (data.data && Array.isArray(data.data)) {
-              const contacts = data.data.map(c => ({ label: c.name, value: c.name }));
-              console.log("Formatted contacts:", contacts);
-              response(contacts);
-            } else {
-              response([]);
-            }
-          },
-          error: function (xhr, status, error) {
-            console.error("Autocomplete AJAX error:", error);
-            response([]);
-          }
-        });
-      },
-      select: function (event, ui) {
-        console.log("Selected contact:", ui.item);
-        $('#defendant_name').val(ui.item.value);
+    $('#search_contact').select2({
+      placeholder: "Search Contact",
+      width: '100%',
+      minimumInputLength: 2,
+      ajax: {
+        delay: 300,
+        url: '/clio/contact-search',
+        dataType: 'json',
+        data: function (params) {
+          return { query: params.term };
+        },
+        processResults: function (data) {
+          return {
+            results: data.data
+              .filter(c => c.name)
+              .map(c => ({ id: c.name, text: c.name }))
+          };
+        }
       }
+    });
+
+    $('#search_contact').on('select2:select', function (e) {
+      const selected = e.params.data;
+      $('#defendant_name').val(selected.text);
     });
   });
 </script>

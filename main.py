@@ -13,6 +13,19 @@ CORS(app)
 from flask import request, jsonify
 import requests
 
+# --- Helper: Get valid Clio access token via OAuth2 session logic ---
+def get_valid_token():
+    # Implement your OAuth2 logic here to fetch a valid access token.
+    # This is a stub; replace with your actual logic.
+    # For example, you might store the token in the session or refresh as needed.
+    # Raise Exception or return None if unable.
+    # Example usage:
+    token = session.get("clio_token")
+    if not token:
+        # Attempt to refresh or obtain a new token here
+        raise Exception("No Clio token in session. Implement OAuth2 logic.")
+    return token
+
 # --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
 def contact_search():
@@ -20,25 +33,23 @@ def contact_search():
     if not query:
         return jsonify({"data": []})
 
-    access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
-    if not access_token_record or access_token_record.is_expired():
+    try:
+        access_token = get_valid_token()
+    except Exception as e:
         return jsonify({"error": "Access token missing or expired"}), 401
-    access_token = access_token_record.access_token
 
     headers = {
         "Authorization": f"Bearer {access_token}",
         "Accept": "application/json"
     }
 
-    clio_url = f"https://app.clio.com/api/v4/contacts?query={query}&limit=50"
+    clio_url = f"https://app.clio.com/api/v4/contacts?query={query}&type=person&limit=50"
     response = requests.get(clio_url, headers=headers)
     if response.status_code != 200:
         return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
 
     json_data = response.json()
     contacts = json_data.get("data", [])
-    app.logger.debug(f"Clio raw response: {json_data}")
-    app.logger.debug(f"Returned {len(contacts)} contacts for query '{query}'")
     # Return mapped contacts for Select2 autocomplete, including 'name' field in each item
     return jsonify({
         "data": [
@@ -51,16 +62,6 @@ def contact_search():
         ]
     })
 
-# --- CLIO CONTACT SEARCH DB ROUTE ---
-@app.route("/clio/contact-search-db")
-def contact_search_db():
-    query = request.args.get("query", "").strip().lower()
-    if not query:
-        return jsonify({"data": []})
-    matches = ClioContact.query.filter(ClioContact.name.ilike(f"%{query}%")).limit(50).all()
-    return jsonify({
-        "data": [{"id": contact.clio_id, "text": contact.name} for contact in matches]
-    })
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
@@ -120,7 +121,6 @@ def login_required(f):
 
 app.logger.removeHandler(default_handler)
 logging.basicConfig(level=logging.DEBUG)
-app.logger.setLevel(logging.DEBUG)
 
 
 # --- Expungement Generator GET and POST Route ---
@@ -131,7 +131,6 @@ def generate_expungement():
         # --- Merge autofill data from session if present ---
         autofill_data = session.pop("expungement_autofill_data", None)
         if autofill_data:
-            app.logger.debug(f"Autofill data from session: {autofill_data}")
             form_data.update(autofill_data)
             form_data["name"] = form_data.get("name", autofill_data.get("name", ""))
             form_data["full_legal_name"] = form_data["name"]
@@ -286,7 +285,6 @@ def generate_expungement():
         populate_document(template_path, output_path, data)
 
         session["generated_file_path"] = output_path
-        app.logger.debug(f"Final form data used for document generation: {form_data}")
         return redirect(url_for("expungement_success"))
     # For GET request, render the expungement form template
     current_month = datetime.now().strftime("%B")
@@ -533,70 +531,10 @@ def lead_links():
 
 
 
-# --- ClioToken Model ---
-class ClioToken(db.Model):
-    __tablename__ = 'clio_tokens'
-    id = db.Column(db.Integer, primary_key=True)
-    access_token = db.Column(db.String, nullable=False)
-    refresh_token = db.Column(db.String, nullable=False)
-    expires_at = db.Column(db.DateTime, nullable=False)
-
-    def is_expired(self):
-        return datetime.utcnow() >= self.expires_at
-
-# --- ClioContact Model for storing Clio contacts ---
-class ClioContact(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    clio_id = db.Column(db.BigInteger, unique=True, nullable=False)
-    name = db.Column(db.String(150), nullable=False)
 
 
-# --- Sync Clio Contacts Route ---
-@app.route("/clio/sync_contacts")
-def sync_clio_contacts():
-    access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
-    if not access_token_record or access_token_record.is_expired():
-        return jsonify({"error": "Access token missing or expired"}), 401
-    access_token = access_token_record.access_token
 
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Accept": "application/json"
-    }
 
-    base_url = "https://app.clio.com/api/v4/contacts"
-    page = 1
-    created = 0
-    updated = 0
-
-    while True:
-        response = requests.get(f"{base_url}?page={page}&per_page=100", headers=headers)
-        if response.status_code != 200:
-            return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
-
-        contacts = response.json().get("data", [])
-        if not contacts:
-            break
-
-        for contact in contacts:
-            clio_id = contact.get("id")
-            name = contact.get("name") or contact.get("display_name") or ""
-
-            if not clio_id or not name:
-                continue
-
-            existing = ClioContact.query.filter_by(clio_id=clio_id).first()
-            if existing:
-                existing.name = name
-                updated += 1
-            else:
-                db.session.add(ClioContact(clio_id=clio_id, name=name))
-                created += 1
-
-        db.session.commit()
-        page += 1
-
-    return jsonify({"created": created, "updated": updated})
 
 
 
@@ -791,10 +729,6 @@ def intake():
         }
 
         response = requests.post("https://grow.clio.com/inbox_leads", json=clio_payload)
-        if response.status_code != 201:
-            print("❌ Clio integration failed:", response.status_code, response.text)
-        else:
-            print("✅ Clio lead submitted successfully!")
 
         return redirect(url_for("intake_success"))
     return render_template("intake.html")
@@ -1228,7 +1162,7 @@ def case_result():
                                 defendant_name = matter.get("client", {}).get("name", selected_display_name)
                             break
             except Exception as e:
-                print("Failed to fetch Clio matter ID:", e)
+                pass
 
         # --- REVISED CLIO CONTACT ID LOGIC ---
         clio_contact_id = None
@@ -1247,7 +1181,7 @@ def case_result():
                                 defendant_name = contact.get("name")
                                 break
             except Exception as e:
-                print("Failed to search Clio contacts:", e)
+                pass
 
         # --- Retrieve all per-charge fields ---
         original_charges = request.form.getlist('original_charge[]')
