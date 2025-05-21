@@ -533,6 +533,13 @@ class Charge(db.Model):
     # New field: Community Service Hours
     community_service_hours = db.Column(db.String(20))
 
+# --- ClioToken Model ---
+class ClioToken(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    access_token = db.Column(db.String(512))
+    refresh_token = db.Column(db.String(512))
+    expires_at = db.Column(db.DateTime)
+
 
 # --- Lead Links Route ---
 @app.route("/lead-links")
@@ -1150,6 +1157,7 @@ def case_result():
                 return jsonify({"error": f"Contact Search Error: {str(e)}"}), 500
     submitted = False
     if request.method == "POST":
+        email_html = ""
         defendant_name = request.form.get('defendant_name', '').strip()
         # --- CLIO MATTER ID LOOKUP (and defendant name extraction) ---
         clio_matter_id = None
