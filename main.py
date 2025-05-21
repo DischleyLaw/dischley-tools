@@ -374,26 +374,6 @@ token_url = "https://app.clio.com/oauth/token"
 # oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, ...)
 
 
-# --- OAuth2 Callback Route ---
-from flask import current_app
-@app.route("/callback")
-def callback():
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    token = oauth.fetch_token(token_url, authorization_response=request.url, client_secret=client_secret)
-    # Store or update ClioToken in the database
-    existing_token = ClioToken.query.first()
-    if existing_token:
-        db.session.delete(existing_token)
-    new_token = ClioToken(
-        access_token=token["access_token"],
-        refresh_token=token["refresh_token"],
-        expires_at=datetime.utcnow() + timedelta(seconds=token["expires_in"])
-    )
-    db.session.add(new_token)
-    db.session.commit()
-    # Optionally, set session or flash message
-    session["clio_token"] = token["access_token"]
-    return redirect(url_for("dashboard"))
 
 # --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
