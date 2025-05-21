@@ -1163,16 +1163,9 @@ def case_result():
                 if response.status_code == 200:
                     for contact in response.json().get("data", []):
                         if contact.get("type", "").lower() == "person":
-                            first = contact.get("first_name", "").strip()
-                            last = contact.get("last_name", "").strip()
-                            full_name = f"{first} {last}".strip()
-                            if (
-                                contact_name_input.lower() == full_name.lower()
-                                or contact_name_input.lower() == first.lower()
-                                or contact_name_input.lower() == last.lower()
-                            ):
+                            if contact.get("name", "").lower() == contact_name_input.lower():
                                 clio_contact_id = contact.get("id")
-                                defendant_name = full_name
+                                defendant_name = contact.get("name")
                                 break
             except Exception as e:
                 print("Failed to search Clio contacts:", e)
@@ -1214,7 +1207,6 @@ def case_result():
         send_review_links = 'send_review_links' in request.form
 
         subject = f"Case Result - {defendant_name}"
-        email_html = f"<h2 style='font-size:16pt;'>Case Result – {defendant_name}</h2>"
         court_value = request.form.get("court", "").strip()
         prosecutor_judge_value = request.form.get("prosecutor_judge", "").strip()
         if court_value:
