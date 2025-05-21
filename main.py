@@ -567,18 +567,6 @@ def lead_links():
     return render_template("lead-links.html", links=links)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
 @app.route("/")
 def dashboard():
     case_results = CaseResult.query.order_by(CaseResult.created_at.desc()).all()
