@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
+from models import ClioToken
 from flask_cors import CORS
 
 # --- Expungement Data Extraction Import ---
@@ -14,17 +15,33 @@ from flask import request, jsonify
 import requests
 
 # --- Helper: Get valid Clio access token via OAuth2 session logic ---
+from datetime import datetime
+from requests.auth import HTTPBasicAuth
+
 def get_valid_token():
-    # Implement your OAuth2 logic here to fetch a valid access token.
-    # This is a stub; replace with your actual logic.
-    # For example, you might store the token in the session or refresh as needed.
-    # Raise Exception or return None if unable.
-    # Example usage:
-    token = session.get("clio_token")
-    if not token:
-        # Attempt to refresh or obtain a new token here
-        raise Exception("No Clio token in session. Implement OAuth2 logic.")
-    return token
+    token_record = ClioToken.query.first()
+    if not token_record:
+        raise Exception("ClioToken not found. Please authorize via /clio/authorize.")
+
+    # If token is expired or about to expire in 2 minutes
+    if not token_record.expires_at or token_record.expires_at <= datetime.utcnow() + timedelta(minutes=2):
+        refresh_data = {
+            'grant_type': 'refresh_token',
+            'refresh_token': token_record.refresh_token,
+            'client_id': client_id,
+            'client_secret': client_secret,
+        }
+        response = requests.post(token_url, data=refresh_data, auth=HTTPBasicAuth(client_id, client_secret))
+        if response.status_code != 200:
+            raise Exception("Failed to refresh token")
+
+        token_json = response.json()
+        token_record.access_token = token_json["access_token"]
+        token_record.refresh_token = token_json.get("refresh_token", token_record.refresh_token)
+        token_record.expires_at = datetime.utcnow() + timedelta(seconds=token_json["expires_in"])
+        db.session.commit()
+
+    return token_record.access_token
 
 # --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
@@ -356,6 +373,28 @@ redirect_uri = "https://tools.dischleylaw.com/callback"
 token_url = "https://app.clio.com/oauth/token"
 # When using OAuth2Session for Clio, always pass redirect_uri:
 # oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, ...)
+
+
+# --- OAuth2 Callback Route ---
+from flask import current_app
+@app.route("/callback")
+def callback():
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    token = oauth.fetch_token(token_url, authorization_response=request.url, client_secret=client_secret)
+    # Store or update ClioToken in the database
+    existing_token = ClioToken.query.first()
+    if existing_token:
+        db.session.delete(existing_token)
+    new_token = ClioToken(
+        access_token=token["access_token"],
+        refresh_token=token["refresh_token"],
+        expires_at=datetime.utcnow() + timedelta(seconds=token["expires_in"])
+    )
+    db.session.add(new_token)
+    db.session.commit()
+    # Optionally, set session or flash message
+    session["clio_token"] = token["access_token"]
+    return redirect(url_for("dashboard"))
 
 # --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
