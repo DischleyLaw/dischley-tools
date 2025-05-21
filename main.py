@@ -38,7 +38,17 @@ def contact_search():
     contacts = json_data.get("data", [])
     app.logger.debug(f"Clio raw response: {json_data}")
     app.logger.debug(f"Returned {len(contacts)} contacts for query '{query}'")
-    return jsonify({"data": contacts})
+    # Return mapped contacts for Select2 autocomplete, including 'name' field in each item
+    return jsonify({
+        "data": [
+            {
+                "id": contact["id"],
+                "text": contact.get("name") or contact.get("display_name") or f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip(),
+                "name": contact.get("name") or contact.get("display_name") or f"{contact.get('first_name', '')} {contact.get('last_name', '')}".strip()
+            }
+            for contact in contacts if contact.get("name") or contact.get("display_name")
+        ]
+    })
 
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])

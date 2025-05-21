@@ -48,7 +48,7 @@
   }
 </style>
 <div class="intake-card">
-<h2 class="mb-4 text-center">Case Result Submission</h2>
+<h2 class="mb-4 text-center">Case Result</h2>
 {% if submitted %}
 <div class="alert alert-success" role="alert">Form submitted successfully!</div>
 {% endif %}
@@ -546,6 +546,7 @@ document.getElementById('was_continued').addEventListener('change', function() {
         });
       },
       select: function (event, ui) {
+        // Populate the defendant_name field with the selected contact's name
         $('#defendant_name').val(ui.item.value);
       }
     });
