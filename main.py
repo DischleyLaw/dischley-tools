@@ -13,6 +13,7 @@ CORS(app)
 from flask import request, jsonify
 import requests
 
+# --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
 def contact_search():
     query = request.args.get("query", "").strip()
@@ -48,6 +49,17 @@ def contact_search():
             }
             for contact in contacts if contact.get("name") or contact.get("display_name")
         ]
+    })
+
+# --- CLIO CONTACT SEARCH DB ROUTE ---
+@app.route("/clio/contact-search-db")
+def contact_search_db():
+    query = request.args.get("query", "").strip().lower()
+    if not query:
+        return jsonify({"data": []})
+    matches = ClioContact.query.filter(ClioContact.name.ilike(f"%{query}%")).limit(50).all()
+    return jsonify({
+        "data": [{"id": contact.clio_id, "text": contact.name} for contact in matches]
     })
 
 # --- Expungement Upload Batch Route ---
@@ -328,6 +340,7 @@ app.config['MAIL_USERNAME'] = os.getenv('MAIL_USERNAME')
 app.config['MAIL_PASSWORD'] = os.getenv('MAIL_PASSWORD')
 app.config['MAIL_DEFAULT_SENDER'] = os.getenv('MAIL_DEFAULT_SENDER')
 
+# --- Mail and Database Initialization ---
 mail = Mail(app)
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -519,6 +532,8 @@ def lead_links():
 
 
 
+
+# --- ClioToken Model ---
 class ClioToken(db.Model):
     __tablename__ = 'clio_tokens'
     id = db.Column(db.Integer, primary_key=True)
@@ -528,6 +543,60 @@ class ClioToken(db.Model):
 
     def is_expired(self):
         return datetime.utcnow() >= self.expires_at
+
+# --- ClioContact Model for storing Clio contacts ---
+class ClioContact(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    clio_id = db.Column(db.BigInteger, unique=True, nullable=False)
+    name = db.Column(db.String(150), nullable=False)
+
+
+# --- Sync Clio Contacts Route ---
+@app.route("/clio/sync_contacts")
+def sync_clio_contacts():
+    access_token_record = ClioToken.query.order_by(ClioToken.expires_at.desc()).first()
+    if not access_token_record or access_token_record.is_expired():
+        return jsonify({"error": "Access token missing or expired"}), 401
+    access_token = access_token_record.access_token
+
+    headers = {
+        "Authorization": f"Bearer {access_token}",
+        "Accept": "application/json"
+    }
+
+    base_url = "https://app.clio.com/api/v4/contacts"
+    page = 1
+    created = 0
+    updated = 0
+
+    while True:
+        response = requests.get(f"{base_url}?page={page}&per_page=100", headers=headers)
+        if response.status_code != 200:
+            return jsonify({"error": "Failed to fetch contacts", "details": response.json()}), response.status_code
+
+        contacts = response.json().get("data", [])
+        if not contacts:
+            break
+
+        for contact in contacts:
+            clio_id = contact.get("id")
+            name = contact.get("name") or contact.get("display_name") or ""
+
+            if not clio_id or not name:
+                continue
+
+            existing = ClioContact.query.filter_by(clio_id=clio_id).first()
+            if existing:
+                existing.name = name
+                updated += 1
+            else:
+                db.session.add(ClioContact(clio_id=clio_id, name=name))
+                created += 1
+
+        db.session.commit()
+        page += 1
+
+    return jsonify({"created": created, "updated": updated})
 
 
 
