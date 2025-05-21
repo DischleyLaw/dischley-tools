@@ -19,27 +19,8 @@ from requests.auth import HTTPBasicAuth
 
 def get_valid_token():
     token_record = ClioToken.query.first()
-    if not token_record:
-        raise Exception("ClioToken not found. Please authorize via /clio/authorize.")
-
-    # If token is expired or about to expire in 2 minutes
-    if not token_record.expires_at or token_record.expires_at <= datetime.utcnow() + timedelta(minutes=2):
-        refresh_data = {
-            'grant_type': 'refresh_token',
-            'refresh_token': token_record.refresh_token,
-            'client_id': client_id,
-            'client_secret': client_secret,
-        }
-        response = requests.post(token_url, data=refresh_data, auth=HTTPBasicAuth(client_id, client_secret))
-        if response.status_code != 200:
-            raise Exception("Failed to refresh token")
-
-        token_json = response.json()
-        token_record.access_token = token_json["access_token"]
-        token_record.refresh_token = token_json.get("refresh_token", token_record.refresh_token)
-        token_record.expires_at = datetime.utcnow() + timedelta(seconds=token_json["expires_in"])
-        db.session.commit()
-
+    if not token_record or not token_record.access_token:
+        raise Exception("ClioToken not found or invalid. Please authorize via /clio/authorize.")
     return token_record.access_token
 
 # --- CLIO CONTACT SEARCH ROUTE ---
