@@ -1,182 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Case Result</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
-  <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+{% extends 'base.html' %}
+{% block content %}
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <style>
-  body {
-    background: #f8f9fa;
+  .card-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  }
+  #autocomplete-results {
+    max-height: 200px;
+    overflow-y: auto;
+  }
+  #autocomplete-results .list-group-item {
+    cursor: pointer;
+  }
+  .dashboard-icons {
+    display: flex;
+    justify-content: center;
+    gap: 40px;
+    margin-top: 30px;
+  }
+  .icon-item {
+    text-align: center;
+  }
+  .icon-item img {
+    width: 100px;
+    height: 100px;
+  }
+  .icon-item p {
+    margin-top: 10px;
+    font-weight: bold;
   }
   .intake-card {
-    background: #fff;
-    border-radius: 1rem;
-    box-shadow: 0 6px 32px rgba(0,0,0,0.07), 0 1.5px 6px rgba(0,0,0,0.03);
     max-width: 100%;
-    width: 100%;
-    margin: 1rem auto;
-    padding: 2rem 1rem;
-    border: 1px solid #eaeaea;
+    padding: 15px;
+    box-sizing: border-box;
   }
-  .intake-card h2 {
-    font-weight: 600;
-    color: #002147;
-    font-size: 2rem;
-    letter-spacing: -1px;
-  }
-  .form-label {
-    color: #212529;
-    font-weight: 500;
-    font-size: 1.08rem;
-    margin-bottom: 0.25rem;
-  }
-  .btn-primary {
-    background: #002147;
-    border: none;
-    border-radius: 0.5rem;
-    font-size: 1.15rem;
-    padding: 0.75rem 2rem;
-    color: #fff;
-  }
-  @media (max-width: 600px) {
-    h2, .form-label {
-      font-size: 1.25rem;
+  @media (max-width: 576px) {
+    .form-floating label,
+    label,
+    .form-check-label {
+      font-size: 14px;
     }
-    .form-control, .form-select {
-      font-size: 1.1rem;
-      padding: 0.75rem 0.75rem;
+    .form-control,
+    .form-select,
+    textarea {
+      font-size: 16px;
     }
     .btn {
-      font-size: 1rem;
-      padding: 0.75rem;
+      font-size: 16px;
+      padding: 10px 14px;
     }
     .intake-card {
-      margin: 1rem;
-      padding: 1.25rem;
+      padding: 10px;
     }
-    /* Make select2 touch targets larger on mobile */
-    .select2-container--default .select2-selection--single {
-      min-height: 48px;
-      font-size: 1.1rem;
+    h2, h3, h4 {
+      font-size: 18px;
+    }
+    .text-end {
+      text-align: center !important;
     }
   }
 </style>
-<body>
-<nav class="navbar navbar-light mb-4" style="background-color: #A2AAAD;">
-  <div class="container-fluid">
-    <a class="navbar-brand d-flex align-items-center" href="/">
-      <img src="{{ url_for('static', filename='img/DL_Logo.png') }}" alt="Dischley Law" height="40" class="me-3">
-      <span>Dischley Law Work Apps</span>
-    </a>
-    <div class="d-flex align-items-center">
-      <a href="/" class="btn btn-outline-light btn-sm">Dashboard</a>
+<div class="container">
+<div class="card-container">
+  <h2 class="mb-4 text-center">Case Result</h2>
+  {% if submitted %}
+  <div class="alert alert-success" role="alert">Form submitted successfully!</div>
+  {% endif %}
+  <form method="POST" autocomplete="off">
+    <div class="mb-3 form-floating position-relative">
+      <input type="text" id="clio_contact_search" class="form-control" placeholder="Search Clio Contacts" autocomplete="off">
+      <label for="clio_contact_search">Search Clio Contacts</label>
+      <div id="autocomplete-results" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
     </div>
-  </div>
-</nav>
-<div class="intake-card">
-  <div class="card">
-    <div class="card-body">
-      <h2 class="mb-4 text-center">Case Result</h2>
-      {% if submitted %}
-      <div class="alert alert-success" role="alert">Form submitted successfully!</div>
-      {% endif %}
-      <form method="POST" autocomplete="off">
-  <div class="mb-3">
-    <label for="clio_contact_search" class="form-label">Search Clio Contacts:</label>
-    <select id="clio_contact_search" class="form-select"></select>
-  </div>
-  <div class="mb-3 form-floating">
-    <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
-    <label for="defendant_name">Defendant Name:</label>
-  </div>
+    <div class="mb-3 form-floating">
+      <input type="text" class="form-control" id="defendant_name" name="defendant_name" placeholder="John Smith" required pattern="[A-Za-z\s\-']{2,100}" title="Please enter a valid name using letters only" autocomplete="name">
+      <label for="defendant_name">Defendant Name:</label>
+    </div>
 
-  <h2 class="h5 mt-4 mb-3">Court Information</h2>
-  <div class="mb-3 form-floating">
-    <select name="court" class="form-select court-select" id="courtSelect">
-      <option value="">-- Select Court --</option>
-      <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
-      <option value="Alexandria City General District Court">Alexandria City General District Court</option>
-      <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
-      <option value="Amherst General District Court">Amherst General District Court</option>
-      <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
-      <option value="Arlington County General District Court">Arlington County General District Court</option>
-      <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
-      <option value="Caroline County General District Court">Caroline County General District Court</option>
-      <option value="Clarke County General District Court">Clarke County General District Court</option>
-      <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
-      <option value="Culpeper General District Court">Culpeper General District Court</option>
-      <option value="Culpeper County Juvenile and Domestic Relations District Court">Culpeper County Juvenile and Domestic Relations District Court</option>
-      <option value="Essex County General District Court">Essex County General District Court</option>
-      <option value="Fairfax City General District Court">Fairfax City General District Court</option>
-      <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
-      <option value="Fairfax County General District Court">Fairfax County General District Court</option>
-      <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
-      <option value="Falls Church General District Court">Falls Church General District Court</option>
-      <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
-      <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
-      <option value="Fauquier County General District Court">Fauquier County General District Court</option>
-      <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
-      <option value="Frederick County General District Court">Frederick County General District Court</option>
-      <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
-      <option value="Hanover General District Court">Hanover General District Court</option>
-      <option value="Henrico County General District Court">Henrico County General District Court</option>
-      <option value="King George County Circuit Court">King George County Circuit Court</option>
-      <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
-      <option value="King George General District Court">King George General District Court</option>
-      <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
-      <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
-      <option value="Loudoun County General District Court">Loudoun County General District Court</option>
-      <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
-      <option value="Orange County General District Court">Orange County General District Court</option>
-      <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
-      <option value="Page County Circuit Court">Page County Circuit Court</option>
-      <option value="Page County General District Court">Page County General District Court</option>
-      <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
-      <option value="Prince William County General District Court">Prince William County General District Court</option>
-      <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
-      <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
-      <option value="Rappahannock General District Court">Rappahannock General District Court</option>
-      <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
-      <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
-      <option value="Rockingham County General District Court">Rockingham County General District Court</option>
-      <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
-      <option value="Shenandoah General District Court">Shenandoah General District Court</option>
-      <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
-      <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
-      <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
-      <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
-      <option value="Stafford County General District Court">Stafford County General District Court</option>
-      <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
-      <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
-      <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
-      <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
-      <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
-      <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
-      <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
-      <option value="Warren County Circuit Court">Warren County Circuit Court</option>
-      <option value="Warren County General District Court">Warren County General District Court</option>
-      <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
-      <option value="Winchester Circuit Court">Winchester Circuit Court</option>
-      <option value="Winchester General District Court">Winchester General District Court</option>
-      <option value="Winchester Juvenile and Domestic Relations Court">Winchester Juvenile and Domestic Relations Court</option>
-    </select>
-    <label for="courtSelect">Court</label>
-  </div>
+    <h2 class="h5 mt-4 mb-3">Court Information</h2>
+    <div class="mb-3 form-floating position-relative">
+      <input type="text" id="court_search" class="form-control" placeholder="Search Court" autocomplete="off" name="court">
+      <label for="court_search">Court</label>
+      <div id="court-autocomplete-results" class="list-group position-absolute w-100" style="z-index: 1000;"></div>
+    </div>
 
-  <div class="mb-3 form-floating">
-    <textarea class="form-control" name="prosecutor_judge" placeholder="Prosecutor and Judge Information" style="height: 100px;"></textarea>
-    <label for="prosecutor_judge">Prosecutor/Judge Notes</label>
-  </div>
+    <div class="mb-3 form-floating">
+      <textarea class="form-control" name="prosecutor_judge" placeholder="Prosecutor and Judge Information" style="height: 100px;"></textarea>
+      <label for="prosecutor_judge">Prosecutor/Judge Notes</label>
+    </div>
 
-  <div id="charges-section">
-    <h2 class="h5 mt-4 mb-3">Charge Details</h2>
+    <div id="charges-section">
+      <h2 class="h5 mt-4 mb-3">Charge Details</h2>
     <div class="charge-block border rounded p-3 mb-3">
       <h3 class="h6">Charge 1</h3>
       <div class="mb-3 form-floating">
@@ -218,7 +140,7 @@
         <h4 class="h6 mt-4">Sentencing</h4>
         <div class="mb-3">
           <label class="form-label">Jail Time Imposed:</label>
-          <div class="row g-2">
+          <div class="row g-2 row-cols-1 row-cols-md-2">
             <div class="col-8">
               <input type="number" class="form-control" name="jail_time_imposed[]" placeholder="Amount">
             </div>
@@ -233,7 +155,7 @@
         </div>
         <div class="mb-3">
           <label class="form-label">Jail Time Suspended:</label>
-          <div class="row g-2">
+          <div class="row g-2 row-cols-1 row-cols-md-2">
             <div class="col-8">
               <input type="number" class="form-control" name="jail_time_suspended[]" placeholder="Amount">
             </div>
@@ -268,8 +190,8 @@
           <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
           <label for="probation_term">Probation Term:</label>
         </div>
-        <div class="mb-3">
-        <div class="form-check form-check-inline">
+      <div class="mb-3">
+        <div class="form-check form-check-inline mb-2">
           <input type="hidden" name="license_suspension[]" value="No">
           <input class="form-check-input license-suspension-checkbox" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
           <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
@@ -280,7 +202,7 @@
         <label>Suspension Term</label>
       </div>
 
-      <div class="mb-3 form-check restricted-license-toggle" style="display: none;">
+      <div class="mb-3 form-check restricted-license-toggle mb-2" style="display: none;">
         <input type="hidden" name="restricted_license[]" value="No">
         <input class="form-check-input restricted-license-checkbox" type="checkbox" name="restricted_license[]" value="Yes" id="restricted_license_1">
         <label class="form-check-label" for="restricted_license_1">Restricted License Granted?</label>
@@ -303,234 +225,263 @@
         <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.charge-block').remove(); updateChargeLabels();">Remove</button>
       </div>
     </div>
-  </div>
-  <div class="text-center mt-3">
-    <button type="button" class="btn btn-primary" onclick="addCharge()">Add Additional Charge</button>
-  </div>
-
-
-  <h2 class="h5 mt-4 mb-3">Case Status</h2>
-  <div class="mb-3">
-    <div class="form-check">
-      <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued" placeholder="Case Continued?">
-      <label class="form-check-label" for="was_continued">Case Continued?</label>
-    </div>
-  </div>
-  <div class="mb-3 row g-2" id="continuation_fields" style="display:none;">
-    <div class="col-12 col-md-6 form-floating mb-3 mb-md-0">
-      <input type="date" class="form-control" id="continuation_date" name="continuation_date" placeholder="Continuation Date">
-      <label for="continuation_date">Continuation Date</label>
-    </div>
-    <div class="col-12 col-md-6 form-floating">
-      <input type="time" class="form-control" id="continuation_time" name="continuation_time" placeholder="Continuation Time">
-      <label for="continuation_time">Continuation Time</label>
+    <div class="d-grid gap-2">
+      <button type="button" class="btn btn-primary" onclick="addCharge()">Add Additional Charge</button>
     </div>
   </div>
 
-  <h2 class="h5 mt-4 mb-3">Notes</h2>
-  <div class="mb-3 form-floating">
-    <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
-    <label for="notes">Notes</label>
-  </div>
-  <div id="plea-offer-field" style="display: none;">
+    <h2 class="h5 mt-4 mb-3">Case Status</h2>
+    <div class="mb-3">
+      <div class="form-check mb-2">
+        <input class="form-check-input" type="checkbox" name="was_continued" id="was_continued" placeholder="Case Continued?">
+        <label class="form-check-label" for="was_continued">Case Continued?</label>
+      </div>
+    </div>
+    <div class="mb-3 row g-2" id="continuation_fields" style="display:none;">
+      <div class="col-12 col-md-6 form-floating mb-3 mb-md-0">
+        <input type="date" class="form-control" id="continuation_date" name="continuation_date" placeholder="Continuation Date">
+        <label for="continuation_date">Continuation Date</label>
+      </div>
+      <div class="col-12 col-md-6 form-floating">
+        <input type="time" class="form-control" id="continuation_time" name="continuation_time" placeholder="Continuation Time">
+        <label for="continuation_time">Continuation Time</label>
+      </div>
+    </div>
+
+    <h2 class="h5 mt-4 mb-3">Notes</h2>
     <div class="mb-3 form-floating">
-      <textarea class="form-control" name="plea_offer" placeholder="Plea Offer" style="height: 100px;"></textarea>
-      <label for="plea_offer">Plea Offer</label>
+      <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
+      <label for="notes">Notes</label>
     </div>
-  </div>
-
-  <div class="mb-3 form-check">
-    <input class="form-check-input" type="checkbox" value="yes" id="send_review_links" name="send_review_links">
-    <label class="form-check-label" for="send_review_links">Send Review Links</label>
-  </div>
-
-  <button type="submit" class="btn btn-primary w-100 mt-3" onclick="this.form.submit();">Submit Case Result</button>
-      </form>
+    <div id="plea-offer-field" style="display: none;">
+      <div class="mb-3 form-floating">
+        <textarea class="form-control" name="plea_offer" placeholder="Plea Offer" style="height: 100px;"></textarea>
+        <label for="plea_offer">Plea Offer</label>
+      </div>
     </div>
-  </div>
+
+    <div class="mb-3 form-check mb-2">
+      <input class="form-check-input" type="checkbox" value="yes" id="send_review_links" name="send_review_links">
+      <label class="form-check-label" for="send_review_links">Send Review Links</label>
+    </div>
+
+    <div class="d-grid gap-2 mt-4">
+      <button type="submit" class="btn btn-primary btn-lg">Submit Case Result</button>
+    </div>
+  </form>
+</div>
 </div>
 
 <script>
 function addCharge() {
-  const section = document.getElementById('charges-section');
-  const blocks = document.querySelectorAll('.charge-block');
-  const clone = blocks[0].cloneNode(true);
+    const section = document.getElementById('charges-section');
+    const blocks = document.querySelectorAll('.charge-block');
+    const clone = blocks[0].cloneNode(true);
 
-  // Hide conditional fields in the clone
-  clone.querySelectorAll('.license-suspension-term, .restricted-license-toggle, .restricted-license-type').forEach(el => {
-    el.style.display = 'none';
-  });
+    // Hide conditional fields in the clone
+    clone.querySelectorAll('.license-suspension-term, .restricted-license-toggle, .restricted-license-type').forEach(el => {
+        el.style.display = 'none';
+    });
 
-  // Reset checkboxes and ensure unique IDs and labels
-  clone.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
-    // Reset checked state
-    checkbox.checked = false;
-    // Make unique ID for restricted license checkbox
-    if (checkbox.classList.contains('restricted-license-checkbox')) {
-      const newId = 'restricted_license_' + (blocks.length + 1);
-      checkbox.id = newId;
-      const label = clone.querySelector(`label[for^="restricted_license_"]`);
-      if (label) label.setAttribute('for', newId);
-      // Hide the associated dropdown
-      const restrictionType = clone.querySelector('.restricted-license-type');
-      if (restrictionType) restrictionType.style.display = 'none';
-    } else if (checkbox.classList.contains('license-suspension-checkbox')) {
-      const newId = 'license_suspension_' + (blocks.length + 1);
-      checkbox.id = newId;
-      const label = clone.querySelector(`label[for^="license_suspension_"]`);
-      if (label) label.setAttribute('for', newId);
+    // Reset checkboxes and ensure unique IDs and labels
+    clone.querySelectorAll('input[type="checkbox"]').forEach((checkbox, index) => {
+        checkbox.checked = false;
+        // Make unique ID for restricted license checkbox
+        if (checkbox.classList.contains('restricted-license-checkbox')) {
+            const newId = 'restricted_license_' + (blocks.length + 1);
+            checkbox.id = newId;
+            const label = clone.querySelector(`label[for^="restricted_license_"]`);
+            if (label) label.setAttribute('for', newId);
+        } else if (checkbox.classList.contains('license-suspension-checkbox')) {
+            const newId = 'license_suspension_' + (blocks.length + 1);
+            checkbox.id = newId;
+            const label = clone.querySelector(`label[for^="license_suspension_"]`);
+            if (label) label.setAttribute('for', newId);
+        }
+    });
+
+    // Reset the restricted license type field
+    const restrictionType = clone.querySelector('.restricted-license-type');
+    if (restrictionType) restrictionType.style.display = 'none';
+
+    // Reset textareas and inputs
+    clone.querySelectorAll('textarea, input[type="text"], input[type="number"], select').forEach(el => {
+        if (el.type !== 'checkbox') el.value = "";
+    });
+
+    // Hide disposition paragraph
+    const dispParagraph = clone.querySelector('.disposition-paragraph');
+    if (dispParagraph) dispParagraph.style.display = 'none';
+
+    // Update heading
+    const heading = clone.querySelector('h3');
+    if (heading) {
+        heading.textContent = `Charge ${blocks.length + 1}`;
     }
-    // No handling for ASAP as it is removed
-  });
 
-  // Reset the restricted license type field
-  const restrictionType = clone.querySelector('.restricted-license-type');
-  if (restrictionType) restrictionType.style.display = 'none';
-
-  // Reset textareas and inputs
-  clone.querySelectorAll('textarea, input[type="text"], input[type="number"], select').forEach(el => {
-    if (el.type !== 'checkbox') el.value = "";
-  });
-
-  // Hide disposition paragraph
-  const dispParagraph = clone.querySelector('.disposition-paragraph');
-  if (dispParagraph) dispParagraph.style.display = 'none';
-
-  // Hide community service hours
-  const commServiceHours = clone.querySelector('.community-service-hours');
-  if (commServiceHours) commServiceHours.style.display = 'none';
-
-  // Update heading
-  const heading = clone.querySelector('h3');
-  if (heading) {
-    heading.textContent = `Charge ${blocks.length + 1}`;
-  }
-
-  section.appendChild(clone);
-  updateChargeLabels();
+    blocks[0].after(clone);
+    updateChargeLabels();
 }
 
 function updateChargeLabels() {
-  const blocks = document.querySelectorAll('.charge-block');
-  blocks.forEach((block, index) => {
-    const heading = block.querySelector('h3');
-    if (!heading) {
-      const h3 = document.createElement('h3');
-      h3.className = 'h6';
-      h3.textContent = `Charge ${index + 1}`;
-      block.prepend(h3);
-    } else {
-      heading.textContent = `Charge ${index + 1}`;
-    }
-    // Update restricted license checkbox id and label in each block for uniqueness
-    const restrictedCheckbox = block.querySelector('.restricted-license-checkbox');
-    const restrictedLabel = block.querySelector('label[for^="restricted_license_"]');
-    if (restrictedCheckbox) {
-      const newId = 'restricted_license_' + (index + 1);
-      restrictedCheckbox.id = newId;
-      if (restrictedLabel) restrictedLabel.setAttribute('for', newId);
-    }
-    // Update license suspension checkbox id and label in each block for uniqueness
-    const licenseSuspCheckbox = block.querySelector('.license-suspension-checkbox');
-    const licenseSuspLabel = block.querySelector('label[for^="license_suspension_"]');
-    if (licenseSuspCheckbox) {
-      const newId = 'license_suspension_' + (index + 1);
-      licenseSuspCheckbox.id = newId;
-      if (licenseSuspLabel) licenseSuspLabel.setAttribute('for', newId);
-    }
-  });
+    const blocks = document.querySelectorAll('.charge-block');
+    blocks.forEach((block, index) => {
+        const heading = block.querySelector('h3');
+        if (!heading) {
+            const h3 = document.createElement('h3');
+            h3.className = 'h6';
+            h3.textContent = `Charge ${index + 1}`;
+            block.prepend(h3);
+        } else {
+            heading.textContent = `Charge ${index + 1}`;
+        }
+        // Update restricted license checkbox id and label in each block for uniqueness
+        const restrictedCheckbox = block.querySelector('.restricted-license-checkbox');
+        const restrictedLabel = block.querySelector('label[for^="restricted_license_"]');
+        if (restrictedCheckbox) {
+            const newId = 'restricted_license_' + (index + 1);
+            restrictedCheckbox.id = newId;
+            if (restrictedLabel) restrictedLabel.setAttribute('for', newId);
+        }
+        // Update license suspension checkbox id and label in each block for uniqueness
+        const licenseSuspCheckbox = block.querySelector('.license-suspension-checkbox');
+        const licenseSuspLabel = block.querySelector('label[for^="license_suspension_"]');
+        if (licenseSuspCheckbox) {
+            const newId = 'license_suspension_' + (index + 1);
+            licenseSuspCheckbox.id = newId;
+            if (licenseSuspLabel) licenseSuspLabel.setAttribute('for', newId);
+        }
+    });
 }
 
-// License suspension, restricted license toggle logic
 document.addEventListener('change', function(e) {
-  const chargeBlock = e.target.closest('.charge-block');
+    const chargeBlock = e.target.closest('.charge-block');
+    if (!chargeBlock) return;
 
-  if (e.target.classList.contains('license-suspension-checkbox')) {
-    const termInput = chargeBlock.querySelector('.license-suspension-term');
-    const restrictedToggle = chargeBlock.querySelector('.restricted-license-toggle');
-    if (e.target.checked) {
-      if (termInput) termInput.style.display = 'block';
-      if (restrictedToggle) restrictedToggle.style.display = 'block';
-    } else {
-      if (termInput) termInput.style.display = 'none';
-      if (restrictedToggle) restrictedToggle.style.display = 'none';
-      const restrictedCheckbox = chargeBlock.querySelector('.restricted-license-checkbox');
-      const restrictionType = chargeBlock.querySelector('.restricted-license-type');
-      if (restrictedCheckbox) restrictedCheckbox.checked = false;
-      if (restrictionType) restrictionType.style.display = 'none';
+    if (e.target.classList.contains('license-suspension-checkbox')) {
+        const termInput = chargeBlock.querySelector('.license-suspension-term');
+        const restrictedToggle = chargeBlock.querySelector('.restricted-license-toggle');
+        if (e.target.checked) {
+            if (termInput) termInput.style.display = 'block';
+            if (restrictedToggle) restrictedToggle.style.display = 'block';
+        } else {
+            if (termInput) termInput.style.display = 'none';
+            if (restrictedToggle) restrictedToggle.style.display = 'none';
+            const restrictedCheckbox = chargeBlock.querySelector('.restricted-license-checkbox');
+            const restrictionType = chargeBlock.querySelector('.restricted-license-type');
+            if (restrictedCheckbox) restrictedCheckbox.checked = false;
+            if (restrictionType) restrictionType.style.display = 'none';
+        }
     }
-  }
 
-  // Ensure correct event delegation for restricted-license-checkbox
-  if (e.target.classList.contains('restricted-license-checkbox')) {
-    const restrictionType = chargeBlock.querySelector('.restricted-license-type');
-    if (restrictionType) {
-      restrictionType.style.display = e.target.checked ? 'block' : 'none';
+    if (e.target.classList.contains('restricted-license-checkbox')) {
+        const restrictionType = chargeBlock.querySelector('.restricted-license-type');
+        if (restrictionType) {
+            restrictionType.style.display = e.target.checked ? 'block' : 'none';
+        }
     }
-  }
 
-  if (e.target.name === 'disposition[]') {
-    const textAreaBlock = chargeBlock.querySelector('.disposition-paragraph');
-    const sentencingBlock = chargeBlock.querySelector('.sentencing-and-probation');
-    if (["Deferred", "298.02", "General Continuance"].includes(e.target.value)) {
-      if (textAreaBlock) textAreaBlock.style.display = 'block';
-      if (sentencingBlock) sentencingBlock.style.display = 'none';
-    } else {
-      if (textAreaBlock) textAreaBlock.style.display = 'none';
-      if (sentencingBlock) sentencingBlock.style.display = 'block';
+    if (e.target.name === 'disposition[]') {
+        const textAreaBlock = chargeBlock.querySelector('.disposition-paragraph');
+        const sentencingBlock = chargeBlock.querySelector('.sentencing-and-probation');
+        if (["Deferred", "298.02", "General Continuance"].includes(e.target.value)) {
+            if (textAreaBlock) textAreaBlock.style.display = 'block';
+            if (sentencingBlock) sentencingBlock.style.display = 'none';
+        } else {
+            if (textAreaBlock) textAreaBlock.style.display = 'none';
+            if (sentencingBlock) sentencingBlock.style.display = 'block';
+        }
     }
-  }
-
-  if (e.target.name === "community_service[]") {
-    const hoursDropdown = chargeBlock.querySelector('.community-service-hours');
-    if (hoursDropdown) {
-      hoursDropdown.style.display = e.target.checked ? 'block' : 'none';
-    }
-  }
 });
 
 document.getElementById('was_continued').addEventListener('change', function() {
-  const isContinued = this.checked;
-  document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
-  document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
+    const isContinued = this.checked;
+    document.getElementById('continuation_fields').style.display = isContinued ? 'flex' : 'none';
+    document.getElementById('plea-offer-field').style.display = isContinued ? 'block' : 'none';
 });
-// select2 for court select
-</script>
-<script>
+
 $(document).ready(function () {
-  // Always initialize Select2 regardless of screen width
-  $('#courtSelect').select2({
-    placeholder: "-- Select Court --",
-    allowClear: true,
-    width: '100%',
-    minimumInputLength: 0,
-    dropdownParent: $(document.body)
-  });
-
-  $('#clio_contact_search').select2({
-    placeholder: "Type to search contacts...",
-    minimumInputLength: 2,
-    ajax: {
-      url: "/clio/contact-search",
-      dataType: 'json',
-      delay: 250,
-      data: function (params) {
-        return { query: params.term };
-      },
-      processResults: function (data) {
-        return {
-          results: data.data.map(function(contact) {
-            return { id: contact.id, text: contact.name };
-          })
-        };
+    // Custom autocomplete for Clio Contact Search
+    $('#clio_contact_search').on('input', function() {
+      const query = $(this).val();
+      if (query.length < 2) {
+        $('#autocomplete-results').empty();
+        return;
       }
-    }
-  });
 
-  // Autofill defendant name on contact select
-  $('#clio_contact_search').on('select2:select', function (e) {
-    const name = e.params.data.text;
-    $('#defendant_name').val(name);
-  });
+      $.getJSON('/clio/contact-search', { query: query }, function(data) {
+        const results = data.data;
+        const listItems = results.map(item => `<a class="list-group-item list-group-item-action">${item.name}</a>`);
+        $('#autocomplete-results').html(listItems.join(''));
+      });
+    });
+
+    $('#autocomplete-results').on('click', '.list-group-item', function() {
+      const selectedName = $(this).text();
+      $('#clio_contact_search').val(selectedName);
+      $('#defendant_name').val(selectedName);
+      $('#autocomplete-results').empty();
+    });
+
+    $(document).click(function(e) {
+      if (!$(e.target).closest('#clio_contact_search, #autocomplete-results').length) {
+        $('#autocomplete-results').empty();
+      }
+    });
+
+    // Custom autocomplete for Court Search
+    $('#court_search').on('input', function() {
+      const query = $(this).val().toLowerCase();
+      if (query.length < 1) {
+        $('#court-autocomplete-results').empty();
+        return;
+      }
+
+      const courts = [
+        "Alexandria City Circuit Court", "Alexandria City General District Court", "Alexandria Juvenile and Domestic Relations District Court",
+        "Amherst General District Court", "Arlington County Circuit Court", "Arlington County General District Court",
+        "Arlington County Juvenile and Domestic Relations Court", "Caroline County General District Court",
+        "Clarke County General District Court", "Culpeper Circuit Court", "Culpeper General District Court",
+        "Culpeper County Juvenile and Domestic Relations District Court", "Essex County General District Court",
+        "Fairfax City General District Court", "Fairfax County Circuit Court", "Fairfax County General District Court",
+        "Fairfax County Juvenile and Domestic Relations Court", "Falls Church General District Court",
+        "Falls Church Juvenile and Domestic Relations Court", "Fauquier County Circuit Court", "Fauquier County General District Court",
+        "Fauquier County Juvenile and Domestic Relations Court", "Frederick County General District Court",
+        "Fredricksburg City General District Court", "Hanover General District Court", "Henrico County General District Court",
+        "King George County Circuit Court", "King George County Juvenile and Domestic Relations Court",
+        "King George General District Court", "King George Juvenile and Domestic Relations Court", "Loudoun County Circuit Court",
+        "Loudoun County General District Court", "Loudoun County Juvenile and Domestic Relations Court",
+        "Orange County General District Court", "Orange County Juvenile and Domestic Relations Court", "Page County Circuit Court",
+        "Page County General District Court", "Prince William County Circuit Court", "Prince William County General District Court",
+        "Prince William County Juvenile and Domestic Relations Court", "Rappahannock Circuit Court",
+        "Rappahannock General District Court", "Rappahannock Juvenile and Domestic Relations Court",
+        "Rockbridge County General District Court", "Rockingham County General District Court", "Shenandoah County Circuit Court",
+        "Shenandoah General District Court", "Spotsylvania Circuit Court", "Spotsylvania General District Court",
+        "Spotsylvania Juvenile and Domestic Relations District Court", "Stafford County Circuit Court",
+        "Stafford County General District Court", "Stafford Juvenile and Domestic Relations Court",
+        "Town of Herndon General District Court", "Town of Vienna General District Court", "United States District Court - District of Columbia",
+        "United States District Court - Eastern District of Virginia", "United States District Court - Western District of Virginia",
+        "United States District Court for the District of Nevada", "Warren County Circuit Court", "Warren County General District Court",
+        "Warren County Juvenile and Domestic Relations Court", "Winchester Circuit Court", "Winchester General District Court",
+        "Winchester Juvenile and Domestic Relations Court"
+      ];
+
+      const results = courts.filter(court => court.toLowerCase().includes(query));
+      const listItems = results.map(item => `<a class="list-group-item list-group-item-action">${item}</a>`);
+      $('#court-autocomplete-results').html(listItems.join(''));
+    });
+
+    $('#court-autocomplete-results').on('click', '.list-group-item', function() {
+      const selected = $(this).text();
+      $('#court_search').val(selected);
+      $('#court-autocomplete-results').empty();
+    });
+
+    $(document).click(function(e) {
+      if (!$(e.target).closest('#court_search, #court-autocomplete-results').length) {
+        $('#court-autocomplete-results').empty();
+      }
+    });
 });
 </script>
+{% endblock %}
