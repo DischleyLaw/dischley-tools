@@ -363,13 +363,13 @@ migrate = Migrate(app, db)
 import os
 from requests_oauthlib import OAuth2Session
 
-# Example usage: Initialize OAuth2Session for Clio with redirect_uri
+
+# --- OAuth2 Integration (Clio) ---
 client_id = os.getenv("CLIO_CLIENT_ID")
 client_secret = os.getenv("CLIO_CLIENT_SECRET")
-redirect_uri = "https://tools.dischleylaw.com/callback"
+redirect_uri = os.getenv("CLIO_REDIRECT_URI")
 token_url = "https://app.clio.com/oauth/token"
-# When using OAuth2Session for Clio, always pass redirect_uri:
-# oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, ...)
+auth_url = "https://app.clio.com/oauth/authorize"
 
 
 
@@ -1749,7 +1749,9 @@ def expungement_form():
 def expungement_success():
     return render_template("success.html")
 
-
+@app.route('/test')
+def test_select2():
+    return render_template('Test.html')
 
 # --- API endpoint used by JS "Add Additional Case" button ---
 # This endpoint supports the dynamic "Add Additional Case" functionality in the expungement form.
@@ -1848,3 +1850,36 @@ def expungement_upload():
 @app.route("/admin_tools")
 def admin_tools():
     return render_template("admin_tools.html")
+# --- Clio OAuth2 Authorization Route ---
+@app.route("/clio/authorize")
+def clio_authorize():
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=["all"])
+    authorization_url, state = oauth.authorization_url(auth_url)
+    return redirect(authorization_url)
+
+# --- Clio OAuth2 Callback Route ---
+@app.route("/callback")
+def clio_callback():
+    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
+    token = oauth.fetch_token(
+        token_url,
+        client_secret=client_secret,
+        authorization_response=request.url
+    )
+
+    access_token = token.get("access_token")
+    refresh_token = token.get("refresh_token")
+    expires_in = token.get("expires_in")
+
+    # Optional: Save to ClioToken model
+    existing_token = ClioToken.query.first()
+    if not existing_token:
+        existing_token = ClioToken()
+        db.session.add(existing_token)
+
+    existing_token.access_token = access_token
+    existing_token.refresh_token = refresh_token
+    existing_token.expires_at = datetime.utcnow() + timedelta(seconds=expires_in or 3600)
+    db.session.commit()
+
+    return f"Clio authorization complete. Access token stored."

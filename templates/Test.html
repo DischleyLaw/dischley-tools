@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Case Result Entry</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+</head>
+<body>
+  <nav class="navbar navbar-light mb-4" style="background-color: #A2AAAD;">
+    <div class="container-fluid">
+      <a class="navbar-brand d-flex align-items-center" href="/">
+        <img src="{{ url_for('static', filename='img/DL_Logo.png') }}" alt="Dischley Law" height="40" class="me-3">
+        <span>Dischley Law Work Apps</span>
+      </a>
+      <div class="d-flex align-items-center">
+        <a href="/" class="btn btn-outline-light btn-sm">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+  <div class="container mt-5">
+    <div class="card">
+      <div class="card-body">
+        <form id="case-result-form">
+          <div class="mb-3">
+            <label for="clio_contact_search" class="form-label">Clio Contact Search:</label>
+            <select id="clio_contact_search" style="width:300px"><option></option></select>
+          </div>
+          <div class="mb-3">
+            <label for="client_name" class="form-label">Client Name:</label>
+            <input type="text" id="client_name" class="form-control" style="width:300px;" readonly>
+          </div>
+          <h2 class="h5 mt-4 mb-3">Court Information</h2>
+          <div class="mb-3 form-floating">
+            <select name="court" class="form-select court-select" id="courtSelect">
+              <option value="">-- Select Court --</option>
+              <option value="Alexandria City Circuit Court">Alexandria City Circuit Court</option>
+              <option value="Alexandria City General District Court">Alexandria City General District Court</option>
+              <option value="Alexandria Juvenile and Domestic Relations District Court">Alexandria Juvenile and Domestic Relations District Court</option>
+              <option value="Amherst General District Court">Amherst General District Court</option>
+              <option value="Arlington County Circuit Court">Arlington County Circuit Court</option>
+              <option value="Arlington County General District Court">Arlington County General District Court</option>
+              <option value="Arlington County Juvenile and Domestic Relations Court">Arlington County Juvenile and Domestic Relations Court</option>
+              <option value="Caroline County General District Court">Caroline County General District Court</option>
+              <option value="Clarke County General District Court">Clarke County General District Court</option>
+              <option value="Culpeper Circuit Court">Culpeper Circuit Court</option>
+              <option value="Culpeper General District Court">Culpeper General District Court</option>
+              <option value="Culpeper County Juvenile and Domestic Relations District Court">Culpeper County Juvenile and Domestic Relations District Court</option>
+              <option value="Essex County General District Court">Essex County General District Court</option>
+              <option value="Fairfax City General District Court">Fairfax City General District Court</option>
+              <option value="Fairfax County Circuit Court">Fairfax County Circuit Court</option>
+              <option value="Fairfax County General District Court">Fairfax County General District Court</option>
+              <option value="Fairfax County Juvenile and Domestic Relations Court">Fairfax County Juvenile and Domestic Relations Court</option>
+              <option value="Falls Church General District Court">Falls Church General District Court</option>
+              <option value="Falls Church Juvenile and Domestic Relations Court">Falls Church Juvenile and Domestic Relations Court</option>
+              <option value="Fauquier County Circuit Court">Fauquier County Circuit Court</option>
+              <option value="Fauquier County General District Court">Fauquier County General District Court</option>
+              <option value="Fauquier County Juvenile and Domestic Relations Court">Fauquier County Juvenile and Domestic Relations Court</option>
+              <option value="Frederick County General District Court">Frederick County General District Court</option>
+              <option value="Fredricksburg City General District Court">Fredricksburg City General District Court</option>
+              <option value="Hanover General District Court">Hanover General District Court</option>
+              <option value="Henrico County General District Court">Henrico County General District Court</option>
+              <option value="King George County Circuit Court">King George County Circuit Court</option>
+              <option value="King George County Juvenile and Domestic Relations Court">King George County Juvenile and Domestic Relations Court</option>
+              <option value="King George General District Court">King George General District Court</option>
+              <option value="King George Juvenile and Domestic Relations Court">King George Juvenile and Domestic Relations Court</option>
+              <option value="Loudoun County Circuit Court">Loudoun County Circuit Court</option>
+              <option value="Loudoun County General District Court">Loudoun County General District Court</option>
+              <option value="Loudoun County Juvenile and Domestic Relations Court">Loudoun County Juvenile and Domestic Relations Court</option>
+              <option value="Orange County General District Court">Orange County General District Court</option>
+              <option value="Orange County Juvenile and Domestic Relations Court">Orange County Juvenile and Domestic Relations Court</option>
+              <option value="Page County Circuit Court">Page County Circuit Court</option>
+              <option value="Page County General District Court">Page County General District Court</option>
+              <option value="Prince William County Circuit Court">Prince William County Circuit Court</option>
+              <option value="Prince William County General District Court">Prince William County General District Court</option>
+              <option value="Prince William County Juvenile and Domestic Relations Court">Prince William County Juvenile and Domestic Relations Court</option>
+              <option value="Rappahannock Circuit Court">Rappahannock Circuit Court</option>
+              <option value="Rappahannock General District Court">Rappahannock General District Court</option>
+              <option value="Rappahannock Juvenile and Domestic Relations Court">Rappahannock Juvenile and Domestic Relations Court</option>
+              <option value="Rockbridge County General District Court">Rockbridge County General District Court</option>
+              <option value="Rockingham County General District Court">Rockingham County General District Court</option>
+              <option value="Shenandoah County Circuit Court">Shenandoah County Circuit Court</option>
+              <option value="Shenandoah General District Court">Shenandoah General District Court</option>
+              <option value="Spotsylvania Circuit Court">Spotsylvania Circuit Court</option>
+              <option value="Spotsylvania General District Court">Spotsylvania General District Court</option>
+              <option value="Spotsylvania Juvenile and Domestic Relations District Court">Spotsylvania Juvenile and Domestic Relations District Court</option>
+              <option value="Stafford County Circuit Court">Stafford County Circuit Court</option>
+              <option value="Stafford County General District Court">Stafford County General District Court</option>
+              <option value="Stafford Juvenile and Domestic Relations Court">Stafford Juvenile and Domestic Relations Court</option>
+              <option value="Town of Herndon General District Court">Town of Herndon General District Court</option>
+              <option value="Town of Vienna General District Court">Town of Vienna General District Court</option>
+              <option value="United States District Court - District of Columbia">United States District Court - District of Columbia</option>
+              <option value="United States District Court - Eastern District of Virginia">United States District Court - Eastern District of Virginia</option>
+              <option value="United States District Court - Western District of Virginia">United States District Court - Western District of Virginia</option>
+              <option value="United States District Court for the District of Nevada">United States District Court for the District of Nevada</option>
+              <option value="Warren County Circuit Court">Warren County Circuit Court</option>
+              <option value="Warren County General District Court">Warren County General District Court</option>
+              <option value="Warren County Juvenile and Domestic Relations Court">Warren County Juvenile and Domestic Relations Court</option>
+              <option value="Winchester Circuit Court">Winchester Circuit Court</option>
+              <option value="Winchester General District Court">Winchester General District Court</option>
+              <option value="Winchester Juvenile and Domestic Relations Court">Winchester Juvenile and Domestic Relations Court</option>
+            </select>
+            <label for="courtSelect">Court</label>
+          </div>
+          <div class="mb-3 form-floating">
+            <textarea class="form-control" name="prosecutor_judge" placeholder="Prosecutor and Judge Information" style="height: 100px;"></textarea>
+            <label for="prosecutor_judge">Prosecutor/Judge Notes</label>
+          </div>
+          <div id="charges-section">
+            <h2 class="h5 mt-4 mb-3">Charge Details</h2>
+            <div class="charge-block border rounded p-3 mb-3">
+              <h3 class="h6">Charge 1</h3>
+              <div class="mb-3 form-floating">
+                <textarea class="form-control" name="original_charge[]" placeholder="Original Charge" style="height: 80px;"></textarea>
+                <label for="original_charge">Original Charge:</label>
+              </div>
+              <div class="mb-3 form-floating">
+                <textarea class="form-control" name="amended_charge[]" placeholder="Amended Charge" style="height: 80px;"></textarea>
+                <label for="amended_charge">Amended Charge:</label>
+              </div>
+              <div class="mb-3 form-floating">
+                <select class="form-select" name="plea[]">
+                  <option value="" selected disabled>Select Plea</option>
+                  <option value="Guilty">Guilty</option>
+                  <option value="Not Guilty">Not Guilty</option>
+                  <option value="No Contest">No Contest</option>
+                </select>
+                <label for="plea">Plea:</label>
+              </div>
+              <div class="mb-3 form-floating">
+                <select class="form-select" name="disposition[]">
+                  <option value="" selected disabled>Select Disposition</option>
+                  <option value="Guilty">Guilty</option>
+                  <option value="Not Guilty">Not Guilty</option>
+                  <option value="Dismissed">Dismissed</option>
+                  <option value="Nolle Prosequi">Nolle Prosequi</option>
+                  <option value="Continued">Continued</option>
+                  <option value="Deferred">Deferred</option>
+                  <option value="298.02">298.02</option>
+                  <option value="General Continuance">General Continuance</option>
+                </select>
+                <label for="disposition">Disposition:</label>
+              </div>
+              <div class="mb-3">
+                <input class="form-check-input" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
+                <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
+              </div>
+              <h4 class="h6 mt-4">Sentencing</h4>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <label class="form-label">Jail Time Imposed:</label>
+                  <div class="input-group">
+                    <input type="number" min="0" class="form-control" name="jail_time_imposed_number[]" placeholder="Amount">
+                    <select class="form-select" name="jail_time_imposed_unit[]">
+                      <option value="days">Days</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label class="form-label">Jail Time Suspended:</label>
+                  <div class="input-group">
+                    <input type="number" min="0" class="form-control" name="jail_time_suspended_number[]" placeholder="Amount">
+                    <select class="form-select" name="jail_time_suspended_unit[]">
+                      <option value="days">Days</option>
+                      <option value="months">Months</option>
+                      <option value="years">Years</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3 form-floating">
+                <input type="number" class="form-control" name="fine_imposed[]" placeholder="Fine Imposed">
+                <label>Fine Imposed ($):</label>
+              </div>
+              <div class="mb-3 form-floating">
+                <input type="number" class="form-control" name="fine_suspended[]" placeholder="Fine Suspended">
+                <label>Fine Suspended ($):</label>
+              </div>
+              <h2 class="h5 mt-4 mb-3">Conditions of Probation</h2>
+              <div class="row mb-3">
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <select class="form-select" name="probation_type[]" id="probation_type">
+                      <option value="" selected>None</option>
+                      <option value="Supervised">Supervised</option>
+                      <option value="Unsupervised">Unsupervised</option>
+                    </select>
+                    <label for="probation_type">Probation Type:</label>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="form-floating">
+                    <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
+                    <label for="probation_term">Probation Term:</label>
+                  </div>
+                </div>
+              </div>
+              <div class="row mb-3">
+                <div class="col-lg-8">
+                  <!-- Hidden checkboxes for unchecked values -->
+                  <input type="hidden" name="vasap[]" value="No">
+                  <input type="hidden" name="vip[]" value="No">
+                  <input type="hidden" name="community_service[]" value="No">
+                  <input type="hidden" name="anger_management[]" value="No">
+                  <input type="hidden" name="bip_adapt[]" value="No">
+                  <input type="hidden" name="sa_eval[]" value="No">
+                  <input type="hidden" name="mh_eval[]" value="No">
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="vasap[]" value="Yes" id="vasap">
+                    <label class="form-check-label" for="vasap">VASAP</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="vip[]" value="Yes" id="vip">
+                    <label class="form-check-label" for="vip">VIP</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="community_service[]" value="Yes" id="community_service" onchange="this.closest('.charge-block').querySelector('.community_service_hours_block').style.display=this.checked?'inline-block':'none';">
+                    <label class="form-check-label" for="community_service">Community Service</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="anger_management[]" value="Yes" id="anger_management">
+                    <label class="form-check-label" for="anger_management">Anger Management</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="bip_adapt[]" value="Yes" id="bip_adapt">
+                    <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="sa_eval[]" value="Yes" id="sa_eval">
+                    <label class="form-check-label" for="sa_eval">SA Eval</label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="checkbox" name="mh_eval[]" value="Yes" id="mh_eval">
+                    <label class="form-check-label" for="mh_eval">MH Eval</label>
+                  </div>
+                </div>
+                <div class="col-lg-4 community_service_hours_block" style="display:none;">
+                  <div class="input-group mb-2">
+                    <input type="number" min="0" class="form-control" name="community_service_hours[]" placeholder="Hours">
+                    <span class="input-group-text">hrs</span>
+                  </div>
+                </div>
+              </div>
+              <div class="mb-3 row">
+                <div class="col">
+                  <input type="hidden" name="other_probation_conditions[]" value="">
+                  <input type="text" class="form-control" name="other_probation_conditions[]" placeholder="Other probation conditions (optional)">
+                </div>
+              </div>
+              <div class="mb-3 form-floating">
+                <textarea class="form-control" name="charge_notes[]" placeholder="Charge Notes" style="height: 100px;"></textarea>
+                <label>Charge Notes</label>
+              </div>
+            </div>
+          </div>
+          <button type="button" id="add-charge-btn" class="btn btn-outline-primary mb-3">Add Another Charge</button>
+          <div class="mb-3">
+            <label for="continuation_date" class="form-label">Continuation Date (if continued):</label>
+            <input type="date" class="form-control" id="continuation_date" name="continuation_date">
+          </div>
+          <div class="mb-3">
+            <label for="continuation_reason" class="form-label">Reason for Continuation (if continued):</label>
+            <input type="text" class="form-control" id="continuation_reason" name="continuation_reason">
+          </div>
+          <div class="mb-3 form-floating">
+            <textarea class="form-control" name="notes" placeholder="Notes" style="height: 100px;"></textarea>
+            <label for="notes">Notes</label>
+          </div>
+          <div class="mb-3 form-check">
+            <input class="form-check-input" type="checkbox" value="yes" id="send_review_links" name="send_review_links">
+            <label class="form-check-label" for="send_review_links">Send Review Links</label>
+          </div>
+          <button type="submit" class="btn btn-primary">Submit</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script>
+    $('#clio_contact_search').select2({
+      placeholder: "Type to search contacts...",
+      minimumInputLength: 2,
+      ajax: {
+        url: "/clio/contact-search",
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { query: params.term }; },
+        processResults: function (data) {
+          return {
+            results: data.data.map(function(contact) {
+              return { id: contact.id, text: contact.name };
+            })
+          };
+        }
+      }
+    });
+    // Autofill Client Name field when a contact is selected
+    $('#clio_contact_search').on('select2:select', function (e) {
+      var name = e.params.data.text;
+      $('#client_name').val(name);
+    });
+
+    // Add dynamic charge block logic
+    $(document).ready(function() {
+      let chargeCount = 1;
+      $('#add-charge-btn').on('click', function() {
+        chargeCount++;
+        let $lastBlock = $('#charges-section .charge-block').last();
+        let $newBlock = $lastBlock.clone();
+        // Reset the values in the cloned block
+        $newBlock.find('textarea, input[type="number"], input[type="text"]').val('');
+        $newBlock.find('select').prop('selectedIndex', 0);
+        $newBlock.find('input[type="checkbox"]').prop('checked', false);
+        $newBlock.find('.community_service_hours_block').hide();
+        $newBlock.find('h3.h6').text('Charge ' + chargeCount);
+        $('#charges-section').append($newBlock);
+      });
+      // Show/hide community service hours block in all charge blocks
+      $(document).on('change', 'input[type="checkbox"][name="community_service[]"]', function() {
+        let $block = $(this).closest('.charge-block');
+        if ($(this).is(':checked')) {
+          $block.find('.community_service_hours_block').show();
+        } else {
+          $block.find('.community_service_hours_block').hide();
+        }
+      });
+    });
+  </script>
+</body>
+</html>
