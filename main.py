@@ -1303,9 +1303,6 @@ def case_result():
                         (i < len(fine_suspended) and fine_suspended[i])
                     ):
                         email_html += "<span style='font-size:16pt; font-weight:bold;'>Sentence:<br></span>"
-                    # --- Restricted License Type ---
-                    if i < len(restricted_license_type) and restricted_license_type[i].strip():
-                        email_html += f"<span style='font-size:16pt;'><strong>Restricted License Type:</strong> {restricted_license_type[i].strip()}<br></span>"
                     imposed_unit = jail_time_imposed_unit[i] if i < len(jail_time_imposed_unit) else "days"
                     suspended_unit = jail_time_suspended_unit[i] if i < len(jail_time_suspended_unit) else "days"
                     if i < len(jail_time_imposed) and jail_time_imposed[i]:
@@ -1334,15 +1331,20 @@ def case_result():
                         else:
                             email_html += f"<span style='font-size:16pt;'><strong>Restricted License:</strong> Yes<br></span>"
 
-                    # License Suspension Term (if present, show as a line)
-                    if i < len(license_suspension_term) and license_suspension_term[i].strip():
-                        email_html += f"<span style='font-size:16pt;'><strong>License Suspension Term:</strong> {license_suspension_term[i].strip()}<br></span>"
 
                     # Render VASAP, VIP, Community Service, etc.
-                    if i < len(vasap) and vasap[i].strip().lower() == "yes":
-                        email_html += "<span style='font-size:16pt;'><strong>VASAP:</strong> ✅<br></span>"
-                    if i < len(vip) and vip[i].strip().lower() == "yes":
-                        email_html += "<span style='font-size:16pt;'><strong>VIP:</strong> ✅<br></span>"
+                    if i < len(vasap):
+                        vasap_status = vasap[i].strip().lower()
+                        if vasap_status == "yes":
+                            email_html += "<span style='font-size:16pt;'><strong>VASAP:</strong> ✅<br></span>"
+                        else:
+                            email_html += "<span style='font-size:16pt;'><strong>VASAP:</strong> ❌<br></span>"
+                    if i < len(vip):
+                        vip_status = vip[i].strip().lower()
+                        if vip_status == "yes":
+                            email_html += "<span style='font-size:16pt;'><strong>VIP:</strong> ✅<br></span>"
+                        else:
+                            email_html += "<span style='font-size:16pt;'><strong>VIP:</strong> ❌<br></span>"
                     if i < len(community_service) and community_service[i].strip().lower() == "yes":
                         hours = community_service_hours_list[i] if len(community_service_hours_list) > i else ""
                         label = "<strong>Community Service:</strong> ✅"
@@ -1408,6 +1410,12 @@ def case_result():
                                 email_html += f"&nbsp;&nbsp;{line}<br>"
                             email_html += "</span>"
 
+                    # --- Moved Restricted License Type and License Suspension Term after Conditions of Probation ---
+                    if i < len(restricted_license_type) and restricted_license_type[i].strip():
+                        email_html += f"<span style='font-size:16pt;'><strong>Type of Suspended License:</strong> {restricted_license_type[i].strip()}<br></span>"
+                    if i < len(license_suspension_term) and license_suspension_term[i].strip():
+                        email_html += f"<span style='font-size:16pt;'><strong>License Suspension Term:</strong> {license_suspension_term[i].strip()}<br></span>"
+
                 # Charge notes
                 if i < len(charge_notes) and charge_notes[i].strip():
                     email_html += f"<span style='font-size:16pt;'><strong>Charge Notes:</strong> {charge_notes[i].strip()}<br></span>"
@@ -1444,7 +1452,7 @@ def case_result():
             summary_fields.append(f"<p style='font-size:16pt;'><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</p>")
 
         if send_review_links:
-            summary_fields.append("<p style='font-size:16pt;'><strong>Review Links Requested:</strong> Yes</p>")
+            summary_fields.append("<p style='font-size:16pt;'><strong>Send Review Links:</strong> Yes</p>")
 
         if summary_fields:
             email_html += "".join(summary_fields)
