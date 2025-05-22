@@ -19,9 +19,10 @@
     background: #fff;
     border-radius: 1rem;
     box-shadow: 0 6px 32px rgba(0,0,0,0.07), 0 1.5px 6px rgba(0,0,0,0.03);
-    max-width: 540px;
-    margin: 3rem auto;
-    padding: 2.5rem 2rem;
+    max-width: 100%;
+    width: 100%;
+    margin: 1rem auto;
+    padding: 2rem 1rem;
     border: 1px solid #eaeaea;
   }
   .intake-card h2 {
@@ -45,8 +46,20 @@
     color: #fff;
   }
   @media (max-width: 600px) {
+    h2, .form-label {
+      font-size: 1.25rem;
+    }
+    .form-control, .form-select {
+      font-size: 1.1rem;
+      padding: 0.75rem 0.75rem;
+    }
+    .btn {
+      font-size: 1rem;
+      padding: 0.75rem;
+    }
     .intake-card {
-      padding: 1.25rem 1rem;
+      margin: 1rem;
+      padding: 1.25rem;
     }
     /* Make select2 touch targets larger on mobile */
     .select2-container--default .select2-selection--single {
@@ -199,34 +212,6 @@
         <textarea class="form-control" name="disposition_paragraph[]" placeholder="Disposition Narrative" style="height: 100px;"></textarea>
         <label>Disposition Narrative</label>
       </div>
-      <div class="mb-3">
-        <div class="form-check form-check-inline">
-          <input type="hidden" name="license_suspension[]" value="No">
-          <input class="form-check-input license-suspension-checkbox" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
-          <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
-        </div>
-      </div>
-      <div class="mb-3 form-floating license-suspension-term" style="display: none;">
-        <input type="text" class="form-control" name="license_suspension_term[]" placeholder="Suspension Term">
-        <label>Suspension Term</label>
-      </div>
-
-      <div class="mb-3 form-check restricted-license-toggle" style="display: none;">
-        <input type="hidden" name="restricted_license[]" value="No">
-        <input class="form-check-input restricted-license-checkbox" type="checkbox" name="restricted_license[]" value="Yes" id="restricted_license_1">
-        <label class="form-check-label" for="restricted_license_1">Restricted License Granted?</label>
-      </div>
-
-      <div class="mb-3 form-floating restricted-license-type" style="display: none;">
-        <select class="form-control" name="restricted_license_type[]">
-          <option value="" selected disabled>Select Restriction Type</option>
-          <option value="II Only">II Only</option>
-          <option value="Time and Place with Interlock">Time and Place with Interlock</option>
-          <option value="Time and Place Only">Time and Place Only</option>
-        </select>
-        <label>Restriction Type</label>
-      </div>
-
       <div class="sentencing-and-probation">
         <h4 class="h6 mt-4">Sentencing</h4>
         <div class="mb-3">
@@ -281,49 +266,32 @@
           <input type="text" class="form-control" id="probation_term" name="probation_term[]" placeholder="Probation Term">
           <label for="probation_term">Probation Term:</label>
         </div>
-        <div class="per-charge-conditions-container">
-          <div class="mb-3">
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="vasap[]" value="No">
-              <input class="form-check-input" type="checkbox" name="vasap[]" id="vasap" value="Yes" placeholder="VASAP">
-              <label class="form-check-label" for="vasap">VASAP</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="vip[]" value="No">
-              <input class="form-check-input" type="checkbox" name="vip[]" id="vip" value="Yes" placeholder="VIP">
-              <label class="form-check-label" for="vip">VIP</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="community_service[]" value="No">
-              <input class="form-check-input" type="checkbox" name="community_service[]" id="community_service" value="Yes" placeholder="Community Service">
-              <label class="form-check-label" for="community_service">Community Service</label>
-            </div>
-            <div class="form-floating community-service-hours" style="display: none; max-width: 200px;">
-              <input type="number" class="form-control" name="community_service_hours[]" placeholder="Community Service Hours">
-              <label>Community Service Hours</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="anger_management[]" value="No">
-              <input class="form-check-input" type="checkbox" name="anger_management[]" id="anger_management" value="Yes" placeholder="Anger Management">
-              <label class="form-check-label" for="anger_management">Anger Management</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="bip_adapt[]" value="No">
-              <input class="form-check-input" type="checkbox" name="bip_adapt[]" id="bip_adapt" value="Yes" placeholder="BIP/ADAPT (DV Class)">
-              <label class="form-check-label" for="bip_adapt">BIP/ADAPT (DV Class)</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="sa_eval[]" value="No">
-              <input class="form-check-input" type="checkbox" name="sa_eval[]" id="sa_eval" value="Yes" placeholder="Substance Abuse Evaluation">
-              <label class="form-check-label" for="sa_eval">SA Eval</label>
-            </div>
-            <div class="form-check form-check-inline">
-              <input type="hidden" name="mh_eval[]" value="No">
-              <input class="form-check-input" type="checkbox" name="mh_eval[]" id="mh_eval" value="Yes" placeholder="Mental Health Evaluation">
-              <label class="form-check-label" for="mh_eval">MH Eval</label>
-            </div>
-          </div>
+        <div class="mb-3">
+        <div class="form-check form-check-inline">
+          <input type="hidden" name="license_suspension[]" value="No">
+          <input class="form-check-input license-suspension-checkbox" type="checkbox" name="license_suspension[]" value="Yes" id="license_suspension_1">
+          <label class="form-check-label" for="license_suspension_1">License Suspension?</label>
         </div>
+      </div>
+      <div class="mb-3 form-floating license-suspension-term" style="display: none;">
+        <input type="text" class="form-control" name="license_suspension_term[]" placeholder="Suspension Term">
+        <label>Suspension Term</label>
+      </div>
+
+      <div class="mb-3 form-check restricted-license-toggle" style="display: none;">
+        <input type="hidden" name="restricted_license[]" value="No">
+        <input class="form-check-input restricted-license-checkbox" type="checkbox" name="restricted_license[]" value="Yes" id="restricted_license_1">
+        <label class="form-check-label" for="restricted_license_1">Restricted License Granted?</label>
+      </div>
+
+      <div class="mb-3 form-floating restricted-license-type" style="display: none;">
+        <select class="form-control" name="restricted_license_type[]">
+          <option value="" selected disabled>Select Restriction Type</option>
+          <option value="II Only">II Only</option>
+          <option value="Time and Place with Interlock">Time and Place with Interlock</option>
+          <option value="Time and Place Only">Time and Place Only</option>
+        </select>
+        <label>Restriction Type</label>
       </div>
       <div class="mb-3 form-floating">
         <textarea class="form-control" name="charge_notes[]" placeholder="Charge Notes" style="height: 100px;"></textarea>
@@ -334,7 +302,6 @@
       </div>
     </div>
   </div>
-
   <div class="text-center mt-3">
     <button type="button" class="btn btn-primary" onclick="addCharge()">Add Additional Charge</button>
   </div>
@@ -408,15 +375,8 @@ function addCharge() {
       checkbox.id = newId;
       const label = clone.querySelector(`label[for^="license_suspension_"]`);
       if (label) label.setAttribute('for', newId);
-    } else {
-      // For other checkboxes, ensure uniqueness if necessary (optional)
-      if (checkbox.name && checkbox.name.endsWith('[]')) {
-        const newId = checkbox.name.replace('[]', '') + '_' + (blocks.length + 1) + '_' + index;
-        checkbox.id = newId;
-        const label = clone.querySelector(`label[for="${checkbox.id}"]`);
-        if (label) label.setAttribute('for', newId);
-      }
     }
+    // No handling for ASAP as it is removed
   });
 
   // Reset the restricted license type field
