@@ -85,6 +85,27 @@
       <label for="defendant_name">Defendant Name:</label>
     </div>
 
+    <!-- Matter selection section -->
+    <div class="mb-3">
+      <label for="clio-matter-select" class="form-label">Select Matter:</label>
+      <select id="clio-matter-select" name="clio_matter_id" class="form-select" style="width: 100%;" disabled></select>
+    </div>
+    <div id="matter-details" style="background:#f9f9f9; border:1px solid #ccc; padding:10px; margin-bottom:20px;">
+      <div class="mb-2">
+        <label for="matter_description" class="form-label"><b>Description:</b></label>
+        <input type="text" class="form-control" id="matter_description" name="matter_description" value="">
+      </div>
+      <div class="mb-2">
+        <label for="matter_display_number" class="form-label"><b>Display Number:</b></label>
+        <input type="text" class="form-control" id="matter_display_number" name="matter_display_number" value="">
+      </div>
+      <div class="mb-2">
+        <label for="matter_maildrop_address" class="form-label"><b>Maildrop Address:</b></label>
+        <input type="text" class="form-control" id="matter_maildrop_address" name="matter_maildrop_address" value="">
+      </div>
+    </div>
+    <!-- End matter selection section -->
+
     <h2 class="h5 mt-4 mb-3">Court Information</h2>
     <div class="mb-3 form-floating position-relative">
       <input type="text" id="court_search" class="form-control" placeholder="Search Court" autocomplete="off" name="court">
@@ -401,32 +422,81 @@ document.getElementById('was_continued').addEventListener('change', function() {
 });
 
 $(document).ready(function () {
-    // Custom autocomplete for Clio Contact Search
+    let selectedContactId = null;
+
+    // Contact autocomplete (already present)
     $('#clio_contact_search').on('input', function() {
       const query = $(this).val();
       if (query.length < 2) {
         $('#autocomplete-results').empty();
         return;
       }
-
       $.getJSON('/clio/contact-search', { query: query }, function(data) {
         const results = data.data;
-        const listItems = results.map(item => `<a class="list-group-item list-group-item-action">${item.name}</a>`);
+        const listItems = results.map(item => `<a class="list-group-item list-group-item-action" data-id="${item.id}">${item.name}</a>`);
         $('#autocomplete-results').html(listItems.join(''));
       });
     });
 
+    // When a contact is selected:
     $('#autocomplete-results').on('click', '.list-group-item', function() {
-      const selectedName = $(this).text();
-      $('#clio_contact_search').val(selectedName);
-      $('#defendant_name').val(selectedName);
-      $('#autocomplete-results').empty();
+        const selectedName = $(this).text();
+        selectedContactId = $(this).data('id');
+        $('#clio_contact_search').val(selectedName);
+        $('#defendant_name').val(selectedName);
+        $('#autocomplete-results').empty();
+
+        // Clear and disable matter select before fetching
+        $('#clio-matter-select').empty();
+        $('#clio-matter-select').prop('disabled', true);
+        $('#desc-placeholder').text('Select a matter');
+        $('#dispnum-placeholder').text('');
+        $('#maildrop-placeholder').text('');
+        $('#matter_description').val('');
+        $('#matter_display_number').val('');
+        $('#matter_maildrop_address').val('');
+
+        if (selectedContactId) {
+            $.getJSON('/clio/contact_matters', { id: selectedContactId }, function(result) {
+                var matters = (result.matters && result.matters.length > 0) ? result.matters : [];
+                console.log('Matters:', matters); // Debug: See what is returned
+                $('#clio-matter-select').append('<option value="">Select a matter</option>');
+                matters.forEach(function(matter) {
+                    var option = new Option(
+                        matter.display_number ? matter.display_number : 'Matter ID: ' + matter.id,
+                        matter.id,
+                        false,
+                        false
+                    );
+                    $('#clio-matter-select').append(option);
+                });
+                // Enable if there are matters
+                $('#clio-matter-select').prop('disabled', matters.length === 0);
+            });
+        }
     });
 
-    $(document).click(function(e) {
-      if (!$(e.target).closest('#clio_contact_search, #autocomplete-results').length) {
-        $('#autocomplete-results').empty();
-      }
+    // Matter select logic
+    $('#clio-matter-select').on('change', function() {
+        var matterId = $(this).val();
+        if (!matterId || !selectedContactId) {
+            $('#matter_description').val('');
+            $('#matter_display_number').val('');
+            $('#matter_maildrop_address').val('');
+            return;
+        }
+        $.getJSON('/clio/contact_matters', { id: selectedContactId }, function(result) {
+            var matter = (result.matters || []).find(function(m) { return String(m.id) === String(matterId); });
+            if (matter) {
+                $('#matter_description').val(matter.description || '');
+                $('#matter_display_number').val(matter.display_number || '');
+                $('#matter_maildrop_address').val(matter.maildrop_address || '');
+            } else {
+                $('#matter_description').val('');
+                $('#matter_display_number').val('');
+                $('#matter_maildrop_address').val('');
+            }
+        });
     });
 
     // Custom autocomplete for Court Search

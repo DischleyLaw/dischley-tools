@@ -1,4 +1,4 @@
-        <!-- Additional Case 2 Static Fields (if desired to always show the second case) -->
+<!-- Additional Case 2 Static Fields (if desired to always show the second case) -->
         <!--
         <div id="additional-case-2" class="card shadow mb-4">
           <div class="card-body">
@@ -67,7 +67,7 @@
         </div>
       </div>
 
-      <form method="POST" action="{{ url_for('expungement_form') }}?downloaded=true" id="expungement-main-form">
+      <form method="POST" action="{{ url_for('generate_expungement') }}?downloaded=true" id="expungement-main-form">
         <!-- Expungement Details -->
         <div class="card shadow mb-4">
           <div class="card-body">
@@ -696,7 +696,7 @@
           throw new Error("Upload failed: Server returned non-JSON. Check backend processing or route handler.");
         }
       })
-      .then(data => {
+      .then((data) => {
         if (!data) {
           console.warn('No autofill data returned in batch upload', data);
           return;
@@ -746,5 +746,6 @@
     container.innerHTML = '';
     window.additionalCaseCount = 1;
   }
+</script>
 
 {% endblock %}

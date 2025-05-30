@@ -1161,8 +1161,14 @@ def case_result():
                 return jsonify({"error": f"Contact Search Error: {str(e)}"}), 500
     submitted = False
     if request.method == "POST":
+        # --- Build email_html with new formatting ---
         email_html = ""
-        defendant_name = request.form.get('defendant_name', '').strip()
+
+        # Get form data for Clio and client display
+        defendant_name = request.form.get("defendant_name", "").strip()
+        matter_description = request.form.get("matter_description", "").strip()
+        matter_display_number = request.form.get("matter_display_number", "").strip()
+        matter_maildrop_address = request.form.get("matter_maildrop_address", "").strip()
         # --- CLIO MATTER ID LOOKUP (and defendant name extraction) ---
         clio_matter_id = None
         selected_display_name = request.form.get("search_matter", "").strip()
@@ -1238,16 +1244,25 @@ def case_result():
         send_review_links = 'send_review_links' in request.form
 
         subject = f"Case Result - {defendant_name}"
-        court_value = request.form.get("court", "").strip()
-        prosecutor_judge_value = request.form.get("prosecutor_judge", "").strip()
-        if court_value:
-            email_html += f"<p style='font-size:16pt;'><strong>Court:</strong> {court_value}</p>"
-        if prosecutor_judge_value:
-            email_html += f"<p style='font-size:16pt;'><strong>Prosecutor/Judge:</strong> {prosecutor_judge_value}</p>"
+
+        # --- New email_html formatting: 16pt font, no <strong>, Clio info header, client name at top ---
+        if defendant_name:
+            email_html += f"<p style='font-size:16pt;'>Client Name: {defendant_name}</p>"
+
+        if matter_display_number or matter_description or matter_maildrop_address:
+            email_html += "<div style='font-size:16pt; margin-top:20px;'><b>Clio Information:</b><br>"
+            if matter_display_number:
+                email_html += f"Matter Number: {matter_display_number}<br>"
+            if matter_description:
+                email_html += f"Matter Description: {matter_description}<br>"
+            if matter_maildrop_address:
+                email_html += f"Maildrop Address: {matter_maildrop_address}<br>"
+            email_html += "</div>"
+
         # --- Add Plea Offer if present ---
         plea_offer = request.form.get("plea_offer", "").strip()
         if plea_offer:
-            email_html += f"<p style='font-size:16pt;'><strong>Plea Offer:</strong> {plea_offer}</p>"
+            email_html += f"<p style='font-size:16pt;'>Plea Offer: {plea_offer}</p>"
         all_charge_fields = [
             original_charges, amended_charges, pleas, dispositions,
             disposition_paragraphs,
@@ -1282,17 +1297,17 @@ def case_result():
                 email_html += "<p style='font-size:16pt; margin-left:20px;'>"
                 # Amended charge
                 if i < len(amended_charges) and amended_charges[i]:
-                    email_html += f"<span style='font-size:16pt;'><strong>Amended Charge:</strong> {amended_charges[i]}<br></span>"
+                    email_html += f"<span style='font-size:16pt;'>Amended Charge: {amended_charges[i]}<br></span>"
                 # Plea
                 if i < len(pleas) and pleas[i]:
-                    email_html += f"<span style='font-size:16pt;'>• <strong>Plea:</strong> {pleas[i]}<br></span>"
+                    email_html += f"<span style='font-size:16pt;'>• Plea: {pleas[i]}<br></span>"
                 # Disposition
                 if i < len(dispositions) and dispositions[i]:
-                    email_html += f"<span style='font-size:16pt;'>• <strong>Disposition:</strong> {dispositions[i]}<br></span>"
+                    email_html += f"<span style='font-size:16pt;'>• Disposition: {dispositions[i]}<br></span>"
                 # Disposition paragraph for special dispositions
                 if i < len(dispositions) and dispositions[i] in skip_dispositions:
                     if i < len(disposition_paragraphs) and disposition_paragraphs[i]:
-                        email_html += f"<span style='font-size:16pt;'><strong>Disposition Narrative:</strong> {disposition_paragraphs[i]}<br></span>"
+                        email_html += f"<span style='font-size:16pt;'>Disposition Narrative: {disposition_paragraphs[i]}<br></span>"
                 # Only render jail, fine, probation, license fields if not in skip_dispositions
                 if i < len(dispositions) and dispositions[i] not in skip_dispositions:
                     # Sentence heading if any jail/fine present
@@ -1327,38 +1342,37 @@ def case_result():
                         if rl_term:
                             details.append(f"Term: {rl_term}")
                         if details:
-                            email_html += f"<span style='font-size:16pt;'><strong>Restricted License:</strong> Yes ({', '.join(details)})<br></span>"
+                            email_html += f"<span style='font-size:16pt;'>Restricted License: Yes ({', '.join(details)})<br></span>"
                         else:
-                            email_html += f"<span style='font-size:16pt;'><strong>Restricted License:</strong> Yes<br></span>"
-
+                            email_html += f"<span style='font-size:16pt;'>Restricted License: Yes<br></span>"
 
                     # Probation/conditions block (only Probation Type and Probation Term fields)
                     probation_lines = []
                     if i < len(probation_type) and probation_type[i].strip():
-                        probation_lines.append(f"<strong>Probation Type:</strong> {probation_type[i]}")
+                        probation_lines.append(f"Probation Type: {probation_type[i]}")
                     if i < len(probation_term) and probation_term[i].strip():
-                        probation_lines.append(f"<strong>Probation Term:</strong> {probation_term[i]}")
+                        probation_lines.append(f"Probation Term: {probation_term[i]}")
                     # Only render Conditions of Probation if at least one probation field is present
                     if (
                         (i < len(probation_type) and probation_type[i].strip())
                         or (i < len(probation_term) and probation_term[i].strip())
                     ):
                         if probation_lines:
-                            email_html += "<span style='font-size:16pt;'><strong>Conditions of Probation:</strong><br>"
+                            email_html += "<span style='font-size:16pt;'>Conditions of Probation:<br>"
                             for line in probation_lines:
                                 email_html += f"&nbsp;&nbsp;{line}<br>"
                             email_html += "</span>"
 
                     # --- Combined License Suspension Term and Restricted License Type ---
                     if i < len(license_suspension_term) and license_suspension_term[i].strip():
-                        email_html += f"<span style='font-size:16pt;'><strong>License Suspension Term:</strong> {license_suspension_term[i].strip()}"
+                        email_html += f"<span style='font-size:16pt;'>License Suspension Term: {license_suspension_term[i].strip()}"
                         if i < len(restricted_license_type) and restricted_license_type[i].strip():
                             email_html += f" (Type of Suspended License: {restricted_license_type[i].strip()})"
                         email_html += "<br></span>"
 
                 # Charge notes
                 if i < len(charge_notes) and charge_notes[i].strip():
-                    email_html += f"<span style='font-size:16pt;'><strong>Additional Conditions:</strong> {charge_notes[i].strip()}<br></span>"
+                    email_html += f"<span style='font-size:16pt;'>Additional Conditions: {charge_notes[i].strip()}<br></span>"
                 email_html += "</p>"
 
         # Extra fields
@@ -1375,28 +1389,36 @@ def case_result():
                         formatted_continuation_time = datetime.strptime(continuation_time, "%H:%M").strftime("%I:%M %p")
                     except ValueError:
                         formatted_continuation_time = continuation_time
-                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case continued to</strong> {formatted_continuation_date} at {formatted_continuation_time}</p>")
+                    summary_fields.append(f"<p style='font-size:16pt;'>Case continued to {formatted_continuation_date} at {formatted_continuation_time}</p>")
                 else:
-                    summary_fields.append(f"<p style='font-size:16pt;'><strong>Case continued to</strong> {formatted_continuation_date}</p>")
+                    summary_fields.append(f"<p style='font-size:16pt;'>Case continued to {formatted_continuation_date}</p>")
             else:
-                summary_fields.append("<p style='font-size:16pt;'><strong>Case Continued</strong></p>")
+                summary_fields.append("<p style='font-size:16pt;'>Case Continued</p>")
 
         if date_disposition:
             try:
                 formatted_disposition_date = datetime.strptime(date_disposition, "%Y-%m-%d").strftime("%B %d, %Y")
             except ValueError:
                 formatted_disposition_date = date_disposition
-            summary_fields.append(f"<p style='font-size:16pt;'><strong>Disposition Date:</strong> {formatted_disposition_date}</p>")
+            summary_fields.append(f"<p style='font-size:16pt;'>Disposition Date: {formatted_disposition_date}</p>")
 
         if notes:
-            summary_fields.append(f"<p style='font-size:16pt;'><strong>Notes:</strong> {notes.replace(chr(10), '<br>')}</p>")
+            summary_fields.append(f"<p style='font-size:16pt;'>Notes: {notes.replace(chr(10), '<br>')}</p>")
 
         if send_review_links:
-            summary_fields.append("<p style='font-size:16pt;'><strong>Send Review Links:</strong> Yes</p>")
+            summary_fields.append("<p style='font-size:16pt;'>Send Review Links: Yes</p>")
 
         if summary_fields:
             email_html += "".join(summary_fields)
-        msg = Message(subject, recipients=["attorneys@dischleylaw.com"])
+
+        # --- CC maildrop address logic ---
+        cc = []
+        if matter_maildrop_address:
+            cc.append(matter_maildrop_address)
+
+        # Change sender to "New Case Result"
+        msg = Message(subject, recipients=["attorneys@dischleylaw.com"], cc=cc,
+                      sender=("New Case Result", os.getenv('MAIL_DEFAULT_SENDER')))
         msg.html = email_html
         mail.send(msg)
 
@@ -1831,3 +1853,21 @@ def clio_callback():
     db.session.commit()
 
     return f"Clio authorization complete. Access token stored."
+
+@app.route("/clio/contact_matters")
+def clio_contact_matters():
+    contact_id = request.args.get("id")
+    if not contact_id:
+        return jsonify({"matters": []})
+    try:
+        access_token = get_valid_token()
+        headers = {"Authorization": f"Bearer {access_token}"}
+        url = f"https://app.clio.com/api/v4/matters?client_id={contact_id}&fields=id,display_number,description,maildrop_address"
+        response = requests.get(url, headers=headers)
+        if response.status_code == 200:
+            matters = response.json().get("data", [])
+            return jsonify({"matters": matters})
+        else:
+            return jsonify({"matters": []}), response.status_code
+    except Exception as e:
+        return jsonify({"matters": [], "error": str(e)}), 500
