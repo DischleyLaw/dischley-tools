@@ -57,17 +57,15 @@
               <label for="file_1" class="form-label"><strong>Upload Court Document (PDF) for Charge #1:</strong></label>
               <input type="file" name="file_1" id="file_1" class="form-control" accept=".pdf">
             </div>
+  
             <div class="col-12">
-              <button type="button" class="btn btn-outline-secondary w-100" onclick="addUploadInput()">Add Another PDF Upload</button>
-            </div>
-            <div class="col-12">
-              <button type="submit" class="btn btn-secondary w-100">Upload All PDFs &amp; Autofill</button>
+              <button type="submit" class="btn btn-secondary w-100">Upload &amp; Autofill</button>
             </div>
           </form>
         </div>
       </div>
 
-      <form method="POST" action="{{ url_for('generate_expungement') }}?downloaded=true" id="expungement-main-form">
+      <form method="POST" action="{{ url_for('generate_expungement') }}" id="expungement-main-form">
         <!-- Expungement Details -->
         <div class="card shadow mb-4">
           <div class="card-body">
@@ -88,7 +86,7 @@
               </div>
               <div class="col-md-6">
                 <label for="name" class="form-label">Full Legal Name</label>
-                <input type="text" class="form-control" id="name" name="full_legal_name" required>
+                <input type="text" name="full_legal_name" class="form-control" id="name" required>
               </div>
               <div class="col-md-6">
                 <label for="dob" class="form-label">Date of Birth</label>
@@ -182,58 +180,85 @@
           </div>
         </div>
         <div id="additionalCasesContainer" class="mb-4"></div>
-
-        <!-- Add Additional Charge Button (moved above) -->
-        <template id="additional-case-template">
-  <div class="card shadow mb-3">
-    <div class="card-body">
-      <div class="mb-3">
-        <label class="form-label">Upload Court Document (PDF) for Charge #<span class="case-index">2</span>:</label>
-        <input type="file" class="form-control case-upload-input" accept=".pdf" data-case-index="2" name="file_case_2">
-        <button type="button" class="btn btn-sm btn-outline-secondary mt-2 upload-case-btn">Upload & Autofill</button>
-      </div>
-      <h6 class="mb-3">Charge Details #<span class="case-index">2</span></h6>
-      <div class="row g-3">
-        <div class="col-md-6">
-          <label for="case_2_arrest_date">Arrest Date</label>
-          <input type="text" class="form-control" name="case_2_arrest_date" id="case_2_arrest_date">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_officer_name">Officer Name</label>
-          <input type="text" class="form-control" name="case_2_officer_name" id="case_2_officer_name">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_police_department">Police Department</label>
-          <input type="text" class="form-control" name="case_2_police_department" id="case_2_police_department">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_charge_name">Charge Name</label>
-          <input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_code_section">Code Section</label>
-          <input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_otn">OTN</label>
-          <input type="text" class="form-control" name="case_2_otn" id="case_2_otn">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_court_dispo">Court Disposition</label>
-          <input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_case_no">Case Number</label>
-          <input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no">
-        </div>
-        <div class="col-md-6">
-          <label for="case_2_dispo_date">Disposition Date</label>
-          <input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date">
-        </div>
-      </div>
-    </div>
+<div class="row mb-4">
+  <div class="col-12">
+    <button type="button" class="btn btn-outline-primary w-100" onclick="addAdditionalCaseSection()">Add Another Charge</button>
   </div>
-</template>
+</div>
+        <!-- Add Additional Charge Button (moved above) -->
+                <template id="additional-case-template">
+          <div class="card shadow mb-3">
+            <div class="card-body">
+              <div class="mb-3">
+                <label class="form-label">Upload Court Document (PDF) for Charge #<span class="case-index">2</span>:</label>
+                <input type="file" class="form-control case-upload-input" accept=".pdf" data-case-index="2" name="file_case_2">
+                <button type="button" class="btn btn-sm btn-outline-secondary mt-2 upload-case-btn">Upload & Autofill</button>
+              </div>
+              <h6 class="mb-3">Charge Details #<span class="case-index">2</span></h6>
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label>Arrest Date</label>
+                  <input type="text" class="form-control" name="case_2_arrest_date" id="case_2_arrest_date">
+                </div>
+                <div class="col-md-6">
+                  <label>Officer Name</label>
+                  <input type="text" class="form-control" name="case_2_officer_name" id="case_2_officer_name">
+                </div>
+                <div class="col-md-6">
+                  <label>Law Enforcement Agency</label>
+                  <select class="form-select" name="case_2_police_department" id="case_2_police_department">
+                    <option value="">Select Agency</option>
+                    <option value="Fairfax County Police Department">Fairfax County Police Department</option>
+                    <option value="Arlington County Police Department">Arlington County Police Department</option>
+                    <option value="Prince William County Police Department">Prince William County Police Department</option>
+                    <option value="Loudoun County Sheriff's Office">Loudoun County Sheriff's Office</option>
+                    <option value="Alexandria Police Department">Alexandria Police Department</option>
+                    <option value="Stafford County Sheriff's Office">Stafford County Sheriff's Office</option>
+                    <option value="Fauquier County Sheriff's Office">Fauquier County Sheriff's Office</option>
+                    <option value="Virginia State Police">Virginia State Police</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                <div class="col-md-6" style="display:none;">
+                  <!-- Optionally, add an "Other" field for additional cases if needed -->
+                  <input type="text" class="form-control" name="case_2_other_police_department" id="case_2_other_police_department">
+                </div>
+                <div class="col-md-6">
+                  <label>Charge Name</label>
+                  <input type="text" class="form-control" name="case_2_charge_name" id="case_2_charge_name">
+                </div>
+                <div class="col-md-6">
+                  <label>Code Section</label>
+                  <input type="text" class="form-control" name="case_2_code_section" id="case_2_code_section">
+                </div>
+                <div class="col-md-6">
+                  <label>VCC Code</label>
+                  <input type="text" class="form-control" name="case_2_vcc_code" id="case_2_vcc_code">
+                </div>
+                <div class="col-md-6">
+                  <label>OTN</label>
+                  <input type="text" class="form-control" name="case_2_otn" id="case_2_otn">
+                </div>
+                <div class="col-md-6">
+                  <label>Court Disposition</label>
+                  <input type="text" class="form-control" name="case_2_court_dispo" id="case_2_court_dispo">
+                </div>
+                <div class="col-md-6">
+                  <label>Case Number</label>
+                  <input type="text" class="form-control" name="case_2_case_no" id="case_2_case_no">
+                </div>
+                <div class="col-md-6">
+                  <label>Final Disposition</label>
+                  <input type="text" class="form-control" name="case_2_final_dispo" id="case_2_final_dispo">
+                </div>
+                <div class="col-md-6">
+                  <label>Disposition Date</label>
+                  <input type="text" class="form-control" name="case_2_dispo_date" id="case_2_dispo_date">
+                </div>
+              </div>
+            </div>
+          </div>
+        </template>
 
         <!-- Prosecutor Info -->
         <div class="card shadow mb-4">
@@ -517,6 +542,15 @@
         const decoded = decodeHTML(value);
         // Enhanced handling for "name" key: maps to full_legal_name field
         if (key === 'name') {
+          let nameField = document.getElementById('name');
+          if (nameField) nameField.value = decoded;
+          let fullNameField = scope.querySelector('[name="full_legal_name"]');
+          if (fullNameField && fullNameField !== nameField) fullNameField.value = decoded;
+          return;
+        }
+        // Special handling for "case_1_name"
+        if (key === 'case_1_name') {
+          const decoded = decodeHTML(value);
           let nameField = document.getElementById('name');
           if (nameField) nameField.value = decoded;
           let fullNameField = scope.querySelector('[name="full_legal_name"]');

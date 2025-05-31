@@ -1,13 +1,7 @@
-from flask import Flask, render_template, request, redirect, url_for, session, send_file, flash, jsonify
-from flask_cors import CORS
+from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file, session, flash
 
-# --- Expungement Data Extraction Import ---
-from Expungement.expungement_utils import extract_expungement_data
-
-# Ensure app is defined only once and before any @app.route decorators
+# --- Initialize Flask app instance ---
 app = Flask(__name__)
-CORS(app)
-
 
 # --- CLIO CONTACT SEARCH ROUTE ---
 from flask import request, jsonify
@@ -76,36 +70,24 @@ def contact_search():
         ]
     })
 
-
 # --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
 def expungement_upload_batch():
-    # Accept files with any key starting with "file", e.g., "file", "file_1", "file_2", etc.
-    files = [f for key, f in request.files.items() if key.startswith("file")]
-    if not files:
-        return jsonify({"error": "No files uploaded"}), 400
-
-    from Expungement.expungement_utils import extract_multiple_cases_data
-    os.makedirs("temp", exist_ok=True)
-    extracted_cases = extract_multiple_cases_data(files[:20])
-    
-    response_data = {}
-    for idx, extracted in enumerate(extracted_cases):
-        case_data = {
-            "arrest_date": extracted.get("arrest_date", ""),
-            "officer_name": extracted.get("officer_name", ""),
-            "police_department": extracted.get("police_department", ""),
-            "charge_name": extracted.get("charge_name", ""),
-            "code_section": extracted.get("code_section", ""),
-            "vcc_code": extracted.get("vcc_code", ""),
-            "otn": extracted.get("otn", ""),
-            "court_dispo": extracted.get("court_dispo", ""),
-            "case_no": extracted.get("case_no", ""),
-            "dispo_date": extracted.get("dispo_date", "")
-        }
-        response_data[f"case_{idx+1}"] = case_data
-
-    return jsonify(response_data), 200
+    result = {}
+    for idx, file_key in enumerate(request.files, start=1):
+        file = request.files[file_key]
+        temp_path = f"/tmp/{file.filename}"
+        file.save(temp_path)
+        extracted = extract_expungement_data(temp_path, case_index=idx)
+        # Map extracted case keys to the expected format
+        def map_case_keys(case_data, case_index=1):
+            # Prefix keys with case_{index}_ for additional cases, or leave as-is for the first case
+            if case_index == 1:
+                return case_data
+            return {f"case_{case_index}_{k}": v for k, v in case_data.items()}
+        mapped = map_case_keys(extracted, case_index=idx)
+        result[f"case_{idx}"] = mapped
+    return jsonify(result)
 
 import subprocess
 import os
@@ -142,6 +124,22 @@ logging.basicConfig(level=logging.DEBUG)
 def generate_expungement():
     if request.method == "POST":
         form_data = request.form.to_dict()
+        
+        # Use full_legal_name from form, or fallback to case_1_name
+        form_data["full_legal_name"] = request.form.get("full_legal_name", "").strip()
+        if not form_data["full_legal_name"]:
+            form_data["full_legal_name"] = request.form.get("case_1_name", "").strip()
+        
+        # NEW: Autofill case_1_name with full_legal_name if case_1_name is empty
+        if not form_data.get("case_1_name", "").strip() and form_data.get("full_legal_name", "").strip():
+            form_data["case_1_name"] = form_data["full_legal_name"]
+        
+        # Also ensure the main 'name' field is populated
+        if not form_data.get("name", "").strip():
+            form_data["name"] = form_data.get("full_legal_name", "")
+        
+        import logging
+        logging.warning(f"Form Keys: {list(form_data.keys())}")
         # --- Merge autofill data from session if present ---
         autofill_data = session.pop("expungement_autofill_data", None)
         if autofill_data:
@@ -171,6 +169,7 @@ def generate_expungement():
                 else:
                     for field in ["arrest_date", "officer_name", "police_department", "charge_name", "code_section", "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"]:
                         form_data[f"case_{idx}_{field}"] = extracted.get(field, "")
+            app.logger.warning("Form Data After Extraction: %s", list(form_data.keys()))
 
         # --- Collect all case fields (support multiple) ---
         from collections import defaultdict
@@ -223,8 +222,7 @@ def generate_expungement():
             type_of_expungement = (
                 f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
                 f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. The Commonwealth cannot show good cause "
-                f"to the contrary as to why the petition should not be granted.\n\n"
-                f"To wit: {manifest_injustice_details}"
+                f"to the contrary as to why the petition should not be granted. (to wit: {manifest_injustice_details})"
             )
         else:
             type_of_expungement = ""
@@ -233,13 +231,16 @@ def generate_expungement():
         police_department_other = form_data.get("other_police_department", "")
         selected_police_department = police_department if police_department != "Other" else police_department_other
 
+        name = form_data.get("name") or form_data.get("full_legal_name") or ""
+        # Ensure "full_legal_name" (lowercase, no curly braces) is present and title-cased for template context
+        full_legal_name = form_data.get("full_legal_name", name).title()
         data = {
-            "{NAME}": form_data.get("name", "").upper(),
-            "{Full Legal Name}": form_data.get("name", "").upper(),
-            "{DOB}": format_date_long(form_data.get("dob", "")),
+            "{NAME}": name.upper(),
+            "{Full Legal Name}": name.upper(),
+            "{DOB}": format_date_long(form_data.get("dob", "")).title(),
             "{County2}": form_data.get("county", "").title(),
             "{COUNTY}": form_data.get("county", "").upper(),
-            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
+            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")).title(),
             "{Name at Arrest}": form_data.get("name_arrest", form_data.get("name", "")).upper(),
             "{Type of Expungement}": type_of_expungement,
             "{Date of Arrest}": arrest_date_formatted,
@@ -267,38 +268,42 @@ def generate_expungement():
             "{Officer Name}": form_data.get("officer_name", ""),
             "{Court of Final Dispo}": form_data.get("court_dispo", ""),
             "{Case No}": form_data.get("case_no", ""),
+            # Pass full_legal_name for template use (no curly braces, lowercase key)
+            "full_legal_name": full_legal_name,
         }
-        data["{NAME}"] = form_data.get("name", "").upper()
-        data["{DOB}"] = format_date_long(form_data.get("dob", ""))
-        data["{Name at Time of Arrest}"] = form_data.get("name_arrest", form_data.get("name", "")).upper()
+        data["{NAME}"] = name.upper()
+        data["{DOB}"] = format_date_long(form_data.get("dob", "")).title()
+        data["{Name at Time of Arrest}"] = form_data.get("name_arrest", form_data.get("name", "")).title()
         data["{Name at Arrest}"] = form_data.get("name_arrest", form_data.get("name", "")).upper()
         data["{Final Disposition}"] = form_data.get("final_dispo", "")
-        data["{additional Cases}"] = ""
-        if len(cases) > 1:
-            for i, case in enumerate(cases[1:], 1):
-                data["{additional Cases}"] += (
-                    f"Additional Case {i}:\n"
-                    f"Date of Arrest: {format_date_long(case.get('arrest_date', ''))}\n\n"
-                    f"Arresting Officer: {case.get('officer_name', '')}\n\n"
-                    f"Police Department: {case.get('police_department', '')}\n\n"
-                    f"Charge Name: {case.get('charge_name', '')}\n\n"
-                    f"Code Section: {case.get('code_section', '')}\n\n"
-                    f"VCC Code: {case.get('vcc_code', '')}\n\n"
-                    f"OTN: {case.get('otn', '')}\n\n"
-                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n\n"
-                    f"Case Number: {case.get('case_no', '')}\n\n"
-                    f"Disposition Date: {format_date_long(case.get('dispo_date', ''))}\n\n"
-                    "\n"
-                )
+
+        # Add {Additional Cases} AFTER data dictionary is constructed, immediately before populate_document
+        data["{Additional Cases}"] = ""
+        for i, case in enumerate(cases[1:], 1):
+            data["{Additional Cases}"] += f"CASE NO {i + 1}:\n\n"
+            data["{Additional Cases}"] += (
+                f"Date of Arrest:\t {format_date_long(case.get('arrest_date', ''))}\n"
+                f"Arresting Officer: {case.get('officer_name', '')}\n"
+                f"Law Enforcement Agency: {case.get('police_department', '')}\n"
+                f"Charge Description:  {case.get('charge_name', '')}\n"
+                f"Charge Code Section: {case.get('code_section', '')}\n"
+                f"VCC Code:  {case.get('vcc_code', '')}\n"
+                f"OTN:  {case.get('otn', '')}\n"
+                f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
+                f"Case number: {case.get('case_no', '')}\n"
+                f"Final Disposition and Date:  {case.get('final_dispo', form_data.get(f'case_{i+1}_final_dispo', ''))} on {format_date_long(case.get('dispo_date', form_data.get(f'case_{i+1}_dispo_date', '')))}\n"
+                f"Certified Copy of Warrant/Summons attached as Exhibit {i + 1}.\n\n"
+            )
 
         output_dir = "temp"
         os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Draft_Petition.docx")
+        output_path = os.path.join(output_dir, f"{name.title().replace(' ', '_')}_Draft_Petition.docx")
 
         template_path = 'static/docs/Exp_Petition_Template.docx'
         populate_document(template_path, output_path, data)
 
         session["generated_file_path"] = output_path
+        session["generated_name"] = data.get("{NAME}", "Petitioner")  # Add this line
         return redirect(url_for("expungement_success"))
     # For GET request, render the expungement form template
     current_month = datetime.now().strftime("%B")
@@ -739,7 +744,7 @@ def intake():
                     f"Facts: {new_lead.facts}, "
                     f"Homework: {new_lead.homework}"
                 ),
-                "referring_url": "http://127.0.0.1:5000/intake",
+                "referring_url": "https://tools.dischleylaw.com/intake",
                 "from_source": (custom_source or lead_source) or "Unknown"
             },
             "inbox_lead_token": os.getenv("CLIO_TOKEN")
@@ -1247,7 +1252,15 @@ def case_result():
 
         # --- New email_html formatting: 16pt font, no <strong>, Clio info header, client name at top ---
         if defendant_name:
-            email_html += f"<p style='font-size:16pt;'>Client Name: {defendant_name}</p>"
+            email_html += f"<div style='font-size:16pt;'>Client Name: {defendant_name}<br>"
+            # --- Add court and prosecutor/judge fields if present in form data (conditionally) ---
+        form_data = request.form
+        court_name = form_data.get("court", "")
+        prosecutor_or_judge = form_data.get("prosecutor_judge", "")
+        if court_name:
+            email_html += f"Court: {court_name}<br>"
+        if prosecutor_or_judge:
+            email_html += f"Prosecutor / Judge: {prosecutor_or_judge}<br>"
 
         if matter_display_number or matter_description or matter_maildrop_address:
             email_html += "<div style='font-size:16pt; margin-top:20px;'><b>Clio Information:</b><br>"
@@ -1510,7 +1523,6 @@ def reset_db():
 
 
 
-
 # --- Expungement Generator Integration ---
 # (already imported above)
 
@@ -1686,6 +1698,7 @@ def expungement_form():
                     f"OTN: {case.get('otn', '')}\n"
                     f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
                     f"Case Number: {case.get('case_no', '')}\n"
+                    f"Final Disposition: {case.get('final_dispo', '')}\n"
                     f"Disposition Date: {case.get('dispo_date', '')}\n"
                     "\n"
                 )
@@ -1699,10 +1712,13 @@ def expungement_form():
 
         # Instead of sending the file directly, save file path to session and redirect to success page
         session["generated_file_path"] = output_path
+        session["generated_name"] = data.get("{NAME}", "Petitioner")  # Add this line
         return redirect(url_for("expungement_success"))
 
     # Default response for GET requests or if no redirect has occurred
     autofill_data = session.pop("expungement_autofill_data", {})
+    # Ensure "full_legal_name" is populated from "case_1_name" if available
+    autofill_data["full_legal_name"] = autofill_data.get("case_1_name", "")
     return render_template(
         'expungement.html',
         counties=prosecutor_info.keys(),
@@ -1717,7 +1733,13 @@ def expungement_form():
 # --- Expungement Success Route ---
 @app.route("/expungement/success")
 def expungement_success():
-    return render_template("success.html")
+    generated_path = session.pop("generated_file_path", None)
+    name = session.pop("generated_name", "Petitioner")
+    download_url = None
+    if generated_path and os.path.isfile(generated_path):
+        filename = os.path.basename(generated_path)
+        download_url = url_for("download_generated_file", filename=filename)
+    return render_template("Expungement_Success.html", download_url=download_url, name=name)
 
 @app.route('/test')
 def test_select2():
@@ -1795,31 +1817,33 @@ def upload():
 
 @app.route('/expungement/upload', methods=['POST'])
 def expungement_upload():
-    if 'file' not in request.files:
-        return jsonify({'error': 'No file part'}), 400
+    def map_case_keys(case_data, case_index=1):
+        # Prefix keys with case_{index}_ for additional cases, or leave as-is for the first case
+        if case_index == 1:
+            return case_data
+        return {f"case_{case_index}_{k}": v for k, v in case_data.items()}
+
     file = request.files['file']
-    if file.filename == '':
-        return jsonify({'error': 'No selected file'}), 400
-    if file and file.filename.endswith('.pdf'):
-        from Expungement.expungement_utils import extract_expungement_data
-        temp_path = os.path.join("temp", file.filename)
-        os.makedirs("temp", exist_ok=True)
-        file.save(temp_path)
-        try:
-            extracted_data = extract_expungement_data(temp_path)
-            # Store the extracted data in session for autofill in UI
-            session["expungement_autofill_data"] = extracted_data
-            return jsonify(extracted_data), 200
-        except Exception as e:
-            app.logger.exception(f"Expungement upload failed during extraction: {str(e)}")
-            return jsonify({'error': f'Failed to extract data from PDF: {str(e)}'}), 500
-    return jsonify({'error': 'Invalid file type'}), 400
+    case_index = int(request.form.get("case_index", 1))
+    temp_path = f"/tmp/{file.filename}"
+    file.save(temp_path)
+    extracted = extract_expungement_data(temp_path, case_index=case_index)
+    if case_index == 1:
+        mapped = map_case_keys(extracted, case_index=1)
+        return jsonify(mapped)
+    else:
+        # For additional cases, return keys as-is (case_2_charge_name, etc.)
+        return jsonify(extracted)
 
-
-# --- Admin Tools Route ---
 @app.route("/admin_tools")
+@login_required
 def admin_tools():
+    # Check if user is logged in as admin
+    if "user" not in session or session.get("user") != "admin":
+        return redirect(url_for("login"))
+    
     return render_template("admin_tools.html")
+
 # --- Clio OAuth2 Authorization Route ---
 @app.route("/clio/authorize")
 def clio_authorize():

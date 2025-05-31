@@ -274,6 +274,24 @@ def extract_expungement_data(filepath, case_index=None):
     logger.debug(f"Extraction result: {result}")
     return result
 
+def map_case_keys(extracted, case_index=1):
+    mapping = {
+        f"case_{case_index}_name": "full_legal_name",
+        f"case_{case_index}_name_arrest": "name_arrest",
+        f"case_{case_index}_dob": "dob",
+        f"case_{case_index}_officer_name": "officer_name",
+        f"case_{case_index}_arrest_date": "arrest_date",
+        f"case_{case_index}_dispo_date": "dispo_date",
+        f"case_{case_index}_charge_name": "charge_name",
+        f"case_{case_index}_code_section": "code_section",
+        f"case_{case_index}_otn": "otn",
+        f"case_{case_index}_case_no": "case_no",
+        f"case_{case_index}_final_dispo": "final_dispo",
+        f"case_{case_index}_court_dispo": "court_dispo",
+        f"case_{case_index}_police_department": "police_department",
+    }
+    return {mapping.get(k, k): v for k, v in extracted.items() if k in mapping}
+
 if __name__ == "__main__":
     import json
     import sys
@@ -308,3 +326,4 @@ def extract_multiple_cases_data(filepaths):
         case_data = extract_expungement_data(path, case_index=idx)
         all_data.append(case_data)
     return all_data
+
