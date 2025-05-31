@@ -2,30 +2,13 @@ from flask import Flask, render_template, request, redirect, url_for, jsonify, s
 from flask import make_response
 from functools import wraps
 from flask import request, Response
-# --- Basic Auth Decorator ---
-def check_auth(username, password):
-    return username == "admin" and password == "securepassword"
-
-def authenticate():
-    return Response(
-        "Authentication required", 401,
-        {"WWW-Authenticate": 'Basic realm="Login Required"'}
-    )
-
+# --- Session-based Auth Decorator ---
 def requires_auth(f):
     @wraps(f)
     def decorated(*args, **kwargs):
-        auth_cookie = request.cookies.get("auth_token")
-        if auth_cookie == "authenticated":
+        if session.get("authenticated"):
             return f(*args, **kwargs)
-
-        auth = request.authorization
-        if not auth or not check_auth(auth.username, auth.password):
-            return authenticate()
-
-        response = make_response(f(*args, **kwargs))
-        response.set_cookie("auth_token", "authenticated", max_age=8 * 60 * 60)
-        return response
+        return redirect(url_for("login", next=request.url))
     return decorated
 
 # --- Initialize Flask app instance ---
@@ -605,20 +588,25 @@ def view_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
     return render_template("leads.html", leads=leads)
 
+# --- Login/Logout Routes ---
 @app.route("/login", methods=["GET", "POST"])
 def login():
+    error = None
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
         if username == "admin" and password == "dischley123":
             session.permanent = True
+            session["authenticated"] = True
             session["user"] = username
-            return redirect(url_for("dashboard"))
-        return render_template("login.html", error="Invalid credentials")
-    return render_template("login.html")
+            next_url = request.args.get("next")
+            return redirect(next_url or url_for("dashboard"))
+        error = "Invalid credentials"
+    return render_template("login.html", error=error)
 
 @app.route("/logout")
 def logout():
+    session.pop("authenticated", None)
     session.pop("user", None)
     return redirect(url_for("login"))
 
