@@ -734,9 +734,9 @@ def intake():
         clio_payload = {
             "inbox_lead": {
                 "from_first": first_name or "Unknown",
-                "from_last": new_lead.name.split()[-1],
-                "from_email": new_lead.email,
-                "from_phone": new_lead.phone,
+                "from_last": new_lead.name.split()[-1] or "Unknown",
+                "from_email": new_lead.email or "Unkown",
+                "from_phone": new_lead.phone or "Unknown",
                 "from_message": (
                     f"Case Type: {case_type}, "
                     f"Charges: {new_lead.charges}, "
