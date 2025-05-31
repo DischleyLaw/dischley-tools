@@ -1838,10 +1838,6 @@ def expungement_upload():
 @app.route("/admin_tools")
 @login_required
 def admin_tools():
-    # Check if user is logged in as admin
-    if "user" not in session or session.get("user") != "admin":
-        return redirect(url_for("login"))
-    
     return render_template("admin_tools.html")
 
 # --- Clio OAuth2 Authorization Route ---
