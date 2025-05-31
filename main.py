@@ -1,4 +1,32 @@
 from flask import Flask, render_template, request, redirect, url_for, jsonify, send_file, session, flash
+from flask import make_response
+from functools import wraps
+from flask import request, Response
+# --- Basic Auth Decorator ---
+def check_auth(username, password):
+    return username == "admin" and password == "securepassword"
+
+def authenticate():
+    return Response(
+        "Authentication required", 401,
+        {"WWW-Authenticate": 'Basic realm="Login Required"'}
+    )
+
+def requires_auth(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        auth_cookie = request.cookies.get("auth_token")
+        if auth_cookie == "authenticated":
+            return f(*args, **kwargs)
+
+        auth = request.authorization
+        if not auth or not check_auth(auth.username, auth.password):
+            return authenticate()
+
+        response = make_response(f(*args, **kwargs))
+        response.set_cookie("auth_token", "authenticated", max_age=8 * 60 * 60)
+        return response
+    return decorated
 
 # --- Initialize Flask app instance ---
 app = Flask(__name__)
@@ -34,8 +62,8 @@ def get_valid_token():
         db.session.commit()
     return token.access_token
 
-# --- CLIO CONTACT SEARCH ROUTE ---
 @app.route("/clio/contact-search")
+@requires_auth
 def contact_search():
     query = request.args.get("query", "").strip()
     if not query:
@@ -70,8 +98,8 @@ def contact_search():
         ]
     })
 
-# --- Expungement Upload Batch Route ---
 @app.route('/expungement/upload_batch', methods=['POST'])
+@requires_auth
 def expungement_upload_batch():
     result = {}
     for idx, file_key in enumerate(request.files, start=1):
@@ -119,8 +147,8 @@ app.logger.removeHandler(default_handler)
 logging.basicConfig(level=logging.DEBUG)
 
 
-# --- Expungement Generator GET and POST Route ---
 @app.route("/expungement/generate", methods=["GET", "POST"])
+@requires_auth
 def generate_expungement():
     if request.method == "POST":
         form_data = request.form.to_dict()
@@ -378,8 +406,8 @@ auth_url = "https://app.clio.com/oauth/authorize"
 
 
 
-# --- Admin Leads Dashboard ---
 @app.route("/admin/leads")
+@requires_auth
 def admin_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
     # Enhance: add URLs for each lead's detail page
@@ -390,8 +418,8 @@ def admin_leads():
         leads_with_links.append(lead_dict)
     return render_template("admin_leads.html", leads=leads, leads_with_links=leads_with_links)
 
-# --- Admin Edit Lead ---
 @app.route("/admin/lead/<int:lead_id>/edit", methods=["GET", "POST"])
+@requires_auth
 def admin_edit_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     if request.method == "POST":
@@ -550,8 +578,8 @@ class ClioToken(db.Model):
         return self.expires_at < datetime.utcnow()
 
 
-# --- Lead Links Route ---
 @app.route("/lead-links")
+@requires_auth
 def lead_links():
     links = []
     for lead in Lead.query.order_by(Lead.created_at.desc()).all():
@@ -564,6 +592,7 @@ def lead_links():
 
 
 @app.route("/")
+@requires_auth
 def dashboard():
     case_results = CaseResult.query.order_by(CaseResult.created_at.desc()).all()
     # Show admin_tools button only for logged-in admin user
@@ -571,6 +600,7 @@ def dashboard():
     return render_template("dashboard.html", case_results=case_results, show_admin_tools=show_admin_tools)
 
 @app.route("/leads")
+@requires_auth
 def view_leads():
     leads = Lead.query.order_by(Lead.created_at.desc()).all()
     return render_template("leads.html", leads=leads)
@@ -593,6 +623,7 @@ def logout():
     return redirect(url_for("login"))
 
 @app.route("/intake", methods=["GET", "POST"])
+@requires_auth
 def intake():
     if request.method == "POST":
         data = request.form
@@ -747,7 +778,7 @@ def intake():
                 "referring_url": "https://tools.dischleylaw.com/intake",
                 "from_source": (custom_source or lead_source) or "Unknown"
             },
-            "inbox_lead_token": os.getenv("CLIO_TOKEN")
+            "inbox_lead_token": "lPFVyNY-R1gOKWNSvCCyoQ"
         }
 
         response = requests.post("https://grow.clio.com/inbox_leads", json=clio_payload)
@@ -756,10 +787,12 @@ def intake():
     return render_template("intake.html")
 
 @app.route("/success")
+@requires_auth
 def intake_success():
     return render_template("success.html")
 
 @app.route("/lead/<int:lead_id>")
+@requires_auth
 def view_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     return render_template("view_lead.html", lead=lead)
@@ -785,6 +818,7 @@ def update_lead_token(token):
         return redirect(url_for("login"))
 
 @app.route("/lead/<int:lead_id>/update", methods=["POST"])
+@requires_auth
 def update_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
 
@@ -1080,6 +1114,7 @@ Manassas, VA 20110
     return redirect(url_for("update_success"))
 
 @app.route("/lead/<int:lead_id>/edit", methods=["GET", "POST"])
+@requires_auth
 def edit_lead(lead_id):
     lead = Lead.query.get_or_404(lead_id)
     if request.method == "POST":
@@ -1094,6 +1129,7 @@ def edit_lead(lead_id):
     return render_template("edit_lead.html", lead=lead)
 
 @app.route("/case_result/<int:result_id>/edit", methods=["GET", "POST"])
+@requires_auth
 def edit_case_result(result_id):
     result = CaseResult.query.get_or_404(result_id)
     if request.method == "POST":
@@ -1118,10 +1154,12 @@ def edit_case_result(result_id):
     return render_template("edit_case_result.html", result=result)
 
 @app.route("/update-success")
+@requires_auth
 def update_success():
     return render_template("update_success.html")
 
 @app.route("/case_result", methods=["GET", "POST"])
+@requires_auth
 def case_result():
     # --- AJAX or form-driven search for matters or contacts (GET handler) ---
     if request.method == "GET" and ("search_matter" in request.args or "search_contact" in request.args):
@@ -1502,6 +1540,7 @@ def case_result():
     return render_template('case_result.html', submitted=submitted)
 
 @app.route("/case_result_success")
+@requires_auth
 def case_result_success():
     return render_template("case_results_success.html")
 
@@ -1512,8 +1551,8 @@ def init_db():
 
 
 
-# Route to reset the database
 @app.route("/reset-db")
+@requires_auth
 def reset_db():
     with app.app_context():
         db.drop_all()
@@ -1527,6 +1566,7 @@ def reset_db():
 # (already imported above)
 
 @app.route("/expungement", methods=["GET", "POST"])
+@requires_auth
 def expungement_form():
     # --- Update Stafford County prosecutor details ---
     if "Stafford County" in prosecutor_info:
@@ -1562,336 +1602,4 @@ def expungement_form():
             os.makedirs("temp", exist_ok=True)
             file.save(file_path)
             extracted_data = extract_expungement_data(file_path)
-            # Explicitly map required keys into form_data for form population
-            form_data['name'] = extracted_data.get('name', '')
-            form_data['name_arrest'] = extracted_data.get('name_arrest', '')
-            form_data['dob'] = extracted_data.get('dob', '')
-            form_data['final_dispo'] = extracted_data.get('final_dispo', '')
-
-        # Add attorney dropdown value
-        attorney = form_data.get("attorney", "")
-
-        # Law enforcement agency dropdown and "Other" textbox
-        police_department = form_data.get("police_department", "")
-        police_department_other = form_data.get("police_department_other", "")
-        selected_police_department = police_department
-        if police_department == "Other":
-            selected_police_department = police_department_other
-
-        # Date formatting helpers
-        def format_date_long(date_str):
-            for fmt in ("%Y-%m-%d", "%m/%d/%Y", "%m-%d-%Y"):
-                try:
-                    return datetime.strptime(date_str, fmt).strftime("%B %d, %Y")
-                except ValueError:
-                    continue
-            return date_str
-
-        expungement_type = form_data.get("expungement_type", "")
-        manifest_injustice_details = form_data.get("manifest_injustice_details", "")
-        # Compose {Type of Expungement} logic as required
-        if expungement_type == "Manifest Injustice":
-            type_of_expungement = (
-                f"The continued existence and possible dissemination of information relating to the charge(s) set forth herein has caused, "
-                f"and may continue to cause, circumstances which constitute a manifest injustice to the Petitioner. "
-                f"(to wit: {manifest_injustice_details})"
-            )
-        elif expungement_type == "Expungement of Right":
-            type_of_expungement = (
-                "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
-                "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
-            )
-        elif expungement_type == "Automatic Expungement":
-            type_of_expungement = "Automatic Expungement"
-        else:
-            type_of_expungement = (
-                "The Petitioner has no prior criminal record, the aforementioned arrest was a misdemeanor offense, "
-                "and the Commonwealth cannot show good cause to the contrary as to why the petition should not be granted."
-            )
-
-        # --- Collect all case fields (support multiple) ---
-        # Detect all keys that match the pattern case_{i}_fieldname
-        from collections import defaultdict
-        import re
-        case_fields = [
-            "arrest_date", "officer_name", "police_department", "charge_name", "code_section",
-            "vcc_code", "otn", "court_dispo", "case_no", "dispo_date"
-        ]
-        # We'll collect cases as a list of dicts
-        cases = []
-        # First, add the main case (no index) as case 0
-        main_case = {}
-        for field in case_fields:
-            main_case[field] = form_data.get(field, "")
-        cases.append(main_case)
-        # Now, look for additional cases by index
-        # Find all case_{i}_arrest_date, etc.
-        indexed_case_data = defaultdict(dict)
-        for key, value in form_data.items():
-            match = re.match(r"case_(\d+)_(\w+)", key)
-            if match:
-                idx, field = match.groups()
-                if field in case_fields:
-                    indexed_case_data[int(idx)][field] = value
-        # Add additional cases, in order
-        for idx in sorted(indexed_case_data.keys()):
-            cases.append(indexed_case_data[idx])
-
-        # Optionally: Merge multiple sets of charges into the generated document.
-        # For now, we will only use the first case for main document fields, but
-        # include all cases in a list in data for potential use in document generation.
-        # (To merge all cases into a single document, pass the list to populate_document if supported.)
-        # Use the first case as the main one:
-        first_case = cases[0] if cases else {}
-        arrest_date_formatted = format_date_long(first_case.get("arrest_date", ""))
-        dispo_date_formatted = format_date_long(first_case.get("dispo_date", ""))
-
-        # Map form fields to template fields
-        data = {
-            "{NAME}": form_data.get("name", "").upper(),
-            "{DOB}": format_date_long(form_data.get("dob", "")),
-            "{County2}": form_data.get("county", "").title(),
-            "{COUNTY}": form_data.get("county", "").upper(),
-            "{Name at Time of Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
-            "{Name at Arrest}": form_data.get("name_arrest", form_data.get("name", "")),
-            "{Type of Expungement}": type_of_expungement,
-            "{Date of Arrest}": arrest_date_formatted,
-            "{Arresting Officer}": first_case.get("officer_name", ""),
-            "{Police Department}": selected_police_department,
-            "{Charge Name}": first_case.get("charge_name", ""),
-            "{Code Section}": first_case.get("code_section", ""),
-            "{VCC Code}": first_case.get("vcc_code", ""),
-            "{OTN}": first_case.get("otn", ""),
-            "{Court Dispo}": first_case.get("court_dispo", ""),
-            "{Case Number}": first_case.get("case_no", ""),
-            "{Final Disposition}": form_data.get("final_dispo", ""),
-            "{Dispo Date}": dispo_date_formatted,
-            "{Prosecutor}": form_data.get("prosecutor", ""),
-            "{Prosecutor Title}": form_data.get("prosecutor_title", ""),
-            "{Prosecutor Address 1}": form_data.get("prosecutor_address1", ""),
-            "{Prosecutor Address 2}": form_data.get("prosecutor_address2", ""),
-            "{Month}": form_data.get("month", current_month),
-            "{Year}": form_data.get("year", current_year),
-            "{Attorney}": attorney,
-            "{Expungement Type}": expungement_type,
-            "{Manifest Injustice Details}": manifest_injustice_details,
-            # --- Additional keys added below ---
-            "{Arrest Date}": arrest_date_formatted,
-            "{Officer Name}": first_case.get("officer_name", ""),
-            "{Court of Final Dispo}": first_case.get("court_dispo", ""),
-            "{Case No}": first_case.get("case_no", ""),
-            # Add all cases for further processing if needed
-            "cases": cases,
-        }
-        # Add {additional Cases} field for Word template
-        data["{additional Cases}"] = ""
-        if len(cases) > 1:
-            for i, case in enumerate(cases[1:], 1):
-                data["{additional Cases}"] += (
-                    f"Additional Case {i}:\n"
-                    f"Date of Arrest: {case.get('arrest_date', '')}\n"
-                    f"Arresting Officer: {case.get('officer_name', '')}\n"
-                    f"Police Department: {case.get('police_department', '')}\n"
-                    f"Charge Name: {case.get('charge_name', '')}\n"
-                    f"Code Section: {case.get('code_section', '')}\n"
-                    f"VCC Code: {case.get('vcc_code', '')}\n"
-                    f"OTN: {case.get('otn', '')}\n"
-                    f"Court of Final Disposition: {case.get('court_dispo', '')}\n"
-                    f"Case Number: {case.get('case_no', '')}\n"
-                    f"Final Disposition: {case.get('final_dispo', '')}\n"
-                    f"Disposition Date: {case.get('dispo_date', '')}\n"
-                    "\n"
-                )
-
-        output_dir = "temp"
-        os.makedirs(output_dir, exist_ok=True)
-        output_path = os.path.join(output_dir, f"{data['{NAME}'].replace(' ', '_')}_Expungement.docx")
-
-        template_path = 'static/docs/Exp_Petition_Template.docx'
-        populate_document(template_path, output_path, data)
-
-        # Instead of sending the file directly, save file path to session and redirect to success page
-        session["generated_file_path"] = output_path
-        session["generated_name"] = data.get("{NAME}", "Petitioner")  # Add this line
-        return redirect(url_for("expungement_success"))
-
-    # Default response for GET requests or if no redirect has occurred
-    autofill_data = session.pop("expungement_autofill_data", {})
-    # Ensure "full_legal_name" is populated from "case_1_name" if available
-    autofill_data["full_legal_name"] = autofill_data.get("case_1_name", "")
-    return render_template(
-        'expungement.html',
-        counties=prosecutor_info.keys(),
-        current_month=current_month,
-        current_year=current_year,
-        messages=messages,
-        download_url=download_url,
-        autofill_data=autofill_data
-    )
-
-
-# --- Expungement Success Route ---
-@app.route("/expungement/success")
-def expungement_success():
-    generated_path = session.pop("generated_file_path", None)
-    name = session.pop("generated_name", "Petitioner")
-    download_url = None
-    if generated_path and os.path.isfile(generated_path):
-        filename = os.path.basename(generated_path)
-        download_url = url_for("download_generated_file", filename=filename)
-    return render_template("Expungement_Success.html", download_url=download_url, name=name)
-
-@app.route('/test')
-def test_select2():
-    return render_template('Test.html')
-
-# --- API endpoint used by JS "Add Additional Case" button ---
-# This endpoint supports the dynamic "Add Additional Case" functionality in the expungement form.
-@app.route("/expungement/next_case_index", methods=["GET"])
-def get_next_case_index():
-    count = session.get("case_index", 1)
-    session["case_index"] = count + 1
-    return jsonify(index=count)
-
-
-# --- Download generated expungement file route ---
-@app.route("/download/<filename>")
-def download_generated_file(filename):
-    filepath = os.path.join("temp", filename)
-    if os.path.exists(filepath):
-        response = send_file(filepath, as_attachment=True)
-        try:
-            os.remove(filepath)
-        except Exception as e:
-            print(f"Failed to delete file: {filepath} — {e}")
-        return response
-    else:
-        flash("File not found.", "danger")
-        return redirect(url_for("expungement_form"))
-
-
-
-
-# --- General PDF Upload and Case Parsing Route ---
-from flask import request, render_template, jsonify
-from pdfminer.high_level import extract_text
-import re
-
-def parse_case_info(text):
-    cases = []
-    pattern = re.compile(
-        r"Case No\.\s*(?P<case_no>\S+).*?"
-        r"Name:\s*(?P<name>[\w\s,]+).*?"
-        r"Charge Name:\s*(?P<charge_name>.+?)\s+"
-        r"Offense Date:\s*(?P<offense_date>\d{2}/\d{2}/\d{4}).*?"
-        r"Final Disposition:\s*(?P<disposition>.+?)\s+"
-        r"Disposition Date:\s*(?P<disposition_date>\d{2}/\d{2}/\d{4})",
-        re.DOTALL
-    )
-    for match in pattern.finditer(text):
-        cases.append(match.groupdict())
-    return cases
-
-@app.route('/upload', methods=['POST'])
-def upload():
-    file = request.files['file']
-    if not file:
-        return jsonify({'error': 'No file uploaded'}), 400
-    text = extract_text(file)
-    cases = parse_case_info(text)
-    print("Parsed cases:", cases)
-    if cases:
-        # Use the first case for autofill
-        parsed_case = cases[0]
-        formatted_data = {
-            "arrest_date": parsed_case.get("offense_date", ""),
-            "charge_name": parsed_case.get("charge_name", ""),
-            "case_no": parsed_case.get("case_no", ""),
-            "court_dispo": parsed_case.get("disposition", ""),
-            "dispo_date": parsed_case.get("disposition_date", "")
-        }
-        session["expungement_autofill_data"] = formatted_data
-        return jsonify(formatted_data), 200
-    return jsonify({}), 200
-
-
-@app.route('/expungement/upload', methods=['POST'])
-def expungement_upload():
-    def map_case_keys(case_data, case_index=1):
-        # Prefix keys with case_{index}_ for additional cases, or leave as-is for the first case
-        if case_index == 1:
-            return case_data
-        return {f"case_{case_index}_{k}": v for k, v in case_data.items()}
-
-    file = request.files['file']
-    case_index = int(request.form.get("case_index", 1))
-    temp_path = f"/tmp/{file.filename}"
-    file.save(temp_path)
-    extracted = extract_expungement_data(temp_path, case_index=case_index)
-    if case_index == 1:
-        mapped = map_case_keys(extracted, case_index=1)
-        return jsonify(mapped)
-    else:
-        # For additional cases, return keys as-is (case_2_charge_name, etc.)
-        return jsonify(extracted)
-
-@app.route("/admin_tools")
-@login_required
-def admin_tools():
-    # Check if user is logged in as admin
-    if "user" not in session or session.get("user") != "admin":
-        return redirect(url_for("login"))
-    
-    return render_template("admin_tools.html")
-
-# --- Clio OAuth2 Authorization Route ---
-@app.route("/clio/authorize")
-def clio_authorize():
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri, scope=["all"])
-    authorization_url, state = oauth.authorization_url(auth_url)
-    return redirect(authorization_url)
-
-# --- Clio OAuth2 Callback Route ---
-@app.route("/callback")
-def clio_callback():
-    oauth = OAuth2Session(client_id, redirect_uri=redirect_uri)
-    token = oauth.fetch_token(
-        token_url,
-        client_secret=client_secret,
-        authorization_response=request.url
-    )
-
-    access_token = token.get("access_token")
-    refresh_token = token.get("refresh_token")
-    expires_in = token.get("expires_in")
-
-    # Optional: Save to ClioToken model
-    existing_token = ClioToken.query.first()
-    if not existing_token:
-        existing_token = ClioToken()
-        db.session.add(existing_token)
-
-    existing_token.access_token = access_token
-    existing_token.refresh_token = refresh_token
-    existing_token.expires_at = datetime.utcnow() + timedelta(seconds=expires_in or 3600)
-    db.session.commit()
-
-    return f"Clio authorization complete. Access token stored."
-
-@app.route("/clio/contact_matters")
-def clio_contact_matters():
-    contact_id = request.args.get("id")
-    if not contact_id:
-        return jsonify({"matters": []})
-    try:
-        access_token = get_valid_token()
-        headers = {"Authorization": f"Bearer {access_token}"}
-        url = f"https://app.clio.com/api/v4/matters?client_id={contact_id}&fields=id,display_number,description,maildrop_address"
-        response = requests.get(url, headers=headers)
-        if response.status_code == 200:
-            matters = response.json().get("data", [])
-            return jsonify({"matters": matters})
-        else:
-            return jsonify({"matters": []}), response.status_code
-    except Exception as e:
-        return jsonify({"matters": [], "error": str(e)}), 500
+            # Explicitly ma<truncated__content/>
